@@ -17,7 +17,8 @@ A Fabric mod for Minecraft 26.3 that replaces the overworld sky with the real ce
 - English and Korean in game
 
 ## Documentation
-See [docs/](docs/README.md): user manual, overview, technical specification and implementation analysis. Change history: [CHANGELOG.md](CHANGELOG.md).
+See [docs/](docs/README.md): user manual, overview, technical specification and implementation analysis.  
+Change history: [CHANGELOG.md](CHANGELOG.md).
 
 ## Download
 See [Releases](../../releases).
