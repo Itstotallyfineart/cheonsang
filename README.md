@@ -43,7 +43,7 @@ The jar is written to `build/libs/`. The repository contains the mod source and 
 - Meteors follow the computer clock, so multiplayer players see the same meteors only as closely as their clocks agree
 
 ## Development
-Planning, data selection, design decisions and in-game verification by itsnotfineart. The source code was written in collaboration with a generative AI (Anthropic Claude).
+Planning, data selection, design decisions and in-game verification by itsnotfineart. The source code by generative AI (Anthropic Claude).
 
 ## License
 Source code: MIT (see `LICENSE`). Original textures and icons by itsnotfineart: CC BY-SA 4.0.
@@ -58,7 +58,7 @@ Data files keep the licenses of their sources (see `CREDITS.txt`). The deep-sky 
 ## 기능
 - 관측 날짜·위치 기준 별·해·달·행성·위성 위치. 행성은 VSOP87 축약 이론(1,259항)으로 계산하며, 1800~2050년 PyEphem 대비 최대 차이는 2.4″(해왕성)~12.6″(화성)
 - 별: HYG 9등, Tycho-2 13등, 선택 extra 팩 사용 시 Gaia DR3 32,061,510개 15.2등
-- 실제 광학 계산 천체망원경: 구경 50~305mm, 접안 40~3mm, 한계등급, 회절, 사출동공
+- 실제 광학 계산 천체망원경: 구경 50-305mm, 접안 40-3mm, 한계등급, 회절, 사출동공
 - 은하·성운·구상성단의 접안렌즈 관측 모습 (Digitized Sky Survey 사진 기반)
 - 하늘 밝기 모델: 박명, 달빛, 대기광, 빛공해, 암적응, 소광, 굴절
 - 관측지 기준 일식·월식, 유성우, 오로라, 황도광
@@ -86,7 +86,7 @@ Minecraft 26.3, Fabric Loader 0.20.1 이상, Fabric API, Fabric Language Kotlin,
 - 유성은 컴퓨터 시계 기준. 멀티플레이에서 같은 유성이 보이는 정도는 각 컴퓨터 시계가 맞는 정도에 따름
 
 ## 개발
-기획, 자료 선정, 설계 판단, 게임 내 검증은 itsnotfineart가 맡았고, 소스 코드는 생성형 AI(Anthropic Claude)와 협업해 작성했습니다.
+기획, 자료 선정, 설계 판단, 게임 내 검증: itsnotfineart 소스 코드:생성형 AI(Anthropic Claude)
 
 ## 라이선스
 소스 코드 MIT (`LICENSE`). itsnotfineart 자체 그림·아이콘 CC BY-SA 4.0.
