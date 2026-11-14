@@ -18,6 +18,9 @@ A Fabric mod for Minecraft 26.3 that replaces the overworld sky with the real ce
 - Screen day and night follow the real Sun altitude; mob spawning and sleeping stay vanilla
 - Korean and English
 
+## Documentation
+Korean documentation is in [docs/](docs/README.md): user manual, overview, technical specification and implementation analysis. Change history: [CHANGELOG.md](CHANGELOG.md).
+
 ## Download
 See [Releases](../../releases).
 - `cheonsang-2.0.0.jar`: the mod (required on client and server)
@@ -63,6 +66,9 @@ Data files keep the licenses of their sources (see `CREDITS.txt`). The deep-sky 
 - `/cfind` 천체 찾기, `/cwhen` 관측 시각·장소 예보, `/cplace` 개인 관측 위치
 - 화면 낮밤은 실제 해 고도를 따름. 몹 생성·잠자기는 바닐라 규칙
 - 한국어, 영어
+
+## 문서
+[docs/](docs/README.md): 사용자 매뉴얼, 소개서, 기술 사양서, 과학적 구현 분석서. 변경 이력은 [CHANGELOG.md](CHANGELOG.md).
 
 ## 내려받기
 [Releases](../../releases)
