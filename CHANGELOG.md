@@ -1,379 +1,379 @@
-# 천상 (Cheonsang) 패치노트
+# Cheonsang changelog
 
-0.1.0 (2026-11-07) ~ 2.0.0 (2026-11-15) · Minecraft 26.3 · Fabric
+0.1.0 (2026-11-07) to 2.0.0 (2026-11-15) · Minecraft 26.3 · Fabric
 
-| 묶음 | 한 줄 |
+| Series | Summary |
 |---|---|
-| 0.1 | 첫 하늘 — 실제 별·해·달·행성, 망원경, 찾기 |
-| 0.2 | 튕김 안전망, 은하수 8K |
-| 1.0 | 지인 배포판 — 리얼타임, 날짜·시각 한 번에 |
-| 1.1 | 정보 카드, 격자·경계선, 별자리 그림, 추적 고정 |
-| 1.2 | 확장팩 분리, 설정 화면, 달 칭동·지명, 화성 자전, 소행성·변광성 |
-| 1.3 | 경도·지방평균시, 실제 일식, 바닐라 달·밤 맞추기 |
-| 1.4 | 별 깜빡임 고침, 각거리, 관측 도감·수첩 |
-| 1.5 | 하늘 빛 모델, 지평선, 빛공해·암적응·오로라, 발전과제 |
-| 1.6 | 기본 화질 상향, 초고화질팩 (은하수 조각) |
-| 1.7 | 망원경 실제 광학, 깊은 별, 3D 망원경 |
-| 1.8 | 은하수 12K, Gaia 별 3,209만, 근접 쌍성, 검색 확장 |
-| 1.9 | 천상열차분야지도, 내 관측 위치, 영어, 오로라 새로 |
-| 1.10 | 은하·성운·성단 관측 스케치, /cwhen, 화면 낮밤 = 실제 해 |
-| 2.0 | 전체 공개 — extra 팩, 멀티 위치 정리, 악용 방지, 행성 VSOP87 |
+| 0.1 | First sky: real stars, Sun, Moon, and planets, telescope, search |
+| 0.2 | Crash safety net, Milky Way 8K |
+| 1.0 | Release for friends: real time, date and time in one command |
+| 1.1 | Info card, grids and boundaries, constellation art, tracking lock |
+| 1.2 | Expansion packs split off, settings screen, lunar libration and place names, Mars rotation, asteroids and variable stars |
+| 1.3 | Longitude and local mean time, real solar eclipses, matching the vanilla Moon and night |
+| 1.4 | Star flicker fixed, angular distance, observing logbook and notebook |
+| 1.5 | Sky brightness model, horizon, light pollution, dark adaptation, and aurora, advancements |
+| 1.6 | Higher default resolution, Ultra pack (Milky Way tiles) |
+| 1.7 | Real telescope optics, faint stars, 3D telescope |
+| 1.8 | Milky Way 12K, 32.09 million Gaia stars, close binaries, expanded search |
+| 1.9 | Cheonsang Yeolcha Bunyajido, personal observing location, English, new aurora |
+| 1.10 | Observing sketches of galaxies, nebulae, and clusters, /cwhen, screen day/night = real Sun |
+| 2.0 | Public release: extra pack, multiplayer location cleanup, abuse protection, VSOP87 planets |
 
 ---
 
-## 2.0 — 전체 공개
+## 2.0: Public release
 
 ### 2.0.0 (2026-11-15)
-- 망원경 왼쪽 아래 광학 표시(구경·초점·접안·배율)가 핫바에 가리지 않음: 핫바 왼쪽 빈 폭에 맞춰 줄이고, 그래도 넘으면 체력 칸 위로
-- 유성이 컴퓨터 시계 기준: 멀티에서 같은 시각이면 같은 유성
-- 모드 아이콘 새로 (직접 그린 그림) · cheonsang-extra 1.0.1 (아이콘만)
-- CREDITS: 라이선스 요약에 비상업(DSS 스케치 판) 항목, M27 저작자 표기, 버전 경위 표기 정리
+- Telescope optics line at the lower left (aperture, focal length, eyepiece, magnification) no longer hidden by the hotbar: shrunk to fit the empty width left of the hotbar, and moved above the health bar if it still does not fit
+- Meteors based on the computer clock: in multiplayer, the same time gives the same meteors
+- New mod icon (hand-drawn) · cheonsang-extra 1.0.1 (icon only)
+- CREDITS: non-commercial item (DSS sketch plates) added to the license summary, M27 attribution, version history notes cleaned up
 
 ### 2.0.0-rc2 (2026-11-14)
-- 행성 위치 계산을 VSOP87 (축약 1,259항) 으로 바꿈. 1800~2050년 최대 오차 토성 11′→4″ · 목성 8′→4″ · 천왕성 17′→4″ · 화성 1.1′→13″ · 수성·금성 4~6″ (PyEphem 대조)
+- Planet positions now computed with VSOP87 (truncated, 1,259 terms). Maximum error over 1800–2050: Saturn 11′→4″ · Jupiter 8′→4″ · Uranus 17′→4″ · Mars 1.1′→13″ · Mercury and Venus 4–6″ (checked against PyEphem)
 
 ### 2.0.0-rc1 (2026-11-14)
-- 서버 OP 가 `/cele set` 으로 위도·경도를 바꾸면 모든 사람의 `/cplace` 가 풀림 (접속해 있지 않던 사람도 다음 접속 때). 날짜·시각만 바꾸면 그대로 · 서버·클라이언트 모두 2.0.0-rc1
-- 악용 방지: 도감·발전과제 패킷과 망원경 자세 패킷을 사람마다 초당 횟수로 제한, 도감 목록은 1초에 한 번 몰아서 보냄
-- 유성이 실제 시간으로 흐름 (시간을 멈춰도 떨어짐)
-- 게임 문구에서 안내·설명 문장을 걷어내고 상태·숫자만
+- When a server OP changes latitude or longitude with `/cele set`, everyone's `/cplace` is cleared (players not online get it on their next login). Changing only the date and time leaves it unchanged · server and client both 2.0.0-rc1
+- Abuse protection: logbook/advancement packets and telescope pose packets rate-limited per player per second; the logbook list is sent in one batch once per second
+- Meteors run on real time (they keep falling when time is frozen)
+- Guidance and explanatory sentences removed from in-game text; status and numbers only
 
 ---
 
-## 1.10 — 접안렌즈로 본 하늘
+## 1.10: The sky through an eyepiece
 
 ### 1.10.2 (2026-11-14)
-- 확장팩 정리: **cheonsang-extra 1.0.0** = Gaia 별 팩(망원경 15.2등 3,209만 개) + 맨눈 은하수 16K·32K 조각 + 달 8K. Gaia 별 팩·초고화질팩(사진 아닌 부분)을 대신함 (천상 1.10.2 이상)
-- 성운·은하 사진과 장노출 은하수(포토팩 = 초고화질팩)는 개발 잠정 중단. 있으면 그대로 동작
-- 설정 화면 아래 팩 상태에 extra 팩 표시
+- Expansion packs consolidated: **cheonsang-extra 1.0.0** = Gaia star pack (32.09 million stars to magnitude 15.2 in the telescope) + naked-eye Milky Way 16K/32K tiles + Moon 8K. Replaces the Gaia star pack and the Ultra pack (non-photo parts) (Cheonsang 1.10.2 or later)
+- Nebula and galaxy photos and the long-exposure Milky Way (photo pack = Ultra pack): development paused for now. They still work if installed
+- extra pack shown in the pack status at the bottom of the settings screen
 
 ### 1.10.1 (2026-11-14)
-- 성운·행성상성운·구상성단도 접안렌즈로 본 모습으로 (DSS2 적색·청색, DSS1 적색 사진 바탕). 별 알갱이는 지우고 모양만 매끈한 빛무리로, 그 위 별은 실제 별 자료가 그림
-- 성운은 어두운 데 적응한 눈 감도(청록에 민감, 빨강에 둔감)에 맞춰 청색 사진을 주로. M42·M8·M17 등 사진이 하얗게 탄 가운데를 다시 살림
-- 구상성단 13개는 실측 핵 반지름으로 모양이 다름 (47 Tuc 뾰족 · ω Cen·M22 넓적). 행성상성운 M97 두 눈·C63 고리 구멍·M57 고리
-- 화면 낮밤(하늘·안개·땅빛)이 천상의 실제 해 고도를 따름: 고위도 백야엔 밤에도 환하고 극야엔 낮에도 어두움. 몹 생성·잠자기는 바닐라 그대로. 설정 화면에서 끌 수 있음
-- `/cfind <천체>`: 지금 볼 수 없으면 가장 좋은 밤 + [위치]·[이동]·[다음]. 이름 뒤 공백이면 추천에 true·false
-- `/cwhen` 결과 버튼 [위치](내 관측 위치) · [이동](OP, 그 날짜·장소로 `/cele set`) · [다음], 결과 문구는 숫자만
-- 어두운 시각이 없는 날짜(백야)는 해가 가장 낮은 시각으로 안내 (전엔 22:00 고정이라 낮으로 이동)
-- 옛 서버 설정의 압축률 3.261 을 1.0 으로 한 번 옮김 (이미 만든 월드는 `/cele rate 1`)
-- 은하 사진 판 일부(M17 등 15개)에 줄무늬가 생기던 것 고침
+- Nebulae, planetary nebulae, and globular clusters also shown as seen through an eyepiece (based on DSS2 red and blue and DSS1 red plates). Star grains removed, leaving only a smooth glow for the shape; the stars on top are drawn from real star data
+- Nebulae mainly use the blue plate, matching dark-adapted eye sensitivity (sensitive to blue-green, weak in red). Restored the overexposed white centers of M42, M8, M17, and others
+- The 13 globular clusters differ in shape according to their measured core radii (47 Tuc sharp · ω Cen and M22 broad). Planetary nebulae: the two eyes of M97, the ring hole of C63, the ring of M57
+- Screen day/night (sky, fog, ground light) follows Cheonsang's real solar altitude: bright at night during high-latitude white nights and dark during the day in polar night. Mob spawning and sleeping stay vanilla. Can be turned off in the settings screen
+- `/cfind <object>`: if not visible now, shows the best night + [place]·[go]·[next]. A space after the name suggests true/false
+- `/cwhen` result buttons [place] (personal observing location) · [go] (OP, `/cele set` to that date and place) · [next]; result text is numbers only
+- For dates with no dark hours (white nights), points to the time when the Sun is lowest (previously fixed at 22:00, which moved you into daytime)
+- Old server config compression rate 3.261 migrated once to 1.0 (for existing worlds use `/cele rate 1`)
+- Fixed stripes appearing on some galaxy photo plates (15, including M17)
 
 ### 1.10.0 (2026-11-14)
-- 은하를 빛무리 대신 접안렌즈로 본 모습으로: 실제 하늘 사진(DSS2) 바탕, 보이는 밝기 문턱보다 밝은 곳만 회색으로. 작은 구경·밝은 하늘은 가운데 얼룩, 큰 구경·어두운 하늘·크게 볼수록 팔·먼지띠
-- 은하 264개 추가 (11등까지 341개, `/cfind NGC2903` 등). 사진 없는 은하는 형태별 그림
-- `/cwhen`: 천체를 언제·어디서 잘 볼 수 있는지 · 일식(total·annular·partial)·월식(total·partial·penumbral)·유성우·보름·삭·행성 근접·다음 현상. 결과 [이동] = 그곳으로 `/cplace`
-- `/ctonight` 는 `/cwhen` 의 옛 이름 (자동완성에서 숨김, 실행은 됨)
-- `/cfind … true`: 행성·심원천체도 찾은 천체에 바로 추적 고정 (어두운 해왕성 대신 근처 은하가 잡히던 것)
-- 쉼표 소수점 언어에서 `/cplace` 버튼·설정 화면 위치 칸이 안 읽히던 것 고침
-- 크레딧: DSS 사진 판은 CC BY-NC-SA 4.0 (비상업)
+- Galaxies shown as seen through an eyepiece instead of as a glow: based on real sky photos (DSS2), with only the parts brighter than the visibility threshold shown in gray. Small apertures and bright skies show a central smudge; large apertures, dark skies, and higher magnification show arms and dust lanes
+- 264 galaxies added (341 down to magnitude 11, e.g. `/cfind NGC2903`). Galaxies without photos use a drawing by morphological type
+- `/cwhen`: when and where an object is best seen · solar eclipses (total, annular, partial), lunar eclipses (total, partial, penumbral), meteor showers, full Moon, new Moon, planetary conjunctions, next events. Result [go] = `/cplace` to that place
+- `/ctonight` is the old name of `/cwhen` (hidden from autocomplete, still runs)
+- `/cfind … true`: tracking lock goes directly to the found object for planets and deep-sky objects too (a nearby galaxy was being picked instead of faint Neptune)
+- Fixed `/cplace` buttons and the settings screen location field not parsing in languages that use a decimal comma
+- Credits: DSS photo plates are CC BY-NC-SA 4.0 (non-commercial)
 
 ---
 
-## 1.9 — 천상열차분야지도·관측 위치
+## 1.9: Cheonsang Yeolcha Bunyajido and observing location
 
 ### 1.9.2 (2026-11-14)
-- 망원경 눈에 대는 자세가 멀티에서 다른 사람 화면에도 보임 (서버·클라이언트 모두 1.9.2 필요)
-- Gaia 별 팩 1.1.0 (`cheonsang-stars-1.1.0.jar`, 천상 1.9.0 이상): 1.8.1~1.9.0 본체 별 목록 변경 반영 (짝별 WDS 위치·용골자리 에타 등). 1.0.0 은 1.9.x 와 같이 쓰지 말 것
-- 1.9.x 정식 배포 묶음: 본체 + Gaia 팩 1.1.0
+- Telescope eyepiece pose visible to other players in multiplayer (server and client both need 1.9.2)
+- Gaia star pack 1.1.0 (`cheonsang-stars-1.1.0.jar`, Cheonsang 1.9.0 or later): includes the main mod's star list changes from 1.8.1–1.9.0 (WDS positions of companion stars, Eta Carinae, and others). Do not use 1.0.0 with 1.9.x
+- Official 1.9.x release bundle: main mod + Gaia pack 1.1.0
 
 ### 1.9.1 (2026-11-14)
-- 오로라를 셰이더로 새로 그림: 하늘 픽셀마다 오로라 층(높이 80~320 km, 지구 곡률 포함)을 따라 빛을 모아 두께 있는 커튼 3장이 원근·입체감 있게 보임
-- 위도에 따라 오로라 띠 위치가 실제처럼 바뀜 (띠보다 남쪽이면 북쪽 하늘, 띠 아래면 머리 위, 띠보다 북쪽이면 남쪽 하늘)
-- 커튼을 옆면으로 볼 때 지나치게 밝아지지 않게, 가장 밝은 곳도 부드럽게 (꽉 찬 초록 기둥 없음)
-- 줄무늬·물결 무늬·모래알 같은 거칠기 없음, 커튼 아래로 옅은 빛 장막
-- 오로라 계산은 화면 그래픽카드에서 (1.9.0 의 0.05초마다 다시 만들던 그물 없앰)
+- Aurora redrawn with a shader: for each sky pixel, light is accumulated along the aurora layer (80–320 km altitude, including Earth's curvature), so three thick curtains appear with perspective and depth
+- Aurora oval position changes with latitude as in reality (south of the oval: northern sky; under the oval: overhead; north of the oval: southern sky)
+- Curtains no longer get too bright when seen edge-on, and the brightest parts are soft (no solid green pillars)
+- No stripes, ripple patterns, or sand-like grain; a faint veil of light below the curtains
+- Aurora computed on the graphics card (removed the 1.9.0 mesh rebuilt every 0.05 seconds)
 
 ### 1.9.0 (2026-11-14)
-- 천상열차분야지도 별자리 289개 (설정 화면에서 서양 88 ↔ 천상열차 전환), 발전과제 4개 추가
-- `/cplace`: 내 하늘만 바꾸는 관측 위치 (위도 경도 · 도시 이름 · reset). 설정 화면에 "관측 위치" 칸
-- 영어 지원 (게임 언어 따라 화면·명령 응답)
-- 토성 위성 7개 (미마스·엔셀라두스·테티스·디오네·이아페투스 추가), 이름 있는 유명 별 18개 카드·검색
-- 일식·월식 발전과제에 부분식 인정, 발전과제 진행 분수 표시
-- 오로라 새로 그림: 활 모양 커튼 3겹·빛기둥·물결, 고위도·강한 활동이면 머리 위로·코로나
-- 망원경: 화면이 열려 있으면 휠은 화면으로, 채팅을 열어도 적도의·추적 고정 유지
-- 지평선 반짝임 완화, 그래픽 메모리 기본값 자동(카드 메모리 1/4), 용골자리 에타 밝기 보정
-- 망원경 조합법·아이콘 변경, 새 세계 시작일 2026-08-11 06:00
-- 전용 서버: 서버·클라이언트 모두 1.9.0 필요 (하늘 정보 형식 바뀜)
+- 289 constellations of the Cheonsang Yeolcha Bunyajido (switch between Western 88 and Cheonsang Yeolcha in the settings screen), 4 advancements added
+- `/cplace`: an observing location that changes only your own sky (latitude longitude · city name · reset). "Observing location" field in the settings screen
+- English support (screens and command replies follow the game language)
+- 7 moons of Saturn (Mimas, Enceladus, Tethys, Dione, and Iapetus added), cards and search for 18 well-known named stars
+- Solar and lunar eclipse advancements accept partial eclipses, advancement progress shown as a fraction
+- Aurora redrawn: three layers of arc-shaped curtains, light pillars, and ripples; overhead with corona at high latitudes or strong activity
+- Telescope: the mouse wheel goes to the open screen when a screen is open; equatorial mount and tracking lock stay on when chat is opened
+- Reduced horizon sparkle, graphics memory default set to automatic (1/4 of card memory), Eta Carinae brightness corrected
+- Telescope recipe and icon changed, new worlds start at 2026-08-11 06:00
+- Dedicated servers: server and client both need 1.9.0 (sky data format changed)
 
 ---
 
-## 1.8 — 은하수·깊은 별
+## 1.8: Milky Way and faint stars
 
 ### 1.8.4 (2026-11-12)
-- `/cfind <위성> true`: 화면 가운데를 다시 고르지 않고 찾은 위성에 바로 추적 고정 (전에는 토성이 잡혔음)
-- 저배율이나 모행성 뒤에 있어도 위성 추적 유지, 가려지면 "현재 가려짐" 표시 (액션바·카드·찾기 결과)
+- `/cfind <moon> true`: tracking lock goes directly to the found moon without reselecting the center of the screen (previously Saturn was picked)
+- Moon tracking kept at low magnification or behind the parent planet; when hidden, "Currently hidden" is shown (action bar, card, search result)
 
 ### 1.8.3 (2026-11-12)
-- 위성·소행성·작게 보이는 행성 점을 별과 같은 방식으로 그림 — 시야를 옮길 때 깜빡이거나 사라지던 것 고침
-- 고배율(×700 무렵)에서 별자리 선이 통째로 사라지던 것 고침
-- `/cfind` 검색 확장: 위성, 영어 이름, 별 부호(α Lyr · 알파 거문고 · Alpha Lyrae · 백조자리 61), HD 번호, 짝별(시리우스 B), 별자리 약자·라틴 소유격, Messier·Caldwell 긴 표기, 유성우 복사점, 달 지명 787곳
-- 자동완성에 모든 이름이 뜸
+- Moons, asteroids, and planets that appear as points now drawn the same way as stars: fixed flickering or disappearing when moving the view
+- Fixed constellation lines disappearing entirely at high magnification (around ×700)
+- `/cfind` search expanded: moons, English names, star designations (α Lyr · Korean names · Alpha Lyrae · 61 Cygni), HD numbers, companion stars (Sirius B), constellation abbreviations and Latin genitives, long Messier and Caldwell forms, meteor shower radiants, 787 lunar place names
+- All names appear in autocomplete
 
 ### 1.8.2 (2026-11-12)
-- 고배율(×700 넘음)에서 좌클릭으로 별이 안 골라지던 것 고침
-- 밝은 별 바로 옆 어두운 짝별(시리우스 B 등)도 골라짐
-- HYG 에 있던 짝별 105개를 WDS 최신 위치로 옮김 (시리우스 B 5.1″ → 11.1″, 리길 켄타우루스 B 19″ → 8.1″, 처녀자리 γ B 9.4″ → 3.4″)
+- Fixed stars not being selectable with left click at high magnification (above ×700)
+- Faint companions right next to bright stars (Sirius B and others) can now be selected
+- 105 companion stars from HYG moved to current WDS positions (Sirius B 5.1″ → 11.1″, Rigil Kentaurus B 19″ → 8.1″, γ Virginis B 9.4″ → 3.4″)
 
 ### 1.8.1 (2026-11-12)
-- 9등보다 어두운 깊은 별도 좌클릭 정보 카드 (등급·색·위치·출몰)
-- 같은 짝별이 두 번 들어가 카스토르·포리마·미자르가 셋으로 보이던 것 고침 (59쌍 넘게)
-- "A,BC" 표기 쌍성 추가 (알마크 등)
+- Left-click info card for faint stars below magnitude 9 too (magnitude, color, position, rise/set)
+- Fixed companion stars entered twice, which made Castor, Porrima, and Mizar appear as three (over 59 pairs)
+- Added binaries written as "A,BC" (Almach and others)
 
 ### 1.8.0 (2026-11-12)
-- 망원경 확대 은하수 8K → 12K (NASA 32K 원본에서)
-- 흩뿌린 가짜 보충 별 완전 제거 — 망원경 별은 전부 실제 관측 자료
-- 근접 쌍성 7,501쌍 (WDS): 한 점이던 쌍성이 구경이 되면 둘로 갈라짐
-- Gaia 별 팩 첫 판 (아래 확장팩 참고)
-- Gaia 팩이 있으면 새로 그린 별빛만큼 은하수 그림을 줄임 (같은 빛을 두 번 안 더함)
+- Telescope Milky Way 8K → 12K (from the NASA 32K original)
+- Scattered fake fill-in stars removed entirely: all telescope stars are real observational data
+- 7,501 close binaries (WDS): binaries that were a single point split into two once the aperture allows
+- First Gaia star pack (see Expansion packs below)
+- With the Gaia pack installed, the Milky Way image is reduced by the starlight newly drawn (the same light is not added twice)
 
-## 1.7 — 망원경 실제 광학
+## 1.7: Real telescope optics
 
 ### 1.7.1 (2026-11-12)
-- 3D 굴절 망원경 모델, 확대하면 눈에 대는 자세 (1인칭·3인칭)
-- 화면 아래 액션바 메시지·한계 경고 없앰, 왼쪽 아래 한 줄로 구경·초점거리·접안·배율만
-- 첫 실행 때 조작 안내 한 번
+- 3D refracting telescope model; eyepiece pose when zoomed in (first and third person)
+- Removed action bar messages and limit warnings at the bottom of the screen; one line at the lower left shows only aperture, focal length, eyepiece, and magnification
+- Controls shown once on first launch
 
 ### 1.7.0 (2026-11-12)
-- 망원경 실제 광학: 대물 구경 50~305mm 12단계(Shift+휠), 접안 40~3mm 11단계(휠), f/7
-- 한계 등급 7.7 + 5·log10(구경 cm) (80mm 12.2등, 305mm 15.1등), 분해능·출사동·과배율 흐림
-- 둥근 시야, 약한 시상 흔들림
-- 9등보다 어두운 별: Tycho-2 실제 별
-- 전자줌 없앰 (배율은 광학으로만)
+- Real telescope optics: objective aperture 50–305mm in 12 steps (Shift+wheel), eyepiece 40–3mm in 11 steps (wheel), f/7
+- Limiting magnitude 7.7 + 5·log10(aperture in cm) (80mm magnitude 12.2, 305mm magnitude 15.1), resolution, exit pupil, blur from overmagnification
+- Round field of view, slight seeing jitter
+- Stars fainter than magnitude 9: real Tycho-2 stars
+- Digital zoom removed (magnification through optics only)
 
-## 1.6 — 화질
+## 1.6: Image quality
 
 ### 1.6.2 (2026-11-11)
-- 초고화질팩 성운·은하 사진 45장 원본으로 다시 받음, 31장은 실제 별 위치에 맞춰 정렬
-- 은하수 그림 잡음 제거
+- Ultra pack: 45 nebula and galaxy photos re-downloaded from the originals, 31 aligned to real star positions
+- Noise removed from the Milky Way image
 
 ### 1.6.1 (2026-11-11)
-- 은하수 조각 불러오기: 큰 은하수를 1024px 조각으로 나눠 화면에 보이는 것만 불러옴 (그래픽 메모리 최대 512MB)
-- 초고화질팩 지원 (아래 확장팩 참고)
+- Milky Way tile loading: the large Milky Way is split into 1024px tiles and only the visible ones are loaded (graphics memory up to 512MB)
+- Ultra pack support (see Expansion packs below)
 
 ### 1.6.0 (2026-11-11)
-- 기본 화질 상향 (고화질팩 흡수): 은하수 8K·4K, 달 지도 4K(확대할수록 256 → 1K → 2K → 4K), 화성 2K, 목성·토성 실제 띠 색, 토성 고리 실제 단면
-- 천체망원경이 크리에이티브 "도구 및 유틸리티" 탭에 나옴
-- `/cfind HIP 21421` — 이름 없는 별도 HIP 번호로
-- 히아데스·플레이아데스처럼 넓은 성단 안에서도 알데바란 같은 별이 좌클릭으로 골라짐
-- 지평선 행성 색을 별과 같게, 점과 원판 색 일치
-- 발전과제 제목 블러드문(월식)·이클립스(일식)
+- Higher default resolution (HD pack merged in): Milky Way 8K/4K, Moon map 4K (256 → 1K → 2K → 4K as you zoom in), Mars 2K, real band colors for Jupiter and Saturn, real cross-section of Saturn's rings
+- Telescope appears in the Creative "Tools & Utilities" tab
+- `/cfind HIP 21421`: unnamed stars by HIP number
+- Stars such as Aldebaran can be selected with left click even inside wide clusters like the Hyades and Pleiades
+- Planet colors near the horizon match the stars, point and disk colors match
+- Advancement titles Blood Moon (lunar eclipse) and Eclipse (solar eclipse)
 
-## 1.5 — 하늘 빛
+## 1.5: Sky light
 
 ### 1.5.4 (2026-11-11)
-- 발전과제 제목 정리
-- 목성·토성 위성 위치를 원판과 같은 굴절 위치로 (좌클릭 원과 맞음)
-- 지평선 별 붉어짐 줄임 (카노푸스가 지나치게 빨갛던 것)
-- `/cfind <이름> true` — 그 천체로 시점 돌리고 망원경을 들고 있으면 켜서 추적 고정
-- 제작 팀 itsnotfineart, MIT 라이선스, 아이콘, 영문 CREDITS
+- Advancement titles cleaned up
+- Jupiter and Saturn moon positions use the same refracted position as the disk (matches the left-click circle)
+- Less reddening of stars near the horizon (Canopus was too red)
+- `/cfind <name> true`: turns the view to the object and, if holding the telescope, turns it on with tracking lock
+- Team itsnotfineart, MIT license, icon, English CREDITS
 
 ### 1.5.3 (2026-11-11)
-- 마인크래프트 발전과제 "천상" 탭 20개 (달·월식·일식·행성 7·목성 위성 4·별자리 88·메시에 110·캘드웰 109 등)
-- 도감 등록 채팅 메시지 없앰
-- 대·소마젤란 안 성운·성단 69개 (NGC 1850·2014 등): 빛무리·좌클릭·찾기·도감
+- 20 Minecraft advancements in a "Cheonsang" tab (Moon, lunar eclipse, solar eclipse, 7 planets, 4 Jupiter moons, 88 constellations, 110 Messier, 109 Caldwell, and more)
+- Logbook registration chat message removed
+- 69 nebulae and clusters in the Large and Small Magellanic Clouds (NGC 1850, 2014, and others): glow, left click, search, logbook
 
 ### 1.5.2 (2026-11-11)
-- 대·소마젤란 안 실제 별 (Gaia DR3 9~11등 약 3,150개)
-- 핫픽스 1.5.2.1: `/ctonight next` 오류, 선택 원 어긋남, 설정 화면 깨짐 고침 / 고개를 돌리면 하늘 밝기가 바뀌던 것 없앰 (천정 기준 하나)
+- Real stars in the Large and Small Magellanic Clouds (Gaia DR3 magnitude 9–11, about 3,150 stars)
+- Hotfix 1.5.2.1: fixed `/ctonight next` error, misaligned selection circle, broken settings screen / removed sky brightness changing when turning your head (single zenith-based value)
 
 ### 1.5.1 (2026-11-11)
-- 빛공해: 주변 블록 빛으로 보틀 지수 1~9, 마을 쪽 지평선 주황빛 돔
-- 암적응: 밝은 곳·손에 든 횃불이면 희미한 별이 안 보이고, 어두우면 최대 30초에 걸쳐 회복
-- 별 반짝임 (지평선 쪽 강하게, 행성은 안 함)
-- 황도광·대일조, 고위도 오로라
+- Light pollution: Bortle scale 1–9 from nearby block light, orange dome on the horizon toward villages
+- Dark adaptation: faint stars disappear in bright places or with a torch in hand, and recover over up to 30 seconds in the dark
+- Star twinkling (stronger near the horizon, none for planets)
+- Zodiacal light and gegenschein, high-latitude aurora
 
 ### 1.5.0 (2026-11-11)
-- 하늘 빛 모델: 대기광·박명·달빛으로 하늘 밝기를 계산해 별 한계 등급과 은하수·성운 진하기를 정함
-- 지평선: 대기 소광으로 별이 어둡고 붉어짐, 굴절로 약 0.5° 떠 보임, 해·달 납작·붉게
-- 달빛 하늘 푸른빛, 대기광 초록 띠, 어두운 빛무리 색 빠짐
-- 배율 따라 은하수·마젤란이 0 이 되던 임시 처리 없앰 (고배율에서도 옅게 남음)
+- Sky brightness model: sky brightness computed from airglow, twilight, and moonlight sets the limiting magnitude for stars and the intensity of the Milky Way and nebulae
+- Horizon: stars dimmed and reddened by atmospheric extinction, raised about 0.5° by refraction, Sun and Moon flattened and reddened
+- Blue tint to moonlit sky, green airglow band, color removed from faint glows
+- Removed the temporary handling that dropped the Milky Way and Magellanic Clouds to 0 with magnification (they remain faintly at high magnification)
 
-## 1.4 — 관측 도구
+## 1.4: Observing tools
 
 ### 1.4.0 (2026-11-11)
-- 하늘이 돌 때 별이 깜빡이던 것 고침 (별을 원형으로 직접 계산, 최소 크기 보장)
-- 고배율 추적 떨림 고침
-- 각거리: 선택 후 Ctrl+좌클릭
-- 관측 도감 (실제로 보일 때만 등록) · 관측 수첩 (오늘 밤·다음 현상·도감) · `/clog`
+- Fixed stars flickering as the sky rotates (stars computed directly as circles, with a minimum size)
+- Fixed tracking jitter at high magnification
+- Angular distance: Ctrl+left click after selecting
+- Observing logbook (registers only when actually visible) · observing notebook (tonight, upcoming events, logbook) · `/clog`
 
-## 1.3 — 계산 바탕
+## 1.3: Calculation basis
 
 ### 1.3.1 (2026-11-11)
-- 바닐라 달 위상·슬라임 생성을 천상 달에 맞춤
-- 바닐라 밤 맞추기 (선택): 몹 생성·밤 판정을 실제 해 고도로
-- 서버에 천상이 없어도 각자 정한 날짜·위치로 하늘 작동
-- 전자줌 ×500·×1000 (1.7.0 에서 없앰)
+- Vanilla Moon phase and slime spawning matched to the Cheonsang Moon
+- Vanilla night matching (optional): mob spawning and night checks use the real solar altitude
+- Sky works with each player's own date and location even if the server does not have Cheonsang
+- Digital zoom ×500 and ×1000 (removed in 1.7.0)
 
 ### 1.3.0 (2026-11-11)
-- 경도 추가, 마크 시계 = 그 장소의 지방평균시
-- `/cele set <년> <월> <일> <시> <분> <위도> <경도>`, 위도 자리에 장소 이름
-- 실제 일식: 달을 관측자 기준으로 계산해 그 장소에서 실제로 가리는 일식만
-- 은하수 조각 고배율 덩어리·보름달 과노출·별 색 진하기·정보 카드 크기 고침, 대적점 잘 보이게
+- Longitude added, Minecraft clock = local mean time of that place
+- `/cele set <year> <month> <day> <hour> <minute> <latitude> <longitude>`, place name allowed in the latitude slot
+- Real solar eclipses: the Moon computed for the observer, so only eclipses actually visible from that place occur
+- Fixed Milky Way tile blocks at high magnification, overexposed full Moon, star color saturation, and info card size; Great Red Spot easier to see
 
-## 1.2 — 팩·설정·작은 천체
+## 1.2: Packs, settings, and small bodies
 
 ### 1.2.5 (2026-11-11)
-- 소행성 세레스·베스타 (1900~2050년)
-- 변광성 알골·미라 (밝기가 실제로 바뀜)
-- 핫픽스 1.2.5.1: 월드 들어갈 때 튕기던 것 고침 (키 설정)
+- Asteroids Ceres and Vesta (1900–2050)
+- Variable stars Algol and Mira (brightness actually changes)
+- Hotfix 1.2.5.1: fixed crash on entering a world (key settings)
 
 ### 1.2.4 (2026-11-11)
-- 화성 실제 지도, 그 시각 지구 쪽 면 (자전)
-- 목성 대적점 그 시각 위치
-- 토성 위성 타이탄·레아
+- Real map of Mars, showing the face turned toward Earth at that time (rotation)
+- Jupiter's Great Red Spot at its position for that time
+- Saturn's moons Titan and Rhea
 
 ### 1.2.3 (2026-11-11)
-- 지구빛(지구조): 초승달·그믐달 어두운 쪽이 가장 밝게
-- 달 칭동: 날마다 가장자리가 조금씩 보이거나 숨음
-- 달 지명 787곳 (한국어 121곳), ×200 이상에서 좌클릭
+- Earthshine: the dark side of crescent Moons is brightest
+- Lunar libration: the limb shows or hides a little more each day
+- 787 lunar place names (121 in Korean), left click at ×200 and above
 
 ### 1.2.2 (2026-11-11)
-- 해·달 실제 크기 (전 맨눈 3배)
-- 은하수 확대해도 매끈하게 (바이큐빅 보간)
-- 장노출 모드 은하수는 배율로 안 줄임
-- 산개성단 52곳 둘레 Gaia DR3 실제 별 1,609개
-- 성능: 별자리 선·정보 카드·행성 계산 줄임, `/cbench` 모든 버전에서
+- Sun and Moon at real size (previously 3× for the naked eye)
+- Milky Way stays smooth when zoomed (bicubic interpolation)
+- Long-exposure mode Milky Way not reduced with magnification
+- 1,609 real Gaia DR3 stars around 52 open clusters
+- Performance: less work for constellation lines, info card, and planet calculations; `/cbench` in all builds
 
 ### 1.2.1 (2026-11-10)
-- 천상 설정 화면 (키 지정 또는 ModMenu): 하늘 표시 항목, 장노출, 정보 카드 위치·투명도·줄, 글씨 크기
-- `/cfilter` 없앰 (설정 화면으로), `/cele next` → `/ctonight next`
+- Cheonsang settings screen (assigned key or ModMenu): sky display items, long exposure, info card position, opacity, and lines, text size
+- `/cfilter` removed (moved to the settings screen), `/cele next` → `/ctonight next`
 
 ### 1.2.0 (2026-11-10)
-- 확장팩 분리: 장노출 은하수·성운 사진 → 사진팩, 현실 은하수 8K → 고화질팩 (본체 15.8MB 로)
-- 망원경을 손에 들면 큰 그림을 미리 올리고, 2분 안 쓰면 내림
-- 흑백 은하수 메모리 1/4
+- Expansion packs split off: long-exposure Milky Way and nebula photos → Photo pack, realistic Milky Way 8K → HD pack (main mod down to 15.8MB)
+- Large images preloaded when the telescope is held, unloaded after 2 minutes unused
+- Grayscale Milky Way memory reduced to 1/4
 
-## 1.1 — 정보와 도구
+## 1.1: Information and tools
 
 ### 1.1.5 (2026-11-08)
-- 별자리 그림은 ×1 에서만
-- 밤에 먼 땅·지평선이 파랗게 뜨던 안개 색 고침
-- 정보 카드를 Stellarium 기준에 맞춤 (고도 굴절 포함, 적경·적위 오늘 날짜 기준, 달 관측자 기준, 출몰 기준 고도)
+- Constellation art only at ×1
+- Fixed fog color that made distant ground and the horizon glow blue at night
+- Info card matched to Stellarium (altitude with refraction, RA/Dec for the current date, Moon for the observer, standard altitude for rise/set)
 
 ### 1.1.4 (2026-11-08)
-- 추적 키를 조작 설정에 등록 (기본 왼쪽 Alt) — Alt+좌클릭 추적이 안 되던 것 고침
-- 별자리 그림이 달빛에 흐려지지 않게
-- 망원경 켤 때마다 ×1 부터
+- Tracking key registered in Controls (default left Alt): fixed Alt+left click tracking not working
+- Constellation art no longer dimmed by moonlight
+- Telescope starts at ×1 each time it is turned on
 
 ### 1.1.3 (2026-11-08)
-- Alt+좌클릭 = 선택 + 추적 고정
-- `/cfind` NGC·IC·Mel·Cr 번호
-- 배율 표시에 시야 폭, 경계선 렉 줄임, 선 끊김 고침
-- 리얼타임 때 카드·`/ctonight` 시각을 그 도시 시계로
+- Alt+left click = select + tracking lock
+- `/cfind` NGC, IC, Mel, and Cr numbers
+- Field width in the magnification display, less lag from boundaries, broken lines fixed
+- In real-time mode, card and `/ctonight` times use that city's clock
 
 ### 1.1.2 (2026-11-08)
-- 별자리 그림 85장 (Stellarium)
-- 백도와 승교점·강교점
-- 시간이 멈추거나 리얼타임일 때 하늘이 덜덜 떨리던 것 고침
-- 경계선 겹친 변 제거 (렉 줄임)
+- 85 constellation art images (Stellarium)
+- Lunar orbit path with ascending and descending nodes
+- Fixed sky jitter when time is frozen or in real-time mode
+- Overlapping boundary edges removed (less lag)
 
 ### 1.1.1 (2026-11-08)
-- Shift+좌클릭 = 선택 해제
-- 격자·선택 원 렉 줄임
-- 은하 형태(드보클레르) 77개
+- Shift+left click = deselect
+- Less lag from grids and the selection circle
+- 77 galaxy morphologies (de Vaucouleurs)
 
 ### 1.1.0 (2026-11-08)
-- 정보 카드 + 선택 원 (거리·분광형·절대등급·출몰)
-- 적도·지평 격자, 별자리 경계선
-- 출·남중·몰 시각, `/ctonight` 오늘 밤 볼거리
-- `/cele next`: 다음 일식·월식·유성우 극대·보름·삭·행성 근접
+- Info card + selection circle (distance, spectral type, absolute magnitude, rise/set)
+- Equatorial and alt-az grids, constellation boundaries
+- Rise, transit, and set times, `/ctonight` sights for tonight
+- `/cele next`: next solar and lunar eclipses, meteor shower peaks, full Moon, new Moon, planetary conjunctions
 
-## 1.0 — 지인 배포판
+## 1.0: Release for friends
 
 ### 1.0.2 (2026-11-08)
-- 6등보다 어두운 성운·은하 빛무리 163개가 안 보이던 것 고침 (배율 단계별)
-- 은하수 그림에만 있던 대·소마젤란·M24·C99 가 확대하면 사라지던 것 고침
-- 별 천체(M40·M73) 표시, C99 등급 표시 고침
+- Fixed 163 nebula and galaxy glows fainter than magnitude 6 not showing (per magnification step)
+- Fixed the Large and Small Magellanic Clouds, M24, and C99, which existed only in the Milky Way image, disappearing when zoomed in
+- Stellar objects (M40, M73) shown, C99 magnitude display fixed
 
 ### 1.0.1 (2026-11-08)
-- `/cele set <년> <월> <일> <시> <분>` — 날짜와 시각을 한 번에
+- `/cele set <year> <month> <day> <hour> <minute>`: date and time in one command
 
 ### 1.0.0 (2026-11-08)
-- `/cele realtime [도시]`: 마크 하루 = 현실 하루, 도시 13곳
-- 은하수 북극 소용돌이 무늬 고침
-- 성운·은하 사진 고해상도
+- `/cele realtime [city]`: one Minecraft day = one real day, 13 cities
+- Fixed swirl pattern at the Milky Way's north pole
+- Higher-resolution nebula and galaxy photos
 
 ## 0.2
 
 ### 0.2.0 (2026-11-08)
-- 튕김 안전망: 오류가 나면 그 부분만 이번 접속 동안 끄고 게임은 계속
-- 은하수 NASA 8K·4K (현실·장노출)
-- 기본 압축률 1.0 (실제 속도)
+- Crash safety net: on an error, only that part is turned off for the current session and the game continues
+- Milky Way NASA 8K/4K (realistic and long exposure)
+- Default compression rate 1.0 (real speed)
 
-## 0.1 — 첫 하늘
+## 0.1: First sky
 
 ### 0.1.13 (2026-11-08)
-- 기본 = 현실(눈으로 보는 모습), 장노출은 켜야 보임
-- 좀생이별(M45) 사진을 실제 별 위치에 맞춤
-- 명령어 영문화
+- Default = realistic (as seen by the eye); long exposure must be turned on
+- Pleiades (M45) photo aligned to real star positions
+- Commands renamed to English
 
 ### 0.1.12 (2026-11-08)
-- 별자리 선 끊김을 배율로만, 글씨 위치 고정
-- 별 반짝거림 줄임, 별 색 진하게
-- 천왕성·해왕성, 목성 위성 좌클릭
-- 망원경 표시 순환 N 키
+- Constellation line breaks only by magnification, label positions fixed
+- Less star twinkle, stronger star colors
+- Uranus and Neptune, left click on Jupiter's moons
+- N key cycles the telescope display
 
 ### 0.1.11 (2026-11-08)
-- 개기일식 효과: 하늘·땅 어두워짐, 별·행성 등장, 코로나
-- 달 어두운 쪽이 검게 칠해지던 것 고침
-- 별자리 선 진하게, 글씨 겹침 피하기
+- Total solar eclipse effect: sky and ground darken, stars and planets appear, corona
+- Fixed the dark side of the Moon being painted black
+- Stronger constellation lines, label overlap avoided
 
 ### 0.1.10 (2026-11-08)
-- 금성·수성 조준 때 튕기던 것 고침
-- M31 사진 방향 바로잡음
+- Fixed crash when aiming at Venus or Mercury
+- M31 photo orientation corrected
 
 ### 0.1.9 (2026-11-07)
-- `/cfind` 로 찾은 천체가 조준선 가운데 오면 화살표 꺼짐
+- Arrow turns off when the object found with `/cfind` reaches the center of the crosshair
 
 ### 0.1.8 (2026-11-07)
-- 망원경 배율 6단계 (×1·×7·×25·×75·×200·×300)
-- 찾기 명령 `/cfind` 로 분리
-- 낮달이 하늘보다 밝게, 가장자리까지 고르게
+- Telescope magnification in 6 steps (×1·×7·×25·×75·×200·×300)
+- Search command split off as `/cfind`
+- Daytime Moon brighter than the sky, even all the way to the limb
 
 ### 0.1.7 (2026-11-07)
-- `/cele lat` · `time` · `set` · `rate` · `reset` 을 쓰면 게임이 튕기던 것 고침 (0.1.5 에서 생긴 문제 — 서버로 넘긴 명령이 다시 가로채져 끝없이 반복됨)
-- 이 명령들을 마크 원래 방식 그대로 서버로 바로 보냄
+- Fixed the game crashing on `/cele lat` · `time` · `set` · `rate` · `reset` (introduced in 0.1.5: commands forwarded to the server were intercepted again and looped endlessly)
+- These commands now go straight to the server the way Minecraft normally sends them
 
 ### 0.1.6 (2026-11-07)
-- 해·달·노을 다듬기: 해 빛번짐, 맨눈용 흐린 달 지도, 달 가림막
+- Sun, Moon, and sunset refinements: solar glare, blurred naked-eye Moon map, Moon occluder
 
 ### 0.1.5 (2026-11-07)
-- `/cele` 하위 명령이 막히던 것 고침
-- 파인더 창 없앰
+- Fixed `/cele` subcommands being blocked
+- Finder window removed
 
 ### 0.1.4 (2026-11-07)
-- 망원경 시야를 화면 크기 원으로, 가장자리만 어둡게
-- 머리 위를 볼 때 시점이 꺾이던 것 고침
+- Telescope field of view is a circle the size of the screen, darkened only at the edge
+- Fixed the view flipping when looking straight up
 
 ### 0.1.3 (2026-11-07)
-- 0.1.3-a: 둥근 시야, 조준선, 별자리 선(가까운 3개), 행성·달 이름, 좌클릭 별 이름
-- 0.1.3-b: 적도의 추적, `/cele find`, 실제 해 방향 박명, 성운 빛무리, 은하수 4K
-- 0.1.3-c: 해 원판 계산(주연감광), NASA LRO 달 지도 + 실시간 위상, 망원경 해·달 실제 크기, 행성 512px
-- 망원경 배율 상한 100 → 300
+- 0.1.3-a: round field of view, crosshair, constellation lines (nearest 3), planet and Moon names, star name on left click
+- 0.1.3-b: equatorial tracking, `/cele find`, twilight from the real Sun direction, nebula glow, Milky Way 4K
+- 0.1.3-c: solar disk computation (limb darkening), NASA LRO Moon map + real-time phase, real-size Sun and Moon in the telescope, planets 512px
+- Telescope magnification limit 100 → 300
 
 ### 0.1.2 (2026-11-07)
-- 밤·기존 맵 접속 때 튕기던 것 고침 (별 셰이더)
-- 셰이더가 실패해도 튕기지 않고 그 부분만 건너뜀
+- Fixed crash at night and when joining existing maps (star shader)
+- If a shader fails, only that part is skipped instead of crashing
 
 ### 0.1.1 (2026-11-07)
-- 월드 들어가자마자 튕기던 것 고침
+- Fixed crash right after entering a world
 
 ### 0.1.0 (2026-11-07)
-- 첫 판: 실제 별·해·달·행성 위치, 은하수, 성운·은하 사진, 유성, 일식·월식
-- 천체망원경, 압축률·위도 설정
+- First version: real positions of stars, Sun, Moon, and planets, Milky Way, nebula and galaxy photos, meteors, solar and lunar eclipses
+- Telescope, compression rate and latitude settings
 
 ---
 
-## 확장팩
+## Expansion packs
 
-| 팩 | 버전 | 날짜 | 내용 |
+| Pack | Version | Date | Contents |
 |---|---|---|---|
-| extra (cheonsang-extra) | 1.0.0 | 2026-11-14 | Gaia 별 팩 1.1.0 전부 + 맨눈 은하수 16K·32K + 달 8K (사진 제외), 천상 1.10.2 이상, 434MB |
-| Gaia 별 팩 (cheonsang-stars) | 1.1.0 | 2026-11-14 | 1.8.1~1.9.0 본체 별 목록 변경 반영, 천상 1.9.0 이상 (1.9.x 는 이 판 사용), 189MB |
-| Gaia 별 팩 (cheonsang-stars) | 1.0.0 | 2026-11-12 | 망원경 별 15.2등까지 3,209만 개 (Gaia DR3), 189MB |
-| 초고화질팩 (cheonsang-ultra) | 2.1.0 | 2026-11-12 | 성운·은하 사진 45장 다시 받음·별 위치 정렬, 약 790MB |
-| 초고화질팩 (cheonsang-ultra) | 2.0.0 | 2026-11-11 | 맨눈 은하수 16K·32K, 장노출 컬러 16K + 수소알파, 달 8K, 사진팩 대신, 약 740MB |
-| 사진팩 (cheonsang-photo) | 1.0.1 | 2026-11-11 | 아이콘·크레딧 (그림 그대로) — 이후 초고화질팩에 들어감 |
-| 사진팩 (cheonsang-photo) | 1.0.0 | 2026-11-10 | 장노출 은하수·성운 사진, 110MB |
-| 고화질팩 (cheonsang-hd) | 1.0.1 | 2026-11-11 | 아이콘·크레딧 — 1.6.0 부터 본체에 들어감 |
-| 고화질팩 (cheonsang-hd) | 1.0.0 | 2026-11-10 | 망원경 확대 현실 은하수 8K, 18MB |
+| extra (cheonsang-extra) | 1.0.0 | 2026-11-14 | All of Gaia star pack 1.1.0 + naked-eye Milky Way 16K/32K + Moon 8K (photos excluded), Cheonsang 1.10.2 or later, 434MB |
+| Gaia star pack (cheonsang-stars) | 1.1.0 | 2026-11-14 | Includes the main mod's star list changes from 1.8.1–1.9.0, Cheonsang 1.9.0 or later (use this version with 1.9.x), 189MB |
+| Gaia star pack (cheonsang-stars) | 1.0.0 | 2026-11-12 | 32.09 million telescope stars to magnitude 15.2 (Gaia DR3), 189MB |
+| Ultra pack (cheonsang-ultra) | 2.1.0 | 2026-11-12 | 45 nebula and galaxy photos re-downloaded and aligned to star positions, about 790MB |
+| Ultra pack (cheonsang-ultra) | 2.0.0 | 2026-11-11 | Naked-eye Milky Way 16K/32K, long-exposure color 16K + hydrogen-alpha, Moon 8K, replaces the Photo pack, about 740MB |
+| Photo pack (cheonsang-photo) | 1.0.1 | 2026-11-11 | Icon and credits (images unchanged); later merged into the Ultra pack |
+| Photo pack (cheonsang-photo) | 1.0.0 | 2026-11-10 | Long-exposure Milky Way and nebula photos, 110MB |
+| HD pack (cheonsang-hd) | 1.0.1 | 2026-11-11 | Icon and credits; merged into the main mod from 1.6.0 |
+| HD pack (cheonsang-hd) | 1.0.0 | 2026-11-10 | Realistic Milky Way 8K for telescope zoom, 18MB |
