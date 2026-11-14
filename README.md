@@ -50,7 +50,7 @@ Data files keep the licenses of their sources (see `CREDITS.txt`). The deep-sky 
 
 # 천상 (한국어)
 
-마인크래프트 26.3 Fabric 모드. 오버월드 하늘을 날짜와 지구상 위치에 맞는 실제 천구로 바꾼다.
+마인크래프트 26.3 Fabric 모드. 오버월드 하늘을 날짜와 지구상 위치에 맞는 실제 천구로 바꿉니다.
 
 ## 기능
 - 관측 날짜·위치 기준 별·해·달·행성·위성 위치. 행성은 VSOP87 축약 이론(1,259항)으로 계산하며, 1800~2050년 PyEphem 대비 최대 차이는 2.4″(해왕성)~12.6″(화성)
@@ -80,7 +80,7 @@ Minecraft 26.3, Fabric Loader 0.20.1 이상, Fabric API, Fabric Language Kotlin,
 - 유성은 컴퓨터 시계 기준. 멀티플레이에서 같은 유성이 보이는 정도는 각 컴퓨터 시계가 맞는 정도에 따름
 
 ## 개발
-기획, 자료 선정, 설계 판단, 게임 내 검증은 itsnotfineart가 맡았고, 소스 코드는 생성형 AI(Anthropic Claude)와 협업해 작성했다.
+기획, 자료 선정, 설계 판단, 게임 내 검증은 itsnotfineart가 맡았고, 소스 코드는 생성형 AI(Anthropic Claude)와 협업해 작성했습니다.
 
 ## 라이선스
 소스 코드 MIT (`LICENSE`). itsnotfineart 자체 그림·아이콘 CC BY-SA 4.0.
