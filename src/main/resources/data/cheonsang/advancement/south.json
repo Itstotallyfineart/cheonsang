@@ -1,0 +1,40 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "acrux": {
+      "trigger": "minecraft:impossible"
+    },
+    "LMC": {
+      "trigger": "minecraft:impossible"
+    },
+    "SMC": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.south.description",
+      "fallback": "Find Acrux and the Large and Small Magellanic Clouds"
+    },
+    "icon": {
+      "id": "minecraft:map"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.south.title",
+      "fallback": "Down Under"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "acrux"
+    ],
+    [
+      "LMC"
+    ],
+    [
+      "SMC"
+    ]
+  ]
+}

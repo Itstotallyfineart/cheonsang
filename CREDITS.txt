@@ -1,0 +1,272 @@
+Cheonsang (천상) — Credits & Licenses
+=====================================
+
+Cheonsang by itsnotfineart
+This file covers Cheonsang 2.0.0 (updated 2026-11-15).
+
+LICENSING AT A GLANCE
+---------------------
+  Mod source code ............................ MIT License (see LICENSE)
+  Original textures & icons by itsnotfineart . CC BY-SA 4.0
+  Data files derived from CC BY-SA sources ... CC BY-SA 4.0 (same as their sources — see below)
+  Constellation art atlas .................... Free Art License 1.3 (same as its source)
+  Deep-sky sketch atlas (DSS-derived) ........ CC BY-NC-SA 4.0 (non-commercial, same as its source)
+  Third-party images and data ................ their own licenses, listed below
+
+This jar is an aggregate: each file keeps the license of its source. Share-alike
+licenses (CC BY-SA, Free Art License) apply only to the files derived from those
+sources, not to the mod code. "Modified" below means converted, cropped, resized,
+re-toned, or otherwise processed by itsnotfineart.
+
+Third-party data and images are provided as-is; their authors do not endorse this mod.
+
+
+STARS
+-----
+stars.bin, star_names.json, star_info.bin
+  HYG Database v4.1 (Hipparcos, Yale Bright Star, Gliese) — David Nash / astronexus
+  https://github.com/astronexus/HYG-Database — CC BY-SA 4.0
+  Modified: cut to magnitude 9.0, converted to binary. Shared under CC BY-SA 4.0.
+  Eta Carinae corrected to magnitude 4.3 at its catalogue position.
+
+  Tycho-2 Catalogue (telescope stars 9–13 mag, sky/deep_stars.bin) — Høg E. et al. (2000), A&A 355, L27
+  Retrieved via VizieR (I/259, doi:10.26093/cds/vizier.1259).
+  Stars matched to Gaia DR3 (gaiadr3.tycho2tdsc_merge_best_neighbour) use the Gaia
+  magnitude, colour and position (propagated to J2000.0); no synthetic stars.
+  Also contains the Gaia DR3 open-cluster and Magellanic Cloud stars listed below.
+
+faint_stars.bin (open clusters, Large & Small Magellanic Clouds; magnitude 9–11)
+  ESA Gaia DR3 — Gaia Collaboration, Vallenari et al. (2023), A&A 674, A1
+  Data © ESA/Gaia/DPAC — CC BY-SA 3.0 IGO  https://www.cosmos.esa.int/web/gaia-users/license
+  Retrieved via VizieR (I/355/gaiadr3, doi:10.26093/cds/vizier.1355) and the ESA Gaia Archive.
+  G → V conversion: Riello et al. (2021), A&A 649, A3.
+  The synthetic magnitude 9–11 background stars still stored in faint_stars.bin are a fallback only
+  and are not drawn, as deep_stars.bin is always present.
+  Shared under CC BY-SA 3.0 IGO.
+
+  This work has made use of data from the European Space Agency (ESA) mission Gaia
+  (https://www.cosmos.esa.int/gaia), processed by the Gaia Data Processing and Analysis
+  Consortium (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium). Funding for the
+  DPAC has been provided by national institutions, in particular the institutions
+  participating in the Gaia Multilateral Agreement.
+  This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France
+  (doi:10.26093/cds/vizier).
+
+Variable stars (Algol, Mira)
+  General Catalogue of Variable Stars — Samus et al. (2017), Astronomy Reports 61, 80 (VizieR B/gcvs)
+
+Close double stars (stars.bin)
+  The Washington Visual Double Star Catalog (WDS) — Mason B.D. et al. (2001), AJ 122, 3466
+  Retrieved via VizieR (B/wds). Used to split HYG stars into components: separation, position angle
+  and component magnitudes from the latest WDS measurement.
+  Companions already present in HYG (e.g. Sirius B) are moved to the latest WDS
+  separation and position angle.
+
+Gaia star pack (separate download: cheonsang-extra-1.0.1.jar, which also carries the
+  Milky Way 16K/32K tiles and the 8K Moon map)
+  ESA Gaia DR3 gaia_source, all-sky, G < 15.5 (32,061,510 stars with 9 < V <= 15.2)
+  Data © ESA/Gaia/DPAC — CC BY-SA 3.0 IGO. Retrieved from the ESA Gaia Archive.
+  Modified: G converted to Johnson V (Riello et al. 2021), BP−RP to B−V (fitted on Tycho-2 matches),
+  positions propagated to J2000.0, binned by sky cell. Also contains the Tycho-2 stars of the base mod.
+  Shared under CC BY-SA 3.0 IGO. The pack carries its own CREDITS.txt.
+
+famous_stars.json (18 named stars without a traditional proper name, e.g. Proxima Centauri,
+Barnard's Star, Tabby's Star, Cygnus X-1)
+  Positions, magnitudes and distances from HYG Database v4.1 (above) — CC BY-SA 4.0.
+  Tabby's Star (KIC 8462852) and UY Scuti are not in HYG; their positions are the SIMBAD (CDS, Strasbourg) ICRS values.
+  This research has made use of the SIMBAD database, operated at CDS, Strasbourg, France.
+  Short descriptions (Korean and English): itsnotfineart. Shared under CC BY-SA 4.0.
+
+
+CONSTELLATIONS
+--------------
+constellations.json, bounds.json
+  d3-celestial — Copyright (c) 2015, Olaf Frohn — BSD 3-Clause License
+  https://github.com/ofrohn/d3-celestial
+  (full license text at the end of this file)
+
+art_atlas.png, art.json — constellation artwork
+  Stellarium, sky culture "modern" — artwork by Johan Meuris, Free Art License 1.3
+  Data: CC BY-SA 4.0 — https://github.com/Stellarium/stellarium/tree/master/skycultures/modern
+  Modified: 85 images packed into one atlas (artwork unchanged).
+  Shared under the Free Art License 1.3 — https://artlibre.org/licence/lal/en/
+  Source of the original works: the Stellarium repository linked above.
+
+korean_constellations.json — Cheonsang Yeolcha Bunyajido asterisms (289 asterisms)
+  Star lines: Stellarium, sky culture "chinese" (traditional Chinese asterisms) — CC BY-SA
+  (the sky culture states "Text and line: CC BY-SA" without a version number)
+  https://github.com/Stellarium/stellarium-skycultures/tree/master/chinese
+  Modified: asterisms of the Joseon star chart (Bocheonga system) selected and matched by Hanja name;
+  star positions from HYG v4.1 (J2000); Korean names checked against Unicode Unihan (kHangul) readings;
+  romanized names added by itsnotfineart. Shared under CC BY-SA 4.0.
+  Unicode Unihan Database (Unihan_Readings, Unihan_Variants) — Unicode, Inc., Unicode License;
+  used only to check readings and simplified/traditional variants (no Unihan data is bundled).
+
+
+DEEP-SKY OBJECTS
+----------------
+dso.json (Messier, Caldwell, 69 objects inside the Magellanic Clouds, and 264 more galaxies to V 11)
+  OpenNGC — Mattia Verga — CC BY-SA 4.0 — https://github.com/mattiaverga/OpenNGC
+  Galaxy Hubble types (dso_morph.json) and radial-velocity distances (dso_dist.json, v / 70 km/s/Mpc) from OpenNGC.
+  Eyepiece sketches of galaxies: galaxy_atlas.png is made from Digitized Sky Survey II (DSS2 red) images
+  (see below); galaxies without an image are drawn procedurally from those types.
+  Nebulae, planetary nebulae and globular clusters too; nebulae combine DSS2 red, DSS2 blue and
+  (where the DSS2 plate has a seam) DSS1 red images.
+  Globular cluster core radii (shape of the central concentration) for 13 clusters from
+  Harris W.E. (1996, 2010 edition), AJ 112, 1487 — Catalog of Parameters for Milky Way Globular Clusters.
+  The Ring Nebula (M57) is drawn as a ring shape, as its DSS plate is saturated.
+
+Galaxy sketch atlas (textures/sky/galaxy_atlas.png)
+  The Digitized Sky Surveys were produced at the Space Telescope Science Institute under U.S. Government
+  grant NAG W-2166. The images of these surveys are based on photographic data obtained using the Oschin
+  Schmidt Telescope on Palomar Mountain and the UK Schmidt Telescope. The plates were processed into the
+  present compressed digital form with the permission of these institutions.
+  The Second Palomar Observatory Sky Survey (POSS-II) was made by the California Institute of Technology with
+  funds from the National Science Foundation, the National Geographic Society, the Sloan Foundation, the
+  Samuel Oschin Foundation, and the Eastman Kodak Corporation.
+  POSS-II plates: copyright (c) 1993-2003 California Institute of Technology.
+  The National Geographic Society - Palomar Observatory Sky Atlas (POSS-I) was made by the California Institute
+  of Technology with grants from the National Geographic Society (DSS1 images).
+  UK Schmidt plates: copyright (c) 1993-2004 Anglo-Australian Observatory Board.
+  Data via MAST (STScI), retrieved with NASA SkyView (GSFC). License: CC BY-NC-SA 4.0
+  (https://archive.stsci.edu/dss/copyright.html). Modified: background removed, stars removed, rotated,
+  resampled, converted to log brightness, plates combined, saturated cores reshaped. galaxy_atlas.png is shared under CC BY-NC-SA 4.0 (non-commercial).
+
+dso_dist.json, dso_morph.json
+  Caldwell numbers: Wikipedia "Caldwell catalogue" — CC BY-SA 4.0
+  Distances and galaxy types from Wikipedia ("Messier object", "Caldwell catalogue",
+  individual galaxy articles) — CC BY-SA 4.0. Shared under CC BY-SA 4.0.
+
+
+MOON, PLANETS, SMALL BODIES
+---------------------------
+moon_map*.png
+  NASA's Scientific Visualization Studio — CGI Moon Kit (LRO data) — https://svs.gsfc.nasa.gov/4720
+  NASA imagery, not copyrighted in the US (NASA media guidelines). Modified: resized, toned.
+  lroc_color_poles_4k: 4096, 2048, 1024 and 256 px versions.
+  cheonsang-extra: lroc_color_poles_8k, moon_map_8k.png, 8192 px.
+
+moon_names.json
+  Gazetteer of Planetary Nomenclature — IAU WGPSN / USGS Astrogeology Science Center
+  https://planetarynames.wr.usgs.gov — US Government work, public domain.
+  Korean names: itsnotfineart.
+
+mars_map.png
+  Solar System Scope (INOVE) "8k_mars" — CC BY 4.0 — https://www.solarsystemscope.com/textures/
+  (based on NASA data). Modified: resized to 2048×1024.
+
+jupiter.png, saturn.png, saturn_ring*.png
+  Solar System Scope (INOVE) "8k_jupiter", "8k_saturn", "8k_saturn_ring_alpha" — CC BY 4.0
+  https://www.solarsystemscope.com/textures/ (based on NASA data).
+  Modified: averaged along longitude (band colours only), contrast and saturation reduced, rendered as discs;
+  ring profile rescaled to Saturn radii and rendered face-on.
+
+Saturn's moons, asteroids (asteroids.bin), rotation checks
+  NASA/JPL Horizons System — https://ssd.jpl.nasa.gov/horizons/ — US Government data.
+  Saturn's moons (Titan, Rhea, Iapetus, Tethys, Dione, Enceladus, Mimas): orbit formulas
+  fitted to Horizons ephemerides for 1900–2050 (only the fitted coefficients are bundled).
+
+Great Red Spot longitude trend
+  JUPOS (amateur observation database, H.-J. Mettig et al.) — factual values only.
+
+
+MILKY WAY
+---------
+milkyway*.png, mw_*.png (Magellanic Clouds, M24, Coalsack patches)
+  NASA/Goddard Space Flight Center Scientific Visualization Studio — Deep Star Maps 2020
+  https://svs.gsfc.nasa.gov/4851 — NASA imagery, not copyrighted in the US.
+  Modified: tone-mapped, resized, cropped. The telescope view uses milkyway_2020_32k reduced to 12K.
+  With the Gaia star pack, the starlight of the newly drawn stars is subtracted from the map per sky
+  cell (Gaia DR3 HEALPix star counts), so the same light is not added twice.
+  cheonsang-extra and Ultra Pack tiles (eye16, eye32, lx16): milkyway_2020_32k, cut into 1024 px tiles, catalogue stars removed.
+
+H-alpha layer in tiles/lx16 and the Ultra Pack milkyway*.png (long exposure)
+  Finkbeiner, D. P. 2003, "A Full-Sky H-alpha Template for Microwave Foreground Prediction", ApJS 146, 407
+  Data from NASA LAMBDA — https://lambda.gsfc.nasa.gov/product/foreground/fg_halpha_get.html
+  Modified: reprojected to equatorial coordinates, tone-mapped, coloured red and added to the long-exposure Milky Way.
+
+
+DEEP-SKY PHOTOS (Photo Pack / Ultra Pack only: cheonsang-photo, cheonsang-ultra)
+--------------------------------------------------
+Not included in this jar. The Ultra Pack 2.1.0 (45 photos) lists every photo,
+author, licence and link in its own CREDITS.txt. The list below is the older Photo Pack 1.0.x set.
+Images from Wikimedia Commons, modified (resized, background removed, stars removed, edges faded).
+Derivatives of CC BY-SA images are shared under CC BY-SA 4.0; CC BY images under CC BY 4.0.
+  M1    Juan lacruz — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:M1_Crab_nebula.png
+  M27   Luc Viatour / https://Lucnix.be — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:M27-Dumbbell_Nebula-29-07-2026.jpg
+  M31   Brucewaters — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:M31,_the_Andromeda_Galaxy,_Killarney_Provincial_Park_Observatory.jpg
+  M8    ESO/S. Guisard — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:Lagoon_Nebula_(ESO).jpg
+  M16   T.A. Rector (NRAO/AUI/NSF and NOIRLab/NSF/AURA) and B.A. Wolpa (NOIRLab/NSF/AURA) — CC BY 4.0
+        https://commons.wikimedia.org/wiki/File:The_Eagle_Nebula,_M16_(noao-04086).tiff
+  C80   ESO — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:Omega_Centauri_by_ESO.jpg
+  C92   ESO — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:The_spectacular_star-forming_Carina_Nebula_imaged_by_the_VLT_Survey_Telescope.jpg
+  C106  NOIRLab/NSF/AURA — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:47_Tucanae,_NGC_104_(noao-02212).jpg
+  M42   NASA, ESA, M. Robberto (STScI/ESA) and the Hubble Space Telescope Orion Treasury Project Team
+        — Public domain — https://commons.wikimedia.org/wiki/File:Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg
+  M45   NASA, ESA, AURA/Caltech, Palomar Observatory (D. Soderblom and E. Nelan, STScI; F. Benedict and
+        B. Arthur, U. Texas; B. Jones, Lick Obs.) — Public domain — https://commons.wikimedia.org/wiki/File:Pleiades_large.jpg
+  M51   NASA and ESA — Public domain — https://commons.wikimedia.org/wiki/File:Messier51_sRGB.jpg
+  M57   NASA, ESA, and C. Robert O'Dell (Vanderbilt University) — Public domain — https://commons.wikimedia.org/wiki/File:Hubble_image_of_the_Ring_Nebula_(Messier_57).jpg
+  M104  NASA/ESA and The Hubble Heritage Team (STScI/AURA) — Public domain — https://commons.wikimedia.org/wiki/File:M104_ngc4594_sombrero_galaxy_hi-res.jpg
+  Licenses verified on Wikimedia Commons on 2026-11-11 (Hubble images marked public domain there;
+  credit lines kept as requested by the authors).
+
+
+METEOR SHOWERS
+--------------
+meteors.json — shower dates, radiants and rates from the International Meteor Organization
+calendar (factual data). https://www.imo.net
+
+
+METHODS (formulas used, no data copied)
+---------------------------------------
+  J. Meeus, Astronomical Algorithms, 2nd ed. (positions, phases, libration, Jupiter's moons)
+  VSOP87 (Bretagnon & Francou 1988, A&A 202, 309; IMCCE) — planet positions, truncated series
+  (coefficients read from the PyMeeus package listing of VSOP87D)
+  Krisciunas & Schaefer (1991), PASP 103, 1033 — moonlit sky brightness
+  Schaefer (1990), PASP 102, 212 — sky brightness units
+  Kasten & Young (1989), Applied Optics 28, 4735 — airmass
+  Sæmundsson (1986), Bennett (1982) — atmospheric refraction
+  IAU WGCCRE (Archinal et al. 2011/2018) — rotation of Mars and Jupiter
+
+
+ORIGINAL WORK BY ITSNOTFINEART  (CC BY-SA 4.0)
+----------------------------------------------
+  textures: phase_*, grs, star, glow, meteor, disc,
+            item/telescope, item/telescope_model, gui/telescope_vignette,
+            icon (hand-drawn by itsnotfineart)
+  models:   item/telescope_in_hand (3D refractor model)
+  Korean names for stars, lunar features and constellations as used in this mod.
+  English translation of the mod text and romanized Joseon asterism names.
+
+
+THIRD-PARTY SOFTWARE (not bundled)
+----------------------------------
+  Fabric Loader, Fabric API (Apache-2.0) · Fabric Language Kotlin (Apache-2.0) · Mod Menu (MIT, optional)
+  Minecraft is a trademark of Mojang Synergies AB. This mod is not affiliated with Mojang or Microsoft.
+
+
+BSD 3-Clause License (d3-celestial)
+-----------------------------------
+Copyright (c) 2015, Olaf Frohn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions
+   and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of
+   conditions and the following disclaimer in the documentation and/or other materials provided
+   with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors may be used to
+   endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

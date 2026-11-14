@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:meteor",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.shower.description",
+      "fallback": "Watch a meteor shower near its peak under a dark sky"
+    },
+    "icon": {
+      "id": "minecraft:blaze_powder"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.shower.title",
+      "fallback": "It's Raining Stars"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

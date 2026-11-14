@@ -1,0 +1,64 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "s1": {
+      "trigger": "minecraft:impossible"
+    },
+    "s2": {
+      "trigger": "minecraft:impossible"
+    },
+    "s3": {
+      "trigger": "minecraft:impossible"
+    },
+    "s4": {
+      "trigger": "minecraft:impossible"
+    },
+    "s5": {
+      "trigger": "minecraft:impossible"
+    },
+    "s6": {
+      "trigger": "minecraft:impossible"
+    },
+    "s7": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.joseonladle.description",
+      "fallback": "Find all seven stars of Bukdu (the Big Dipper)"
+    },
+    "icon": {
+      "id": "minecraft:bowl"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.joseonladle.title",
+      "fallback": "Full Ladle"
+    },
+    "frame": "task",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "s1"
+    ],
+    [
+      "s2"
+    ],
+    [
+      "s3"
+    ],
+    [
+      "s4"
+    ],
+    [
+      "s5"
+    ],
+    [
+      "s6"
+    ],
+    [
+      "s7"
+    ]
+  ]
+}

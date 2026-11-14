@@ -1,0 +1,46 @@
+{
+  "parent": "cheonsang:planets",
+  "criteria": {
+    "io": {
+      "trigger": "minecraft:impossible"
+    },
+    "europa": {
+      "trigger": "minecraft:impossible"
+    },
+    "ganymede": {
+      "trigger": "minecraft:impossible"
+    },
+    "callisto": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.jovian.description",
+      "fallback": "Find all four Galilean moons of Jupiter"
+    },
+    "icon": {
+      "id": "minecraft:honeycomb"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.jovian.title",
+      "fallback": "Starry Messenger"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "io"
+    ],
+    [
+      "europa"
+    ],
+    [
+      "ganymede"
+    ],
+    [
+      "callisto"
+    ]
+  ]
+}

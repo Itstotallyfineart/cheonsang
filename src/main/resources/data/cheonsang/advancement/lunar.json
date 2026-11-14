@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:moon",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.lunar.description",
+      "fallback": "Watch a lunar eclipse under open sky"
+    },
+    "icon": {
+      "id": "minecraft:red_dye"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.lunar.title",
+      "fallback": "Once in a Blood Moon"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

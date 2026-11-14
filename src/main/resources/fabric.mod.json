@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "cheonsang",
+  "version": "${version}",
+  "name": "Cheonsang 천상",
+  "description": "마인크래프트 하늘을 실제 천구로 — 실제 별·행성·달·은하수·유성우, 압축 달력, 천체망원경. 셰이더(Iris) 미지원.",
+  "authors": ["itsnotfineart"],
+  "license": "MIT",
+  "icon": "assets/cheonsang/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [{ "adapter": "kotlin", "value": "kr.inf.cheonsang.Cheonsang" }],
+    "client": [{ "adapter": "kotlin", "value": "kr.inf.cheonsang.client.CheonsangClient" }],
+    "modmenu": ["kr.inf.cheonsang.client.ModMenuEntry"]
+  },
+  "mixins": ["cheonsang.mixins.json", { "config": "cheonsang.client.mixins.json", "environment": "client" }],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*"
+  },
+  "breaks": {
+    "iris": "*"
+  }
+}

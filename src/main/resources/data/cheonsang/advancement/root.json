@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "telescope": {
+      "conditions": {
+        "items": [
+          {
+            "items": "cheonsang:telescope"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:gui/advancements/backgrounds/end",
+    "description": {
+      "translate": "advancements.cheonsang.root.description",
+      "fallback": "Get a telescope"
+    },
+    "icon": {
+      "id": "cheonsang:telescope"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancements.cheonsang.root.title",
+      "fallback": "Cheonsang"
+    }
+  },
+  "requirements": [
+    [
+      "telescope"
+    ]
+  ]
+}

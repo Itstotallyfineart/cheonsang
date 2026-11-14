@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.angle.description",
+      "fallback": "Measure the angle between two objects"
+    },
+    "icon": {
+      "id": "minecraft:compass"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.angle.title",
+      "fallback": "Rule of Thumb"
+    },
+    "frame": "task",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

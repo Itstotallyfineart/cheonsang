@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.algol.description",
+      "fallback": "Select Algol when it fades below magnitude 3"
+    },
+    "icon": {
+      "id": "minecraft:spider_eye"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.algol.title",
+      "fallback": "Demon's Wink"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

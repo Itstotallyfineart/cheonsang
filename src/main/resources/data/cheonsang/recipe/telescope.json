@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " G ",
+    " S ",
+    "III"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "S": "minecraft:spyglass",
+    "I": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "cheonsang:telescope",
+    "count": 1
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.solar.description",
+      "fallback": "Watch a solar eclipse under open sky"
+    },
+    "icon": {
+      "id": "minecraft:black_dye"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.solar.title",
+      "fallback": "Throwing Shade"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:joseon28",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.joseonnoin.description",
+      "fallback": "Find Noinseong, the Old Man Star (Canopus)"
+    },
+    "icon": {
+      "id": "minecraft:totem_of_undying"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.joseonnoin.title",
+      "fallback": "Live Long and Prosper"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

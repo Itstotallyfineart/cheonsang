@@ -1,0 +1,28 @@
+{
+  "parent": "cheonsang:planets",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.mercury.description",
+      "fallback": "Find Mercury"
+    },
+    "icon": {
+      "id": "minecraft:iron_nugget"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.mercury.title",
+      "fallback": "Mercurial"
+    },
+    "frame": "task",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

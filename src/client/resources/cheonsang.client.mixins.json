@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "kr.inf.cheonsang.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["SkyRendererMixin", "CameraMixin", "MouseHandlerMixin", "MinecraftMixin", "AtmosphericFogMixin", "LightmapMixin", "AvatarRendererMixin", "EntityRendererAccessor", "FirstPersonHandsMixin", "TimelineMixin", "AttributeTrackSamplerMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

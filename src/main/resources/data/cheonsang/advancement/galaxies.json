@@ -1,0 +1,82 @@
+{
+  "parent": "cheonsang:root",
+  "criteria": {
+    "M31": {
+      "trigger": "minecraft:impossible"
+    },
+    "M33": {
+      "trigger": "minecraft:impossible"
+    },
+    "LMC": {
+      "trigger": "minecraft:impossible"
+    },
+    "SMC": {
+      "trigger": "minecraft:impossible"
+    },
+    "M51": {
+      "trigger": "minecraft:impossible"
+    },
+    "M81": {
+      "trigger": "minecraft:impossible"
+    },
+    "M82": {
+      "trigger": "minecraft:impossible"
+    },
+    "M101": {
+      "trigger": "minecraft:impossible"
+    },
+    "M104": {
+      "trigger": "minecraft:impossible"
+    },
+    "C77": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.cheonsang.galaxies.description",
+      "fallback": "Find ten major galaxies beyond the Milky Way"
+    },
+    "icon": {
+      "id": "minecraft:ender_pearl"
+    },
+    "title": {
+      "translate": "advancements.cheonsang.galaxies.title",
+      "fallback": "Far, Far Away"
+    },
+    "frame": "goal",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "M31"
+    ],
+    [
+      "M33"
+    ],
+    [
+      "LMC"
+    ],
+    [
+      "SMC"
+    ],
+    [
+      "M51"
+    ],
+    [
+      "M81"
+    ],
+    [
+      "M82"
+    ],
+    [
+      "M101"
+    ],
+    [
+      "M104"
+    ],
+    [
+      "C77"
+    ]
+  ]
+}
