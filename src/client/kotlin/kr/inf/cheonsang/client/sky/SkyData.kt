@@ -126,23 +126,7 @@ object SkyData {
         }
     }
 
-    /** 천상열차 발전과제용: 28수 가장 밝은 별(각→진 순) · 삼원 별들 · 북두 일곱 별 · 노인성 (HIP) */
-    class KoreanMeta(val mansions: List<Int>, val enclosures: Map<String, Set<Int>>, val ladle: List<Int>, val noin: Int)
-    val koreanMeta: KoreanMeta by lazy {
-        val arr = json("korean_constellations.json").asJsonArray.map { it.asJsonObject }
-        fun hips(o: com.google.gson.JsonObject) = o["hips"]?.asJsonArray?.map { it.asInt } ?: emptyList()
-        val enc = linkedMapOf("jami" to "자미원", "taemi" to "태미원", "cheonsi" to "천시원").mapValues { (_, g) ->
-            arr.filter { it["group"]?.asString?.endsWith(g) == true }.flatMap { hips(it) }.toSet()
-        }
-        KoreanMeta(
-            arr.filter { it["mansion"]?.asBoolean == true }.map { it["bright"].asInt },
-            enc,
-            arr.firstOrNull { it["hz"]?.asString == "北斗" }?.let { hips(it) } ?: emptyList(),
-            arr.firstOrNull { it["hz"]?.asString == "老人" }?.let { hips(it).firstOrNull() } ?: 30438,
-        )
-    }
-
-    /** 망원경 화면에 그릴 별자리 — 설정 "별자리: 서양 / 천상열차" (발전과제·별 부호는 늘 서양 88) */
+    /** 망원경 화면에 그릴 별자리 — 설정 "별자리: 서양 / 천상열차" */
     val drawnConstellations: List<Constellation> get() = if (kr.inf.cheonsang.client.TelescopeFilter.korean) korean else constellations
 
     /** 심원천체 거리 (광년) — 위키백과 메시에·캘드웰 표 (_tools/make_dso_dist.py) */

@@ -192,7 +192,7 @@ object TelescopeView {
     @JvmStatic
     fun scroll(amount: Double): Boolean {
         if (!active || amount == 0.0) return false
-        if (Minecraft.getInstance().gui.screen() != null) return false  // 화면이 열려 있으면 휠은 화면 몫 (발전과제·설정·수첩 목록)
+        if (Minecraft.getInstance().gui.screen() != null) return false  // 화면이 열려 있으면 휠은 화면 몫
         // 구경 키(기본 Shift) + 휠 = 대물 구경, 휠만 = 접안 (배율)
         if (apertureHeld()) {
             val before = zoom

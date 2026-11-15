@@ -101,7 +101,7 @@ object AmbientLight {
         return ((h ushr 11) and 0xFFFFF).toDouble() / 0xFFFFF.toDouble()
     }
 
-    /** 개발용 `/caurora` — 위도·태양 활동과 무관하게 이 세기로 (null = 끔, 저장 안 함, 도감·발전과제에는 안 들어감) */
+    /** 개발용 `/caurora` — 위도·태양 활동과 무관하게 이 세기로 (null = 끔, 저장 안 함) */
     var debugAurora: Double? = null
 
     /** 오로라 세기 0~1 — 위도 60° 미만·활동 약함(0.4 미만)·밝은 하늘이면 0 */

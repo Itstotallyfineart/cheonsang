@@ -16,8 +16,6 @@ object Safety {
     const val KEYS = "키"
     /** 찾기 하나가 걸려도 나머지는 꺼지지 않게 따로 둠 */
     const val TONIGHT = "오늘 밤"
-    const val BOOK = "수첩"
-    const val LOG = "도감"
 
     @PublishedApi internal val off = HashSet<String>()
 
@@ -45,6 +43,6 @@ object Safety {
     fun reset() = off.clear()
 
     /** 기능 이름 (상수는 한국어 식별자) → 화면 이름 */
-    private val PART_KEY = mapOf(SKY to "sky", TELESCOPE to "telescope", FIND to "find", KEYS to "keys", TONIGHT to "tonight", BOOK to "book", LOG to "log")
+    private val PART_KEY = mapOf(SKY to "sky", TELESCOPE to "telescope", FIND to "find", KEYS to "keys", TONIGHT to "tonight")
     @PublishedApi internal fun partLabel(part: String) = PART_KEY[part]?.let { L.t("cheonsang.part.$it") } ?: part
 }

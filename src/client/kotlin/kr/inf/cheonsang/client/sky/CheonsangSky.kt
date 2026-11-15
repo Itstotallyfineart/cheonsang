@@ -267,7 +267,7 @@ object CheonsangSky {
     /** 달빛 0~1 (밝은 비율 × 달이 떠 있는 정도) — 은하수·유성이 흐려짐 */
     var moonLight = 0f
         private set
-    /** 월식 본영이 달을 덮은 비율 0~1 (도감 "월식") */
+    /** 월식 본영이 달을 덮은 비율 0~1 */
     var lunarUmbra = 0f
         private set
     /** 일식: 해 원판이 가려진 넓이 비율 0~1 */
@@ -871,12 +871,9 @@ object CheonsangSky {
         drawQuad(pass, "moon", MOON_PIPELINE, moonTex, quad, moonDraw, mRight, mUp, rm, Vector4f(1f, 1f, 1f, c), Matrix4f(prm).m22(1f))
         // 유성 (대기 속이라 달보다 앞)
         val dark = starFactor() * (1f - 0.5f * moonLight)
-        val view = viewCenter()
         // 유성은 실제 시간으로 흐름 (시간 정지·압축률과 무관). 기준은 컴퓨터 시계라 멀티에서 같은 시각이면 같은 유성
         for (st in Meteors.visible(System.currentTimeMillis() / 50.0, sunLon, skyMat3, dark)) {
             val mid = (st.tail + st.head).normalized()
-            // 발전과제 "별똥별 보기": 화면 가운데에서 30° 안을 지나간 별똥별
-            if (st.alpha > 0.2f && (mid dot view) > 0.866) meteorSeenNanos = System.nanoTime()
             val along = (st.head - st.tail) * (R / 2.0)
             val width = (mid cross along).normalized() * 0.07
             drawQuad(pass, "meteor", GLOW_PIPELINE, TEX_METEOR, quad, mid, along, width, 1f, Vector4f(1f, 1f, 1f, st.alpha))
@@ -1282,10 +1279,7 @@ object CheonsangSky {
     private var zodiBuffer: GpuBuffer? = null
     private var zodiIndexCount = 0
     private var zodiSunLon = Double.NaN
-    /** 별똥별이 화면 가까이 지나간 마지막 시각 (도감) */
-    @JvmStatic var meteorSeenNanos = 0L
-
-    /** 황도광 보이는 정도 0~1 (해 −15°→−19°, 달빛 없음, 보틀 4 아래) — 그리기·도감 같은 기준 */
+    /** 황도광 보이는 정도 0~1 (해 −15°→−19°, 달빛 없음, 보틀 4 아래) */
     fun zodiacalDark(): Float = ((-sunAlt - 15.0) / 4.0).coerceIn(0.0, 1.0).toFloat() * (1f - moonLight).coerceAtLeast(0f) *
         ((4.0 - kr.inf.cheonsang.client.AmbientLight.bortle) / 2.0).coerceIn(0.0, 1.0).toFloat() * clear
 

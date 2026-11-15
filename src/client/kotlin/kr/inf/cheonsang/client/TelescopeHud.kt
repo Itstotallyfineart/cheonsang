@@ -755,8 +755,6 @@ object TelescopeHud {
             if (t == null) { mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.34"))); return }
             if (t.key == sel.key) { measure = null; mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.35"))); return }
             measure = t
-            LogBook.observe(t)
-            LogBook.event("event:angle", L.t("cheonsang.telescopehud.36"))
             mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.37", sel.short, t.short, angleText(sel, t) ?: "-")))
             return
         }
@@ -766,7 +764,6 @@ object TelescopeHud {
             val t = find(Projector(mc), PICK_RADIUS)
             if (t == null) { mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.34"))); return }
             selected = t; locked = t; measure = null
-            LogBook.observe(t)
             mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.39", t.short)))
             return
         }
@@ -777,7 +774,6 @@ object TelescopeHud {
             else -> L.t("cheonsang.telescopehud.34")
         }
         selected = t; measure = null
-        if (t != null) LogBook.observe(t)
         mc.player?.sendOverlayMessage(Component.literal(msg))
     }
 
@@ -798,7 +794,6 @@ object TelescopeHud {
         val mc = Minecraft.getInstance()
         val t = runCatching { fixed?.invoke() }.getOrNull() ?: find(Projector(mc), PICK_RADIUS) ?: return
         selected = t; locked = t; measure = null
-        LogBook.observe(t)
         mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.39", t.short) + (note?.invoke()?.let { " | $it" } ?: "")))
     }
 

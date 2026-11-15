@@ -28,7 +28,6 @@ object CheonsangClient : ClientModInitializer {
         Bench.register()
         Tonight.register()
         CWhen.register()
-        LogBook.register()
         PoseSync.register()
         AmbientLight.register()
         // 개발용: 가시성 모델 효과별 켜고 끄기 (저장 안 함)

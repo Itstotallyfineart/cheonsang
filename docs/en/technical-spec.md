@@ -29,8 +29,7 @@ Cheonsang is a Fabric mod that replaces the sky of the Minecraft Java Edition Ov
 | Environment | `environment: "*"` (one jar for server and client; runs client-only as well) |
 | License | Code: MIT. Data files follow the licenses of the original sources (CREDITS.txt, Section 5.14) |
 | Source size | 56 Kotlin and 13 Java files, 10,918 lines (including the VSOP87 coefficient file), 11 GLSL shaders |
-| Translations | 546 keys each in `ko_kr` and `en_us`. Korean when the game language is Korean, English otherwise |
-| Advancements | 24 (`data/cheonsang/advancement/`) |
+| Translations | 470 keys each in `ko_kr` and `en_us`. Korean when the game language is Korean, English otherwise |
 | Mod icon | `assets/cheonsang/icon.png` 128×128 (hand-drawn, CC BY-SA 4.0). Expansion pack: `assets/cheonsang_extra/icon.png` 128×128 |
 | Release file size | Main mod `cheonsang-2.0.0.jar` 111.5 MB, expansion pack `cheonsang-extra-1.0.1.jar` 434.0 MB |
 
@@ -61,15 +60,15 @@ Values were taken from `gradle.properties`, `build.gradle.kts`, and `fabric.mod.
 
 | Entry point | Class | Role |
 | --- | --- | --- |
-| `main` | `kr.inf.cheonsang.Cheonsang` | Server and common initialization: registers `SkyServer`, `LogServer`, `PoseServer`, `VanillaSync`, `Telescope` |
+| `main` | `kr.inf.cheonsang.Cheonsang` | Server and common initialization: registers `SkyServer`, `PoseServer`, `VanillaSync`, `Telescope` |
 | `client` | `kr.inf.cheonsang.client.CheonsangClient` | Rendering, client commands, key mappings, packet reception, config files |
 | `modmenu` | `kr.inf.cheonsang.client.ModMenuEntry` | Connects the Mod Menu settings screen |
 
 | Source set | Package | Main contents |
 | --- | --- | --- |
-| main (common) | `kr.inf.cheonsang` | `SkyServer` (sky state, `/cele`), `LogServer` (observing logbook), `PoseServer` (telescope pose), `RateLimit`, `RealTime` (13 real-time cities), `VanillaSync` (vanilla Moon phase and night), `Telescope` (item), `NextEvents`, `L` (translation) |
+| main (common) | `kr.inf.cheonsang` | `SkyServer` (sky state, `/cele`), `PoseServer` (telescope pose), `RateLimit`, `RealTime` (13 real-time cities), `VanillaSync` (vanilla Moon phase and night), `Telescope` (item), `NextEvents`, `L` (translation) |
 | main (common) | `kr.inf.cheonsang.astro` | `AstroMath` (vectors, matrices, ΔT), `Calendar`, `SkyClock`, `Frames`, `Sun`, `Moon` and `MoonTerms`, `Planets` and `Vsop87Data`, `Eclipse`, `RiseSet`, `Events`, `WhenCalc` |
-| client | `kr.inf.cheonsang.client` | `TelescopeView`, `TelescopeHud`, and `Optics` (telescope), `Visibility` (visibility model), `AmbientLight` (light pollution, dark adaptation, aurora conditions), `InfoCard`, `FindGuide` (`/cfind`), `CWhen` (`/cwhen`), `Place` (`/cplace`), `LogBook` and `NotebookScreen`, `SettingsScreen`, `Bench`, `Safety`, `PoseSync` |
+| client | `kr.inf.cheonsang.client` | `TelescopeView`, `TelescopeHud`, and `Optics` (telescope), `Visibility` (visibility model), `AmbientLight` (light pollution, dark adaptation, aurora conditions), `InfoCard`, `FindGuide` (`/cfind`), `CWhen` (`/cwhen`), `Place` (`/cplace`), `SettingsScreen`, `Bench`, `Safety`, `PoseSync` |
 | client | `kr.inf.cheonsang.client.sky` | `CheonsangSky` (main sky renderer), `StarCatalog`, `DeepStars`, `TileSky`, `PhotoSky`, `GalaxySketch`, `Meteors`, `SmallBodies`, `SkyData`, `Packs`, `VramBudget`, `VisualDay`, `GrayTexture` |
 
 The astronomical computation (`astro`) lives in the common source set, so server commands (`/cele`, next-event calculation) and client rendering use the same code.
@@ -89,8 +88,6 @@ For on-screen day and night, only the visual tracks of the 26.3 `day` timeline (
 | --- | --- | --- | --- |
 | `cheonsang:sky4` | Server → client | epochTick (VAR_LONG), epochJd (DOUBLE), rate (DOUBLE), lat (DOUBLE), lon (DOUBLE), city (STRING_UTF8) | Per-dimension sky clock, time compression rate, world default location, real-time city |
 | `cheonsang:placegen` | Server → client | gen (VAR_INT) | World default location change counter. If the received value differs from the previous one, the client clears its own `/cplace` |
-| `cheonsang:log_add` | Client → server | key (UTF-8 ≤96), name (UTF-8 ≤96), zoom (DOUBLE) | Adds a logbook entry. The `adv:` prefix grants an advancement criterion |
-| `cheonsang:log_all` | Server → client | lines (list of UTF-8 ≤256 strings, up to 20,000 lines) | The player's full logbook |
 | `cheonsang:pose_set` | Client → server | on (BOOL) | Whether the telescope is zoomed in (above ×1) |
 | `cheonsang:pose` | Server → client | id (UUID), on (BOOL) | Telescope pose of another player |
 
@@ -101,11 +98,9 @@ All packets are registered with Fabric `PayloadTypeRegistry`. Before sending, `S
 | Location | Format | Contents |
 | --- | --- | --- |
 | World save `cheonsang:sky` | `SavedData`, string → list of doubles | Per dimension ID: [epoch tick, epoch Julian Day, compression rate, latitude] (+ city index and pre-activation values in real-time mode); longitude under the `#lon` key; location change counter under the `#gen` key |
-| World save `cheonsang:log` | `SavedData`, UUID → (entry key → "Julian Day\|magnification\|name") | Observing logbook. Up to 15,000 entries per player |
 | `config/cheonsang/server.json` | JSON | `rate`(1.0), `lat`(0), `lon`(0), `vanillaMoon`(true), `vanillaNight`(false) |
 | `config/cheonsang/client.json` | JSON | `enabled`(true), `nakedEyeLimit`(6.0, 4–6.5), `meteors`(1.0, 0–5), `display` (settings screen values) |
 | `config/cheonsang/places.json` | JSON | Personal observing locations, per server and world |
-| `config/cheonsang/log_local.json` | JSON | Logbook used when the server does not have Cheonsang |
 
 ### 3.5 Expansion pack structure
 
@@ -247,7 +242,7 @@ Results checked against NASA data:
 
 ### 4.12 Visibility model
 
-A single function computes the limiting magnitude in the viewing direction. Star display, the intensity of extended sources, and logbook decisions all use this value. The order of steps is fixed.
+A single function computes the limiting magnitude in the viewing direction. Star display and the intensity of extended sources use this value. The order of steps is fixed.
 
 | Step | Formula and values | Source |
 | --- | --- | --- |
@@ -758,7 +753,6 @@ The 13 real-time cities are longyearbyen, reykjavik, london, newyork, seoul, cai
 | `/cwhen lunar total\|partial\|penumbral` | Next lunar eclipse |
 | `/cwhen meteor [QUA\|LYR\|ETA\|PER\|ORI\|LEO\|GEM]` | Next meteor shower maximum |
 | `/cwhen full` · `new` · `conj` · `next` | Next full moon, new moon, planetary conjunction, list of upcoming events |
-| `/clog` · `/clog list` | Open the observing notebook, logbook summary |
 | `/cbench` · `/cbench stop` | Performance benchmark |
 | `/cvis` · `/cvis <effect> on\|off` | Status of visibility effects and turning them on or off (not saved). Effects: twilight, moon, airglow, extinction, refraction, colorloss, light, dark, zodiacal, twinkle, aurora |
 
@@ -776,7 +770,7 @@ The `/cwhen` criteria for objects (solar altitude, object altitude) are −18° 
 | Lock tracking | Left Alt + left click |
 | Angular distance | Ctrl + left click |
 | Clear selection | Shift + left click |
-| Cheonsang settings · Cheonsang observing notebook | Not bound (assign under "Miscellaneous" in Controls) |
+| Cheonsang settings | Not bound (assign under "Miscellaneous" in Controls) |
 
 The telescope item `cheonsang:telescope` stacks to 1 and is placed after the spyglass in the creative "Tools & Utilities" tab. The recipe is a glass pane at top center, a spyglass in the center, and 3 iron ingots in the bottom row.
 
@@ -794,8 +788,6 @@ The settings screen has items for Constellation lines, Names, object display, an
 | --- | --- |
 | Sky clock and location | The server stores them per dimension and sends `sky4` on the tick after joining, on dimension change, and when a value changes |
 | Personal location | Stored only on the client. When the world default location (latitude and longitude) changes, the server's `#gen` counter increases by 1, and a client receiving `placegen` clears `/cplace` if the counter differs (players who were not online do this on their next join). Kept if only the date, time, or compression rate changes |
-| Observing logbook | The client decides visibility and sends `log_add`, and the server stores it with the sky Julian Day at that moment. The list is resent in batches at most once per second (20 ticks) |
-| Advancements | Decided from the logbook; the server grants criteria with `adv:<id>/<criterion>` keys |
 | Telescope pose | `pose_set` is sent only when the state changes, and the server relays `pose` to other players. New players receive the list of players currently zoomed in; cleared on leave. Not saved |
 | Meteors | No packet. Each client generates the same random numbers from the 0.2-second slot number of the computer clock (`System.currentTimeMillis`), so clients with matching clocks see the same meteors |
 | Server without Cheonsang | The client computes on its own with defaults (2026-08-11, 0°, 0°, compression rate 1) or settings screen values |
@@ -806,26 +798,19 @@ A per-player token bucket is used. Up to burst packets are allowed at once, then
 
 | Packet | burst | Per second | Notes |
 | --- | --- | --- | --- |
-| `log_add` (logbook, advancements) | 300 | 20 | Larger than the amount sent in bulk right after joining |
 | `pose_set` (telescope pose) | 6 | 2 | Off (on = false) is accepted without limit |
 
 ### 9.3 Input validation
 
 | Item | Rule |
 | --- | --- |
-| Logbook key | `^[A-Za-z]+:[^\t\n\|]{1,80}$` or `sun` / `moon` |
-| Name | Tabs, line breaks, and `\|` replaced, truncated to 80 characters |
-| Magnification | Clamped to 1–1000 |
-| Entry count | Up to 15,000 per player; existing keys are ignored (only the first discovery is recorded) |
-| Advancement ID and criterion | `^[a-z0-9_]{1,32}$` · `^[A-Za-z0-9_]{1,32}$`, only `cheonsang:` advancements that exist on the server |
-| String length | In the packet codec, key and name 96 bytes; list strings 256 bytes, up to 20,000 lines |
 | Server config | `rate` clamped to 0.01–1000, `lat` to −90–90, `lon` to −180–180 |
 
 ---
 
 ## 10. Fault isolation
 
-Client features are split into units (sky, telescope, find, keys, tonight, notebook, logbook), each wrapped in `Safety.run`. If one feature throws an exception, only that feature is turned off for the current session and falls back to the default sky or vanilla behavior. The full stack trace is written once to `latest.log`, and an error with the feature name is shown on screen. `VirtualMachineError` is rethrown. All features are turned back on when you rejoin the server. Where shaders cannot be used, galaxy sketches are replaced with a simple glow.
+Client features are split into units (sky, telescope, find, keys, tonight), each wrapped in `Safety.run`. If one feature throws an exception, only that feature is turned off for the current session and falls back to the default sky or vanilla behavior. The full stack trace is written once to `latest.log`, and an error with the feature name is shown on screen. `VirtualMachineError` is rethrown. All features are turned back on when you rejoin the server. Where shaders cannot be used, galaxy sketches are replaced with a simple glow.
 
 ---
 

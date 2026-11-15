@@ -200,7 +200,7 @@ Lens aberrations, central obstruction, and transmission are not included. Seeing
 
 ## 5. Observational Environment
 
-The limiting magnitude in the viewing direction is computed by a unified visibility model that applies the six stages below in a fixed order. Star display, the intensity of the Milky Way and nebulae, and logbook checks all follow its result.
+The limiting magnitude in the viewing direction is computed by a unified visibility model that applies the six stages below in a fixed order. Star display and the intensity of the Milky Way and nebulae follow its result.
 
 | Stage | Content |
 | --- | --- |
@@ -272,7 +272,6 @@ Astronomical events appear on screen according to computed object positions and 
 
 Solar eclipses are classified as total, annular, hybrid, or partial. A forecast gives the latitude and longitude of the point of greatest eclipse, the local time and solar altitude there, the duration of totality, the width of the shadow path, and the fraction covered at the current observing location. For example, the total solar eclipse of 2027-08-02 is forecast with greatest eclipse at 25.5°N 33.1°E, a duration of 6 min 25 s, and a path width of 258 km, and the observing location can be moved to that point directly from the result. Lunar eclipses are classified as total, partial, or penumbral, and the times are computed from the start of the penumbral eclipse (P1) through the umbral contacts (U1–U4) to the end of the penumbral eclipse (P4).
 
-The logbook records solar eclipses in which more than about 5% of the diameter of the Sun above the horizon is covered, and lunar eclipses in which the Moon enters the umbra by more than 2%. Penumbral lunar eclipses appear on screen but are not recorded.
 
 ### Planets, moons, and occultations
 
@@ -369,9 +368,6 @@ In Cheonsang, astronomy concepts from textbooks can be observed directly and che
 
 Real observation is limited by weather, time, equipment, and location. In Cheonsang the same object can be observed repeatedly under different conditions. For example, the same night sky can be compared under a Bortle class 1 sky and next to village lights, or the 2027 total solar eclipse can be observed from the center line of the eclipse. The stars and objects on screen follow real catalog data, so the arrangement of constellations and objects learned in the game is the same as in the real night sky.
 
-### Observation records
-
-The mod provides a logbook and an observing notebook, in which objects are registered only when they are actually visible, and 24 advancements, including ones based on traditional astronomical systems such as the 28 lunar mansions and the Three Enclosures. Advancements show progress as a fraction, as in "how many of the 28 lunar mansions have been observed".
 
 ### Notes on use
 

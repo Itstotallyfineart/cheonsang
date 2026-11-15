@@ -54,8 +54,6 @@ object TelescopeFilter {
     lateinit var apertureKey: CheonsangKey
     private lateinit var settingsKey: CheonsangKey
     private var keysChecked = false
-    /** 다른 곳에서 등록한 천상 키 (관측 수첩) — 첫 틱 검사에 같이 넣음 */
-    val extraKeys = ArrayList<CheonsangKey>()
 
     /**
      * 26.3 은 키 번호가 SDL 스캔코드(N=17, 왼쪽 Alt=226, 없음=0) — "없음=-1" 이 저장되면 KeyMapping.setAll 이 범위 밖을 읽어 튕김.
@@ -83,7 +81,7 @@ object TelescopeFilter {
         ClientTickEvents.START_CLIENT_TICK.register { mc ->
             if (keysChecked) return@register
             keysChecked = true
-            val changed = (listOf(key, trackKey, apertureKey, settingsKey) + extraKeys).map { it.fix() }.any { it }
+            val changed = listOf(key, trackKey, apertureKey, settingsKey).map { it.fix() }.any { it }
             if (changed) {
                 KeyMapping.resetMapping()
                 try { mc.options.save() } catch (_: Exception) {}

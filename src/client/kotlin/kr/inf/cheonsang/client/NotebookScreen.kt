@@ -2,6 +2,9 @@ package kr.inf.cheonsang.client
 
 import kr.inf.cheonsang.L
 import kr.inf.cheonsang.client.sky.CheonsangSky
+import com.mojang.blaze3d.platform.InputConstants
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
@@ -9,18 +12,39 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 
 /**
- * 관측 수첩: 오늘 밤 (`/ctonight`) · 다음 현상 (`/ctonight next`) · 도감 (발전과제 진행 + 등록 목록).
- * 여는 법: 조작 설정 "천상 관측 수첩" 키 (기본 없음) · `/clog` (도감 탭). 휠 = 위아래로 넘김
+ * 관측 수첩: 오늘 밤 · 다음 현상. 여는 법: 조작 설정 "천상 관측 수첩" 키 (기본 없음).
  */
 class NotebookScreen(private var tab: Int) : Screen(Component.literal(L.t("cheonsang.notebookscreen.1"))) {
     private var lines: List<String> = emptyList()
     private var scroll = 0
     private val tabButtons = ArrayList<Button>()
 
+    companion object {
+        private val TABS get() = listOf(L.t("cheonsang.notebookscreen.11"), L.t("cheonsang.notebookscreen.10"))
+        private const val LINE_H = 11
+        private lateinit var notebookKey: TelescopeFilter.CheonsangKey
+
+        fun register() {
+            notebookKey = TelescopeFilter.CheonsangKey("key.cheonsang.notebook", InputConstants.UNKNOWN.value, null)
+                .also { KeyMappingHelper.registerKeyMapping(it) }
+            TelescopeFilter.extraKeys += notebookKey
+            ClientTickEvents.END_CLIENT_TICK.register { mc ->
+                Safety.run(Safety.KEYS, Unit) {
+                    while (notebookKey.consumeClick()) if (mc.gui.screen() == null) open(0)
+                }
+            }
+        }
+
+        fun open(tab: Int) {
+            val mc = Minecraft.getInstance()
+            mc.setScreenAndShow(NotebookScreen(tab))
+        }
+    }
+
     override fun init() {
         tabButtons.clear()
         val w = 90
-        val x0 = width / 2 - (w * 3 + 8) / 2
+        val x0 = width / 2 - (w * TABS.size + (TABS.size - 1) * 4) / 2
         TABS.forEachIndexed { k, name ->
             tabButtons += addRenderableWidget(Button.builder(Component.literal(name)) { select(k) }.bounds(x0 + k * (w + 4), 24, w, 20).build())
         }
@@ -41,7 +65,7 @@ class NotebookScreen(private var tab: Int) : Screen(Component.literal(L.t("cheon
 
     private fun build(): List<String> = when (tab) {
         0 -> Tonight.report()
-        1 -> {
+        else -> {
             val level = Minecraft.getInstance().level
             if (level == null) listOf(L.t("cheonsang.notebookscreen.4")) else {
                 val lat = CheonsangSky.latitude; val lon = CheonsangSky.longitude
@@ -49,12 +73,6 @@ class NotebookScreen(private var tab: Int) : Screen(Component.literal(L.t("cheon
                     kr.inf.cheonsang.NextEvents.lines(CheonsangSky.clock.jd(level.defaultClockTime.toDouble()), lat, lon, null, false, kr.inf.cheonsang.SkyServer.placeText(lat, lon))
                         .map { it.string }
             }
-        }
-        else -> {
-            LogBook.ensureLoaded()
-            val done = LogBook.ACHIEVEMENTS.count { it.done() }
-            listOf(L.t("cheonsang.notebookscreen.6", done, LogBook.ACHIEVEMENTS.size)) + LogBook.achievementLines() +
-                listOf("", L.t("cheonsang.notebookscreen.8", LogBook.entries.size)) + LogBook.entryLines().ifEmpty { listOf(L.t("cheonsang.notebookscreen.7")) }
         }
     }
 
@@ -80,14 +98,4 @@ class NotebookScreen(private var tab: Int) : Screen(Component.literal(L.t("cheon
 
     override fun isPauseScreen() = false
 
-    companion object {
-        // 열 때마다 번역
-        private val TABS get() = listOf(L.t("cheonsang.notebookscreen.11"), L.t("cheonsang.notebookscreen.10"), L.t("cheonsang.notebookscreen.9"))
-        private const val LINE_H = 11
-
-        fun open(tab: Int) {
-            val mc = Minecraft.getInstance()
-            mc.setScreenAndShow(NotebookScreen(tab))
-        }
-    }
 }

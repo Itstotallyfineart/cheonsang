@@ -12,12 +12,11 @@ For Cheonsang 2.0.0 · 2026-11-15
 6. The Telescope
 7. Command Reference
 8. Settings
-9. Observing Logbook, Observing Notebook, and Advancements
-10. Running a Multiplayer Server
-11. Performance
-12. Troubleshooting
-13. Known Limitations
-14. Data Sources
+9. Running a Multiplayer Server
+10. Performance
+11. Troubleshooting
+12. Known Limitations
+13. Data Sources
 - Appendix A. Astronomical Observing Guide
   - A.1 Observing Conditions
   - A.2 Principles of Telescope Optics
@@ -33,7 +32,7 @@ For Cheonsang 2.0.0 · 2026-11-15
 
 Cheonsang is a Fabric mod that replaces the sky of the Minecraft Overworld with a real celestial sphere. From the observing location (latitude and longitude) and the date and time, it computes the positions and brightness of stars, the Sun, the Moon, planets, and deep-sky objects, then draws them on screen after applying the atmosphere, sky brightness, light pollution, and telescope optics. Star positions and magnitudes come from the HYG v4.1, Tycho-2, and Gaia DR3 catalogs. Positions of the Sun, Moon, and planets are computed with celestial mechanics formulas.
 
-If the game language is Korean, the screens, command responses, info cards, notebook, and advancements appear in Korean. In any other language they appear in English.
+If the game language is Korean, the screens, command responses, and info cards appear in Korean. In any other language they appear in English.
 
 ## 2. Installation
 
@@ -85,7 +84,7 @@ The sky also works on the client alone when the server does not have Cheonsang. 
 
 A new world starts on 2026-08-11 at 06:00, at latitude 0° and longitude 0°. The compression rate is 1.0 (real speed). The next day, August 12, has a total solar eclipse, the peak of the Perseid meteor shower, and a waning crescent Moon all at once, and August 28 has a partial lunar eclipse. The point of greatest eclipse for the August 12 total solar eclipse is at about 65°N 25°W.
 
-Worlds from earlier versions keep their saved date and location, and their observing logbook and advancements are preserved.
+Worlds from earlier versions keep their saved date and location.
 
 ### 3.2 Basic Rules for Time and Location
 
@@ -106,7 +105,7 @@ By default, the day and night on screen (sky color, fog, and light on the ground
 2. Craft a telescope (section 6.1).
 3. Hold the telescope, right-click to turn it on, and raise the magnification with the mouse wheel. A control guide appears once the first time you turn it on.
 4. Find an object with `/cfind Jupiter` or similar, and left-click to select it and see its info card.
-5. In the controls settings, assign keys to "Cheonsang settings" and "Cheonsang observing notebook" (no default).
+5. In the controls settings, assign a key to "Cheonsang settings" (no default).
 
 ## 4. Screen Layout
 
@@ -119,7 +118,7 @@ By default, the day and night on screen (sky color, fog, and light on the ground
 | Selection marker | A circle around the selected object. While tracking, the card title shows [tracking] |
 | Angular distance display | A purple circle and connecting line, and "Angle → name" on the last line of the card |
 | Direction arrow | For 60 seconds after running `/cfind`. Turns off once the object is found |
-| Error display | "Cheonsang ... error" at the top of the screen (section 12) |
+| Error display | "Cheonsang ... error" at the top of the screen (section 11) |
 
 The optics line positions itself so that the hotbar and offhand slot do not cover it. If the empty space on the left of the screen is narrow, the text shrinks automatically (down to half size). If it still does not fit, the line is shown above the health and armor bars.
 
@@ -152,7 +151,6 @@ These are in the "Miscellaneous" category of the controls settings, and all of t
 | Track object (hold + left click) | Left Alt | Hold and left-click to select and lock tracking |
 | Objective aperture (hold + scroll) | Left Shift | Hold and scroll to change the aperture |
 | Cheonsang settings | None | Opens the Cheonsang settings screen |
-| Cheonsang observing notebook | None | Opens the observing notebook |
 
 Turning off constellation lines and names with the N key gives a view closer to a real eyepiece.
 
@@ -168,7 +166,7 @@ Turning off constellation lines and names with the N key gives a view closer to 
 | Tracking key + left-click | Selects and locks tracking. The object stays at the center of the view |
 | Ctrl + left-click | With an object selected, measures the angular distance to the object at the center of the view |
 
-Tracking is released when you press tracking key + left-click again, press Shift + left-click, or move the mouse a large amount. It is also released automatically when the object sets below the horizon. Tracking continues while chat or other screens are open. While a screen such as the notebook, settings, or advancements is open, wheel input goes to that screen.
+Tracking is released when you press tracking key + left-click again, press Shift + left-click, or move the mouse a large amount. It is also released automatically when the object sets below the horizon. Tracking continues while chat or other screens are open. While the notebook or settings screen is open, wheel input goes to that screen.
 
 ## 6. The Telescope
 
@@ -263,7 +261,7 @@ Shows the sky date and time (local mean time), the compression rate (how many Mi
 
 Examples: `/cplace 70 20`, `/cplace -30 135`, `/cplace seoul` (Korean city names also work)
 
-This does not affect anyone else's sky and does not require OP permission. The value is saved separately for each server and world in `config/cheonsang/places.json`. Observations made from a moved location also count toward the logbook and advancements.
+This does not affect anyone else's sky and does not require OP permission. The value is saved separately for each server and world in `config/cheonsang/places.json`.
 
 Place names (from north to south):
 
@@ -349,7 +347,7 @@ This command is computed only on your own client, so it works even when the serv
 | `/cwhen full` · `new` · `conj` | The next full moon · new moon · planetary conjunction (for your observing location) |
 | `/cwhen next` | One line each for the next solar eclipse, lunar eclipse, full moon, new moon, meteor shower, and planetary conjunction (for eclipses, the nearest one of any type) |
 
-`/cwhen <object>` judges a night by the object's altitude, the darkness of the sky (solar altitude), moonlight, and the margin below the limiting magnitude. If the object does not rise or stays too low at that latitude, a latitude where it is well placed is also suggested. The same tonight summary is also available in the "Tonight" tab of the observing notebook.
+`/cwhen <object>` judges a night by the object's altitude, the darkness of the sky (solar altitude), moonlight, and the margin below the limiting magnitude. If the object does not rise or stays too low at that latitude, a latitude where it is well placed is also suggested.
 
 Argument details:
 
@@ -372,18 +370,6 @@ Times in the results are the local mean time at the result's location, which is 
 | [next] | The next result after that |
 
 Examples: `/cwhen M51`, `/cwhen Saturn`, `/cwhen solar total`, `/cwhen lunar partial`, `/cwhen meteor PER`
-
-#### /clog
-
-```
-/clog
-/clog list
-```
-
-| Form | Action |
-| --- | --- |
-| `/clog` | Opens the observing notebook on the Logbook tab |
-| `/clog list` | Shows the number of logbook entries, the advancement count, and the 10 most recent entries in chat |
 
 #### /ctonight
 
@@ -538,59 +524,8 @@ The file is `config/cheonsang/server.json`. It is read when the server starts.
 | File | Contents |
 | --- | --- |
 | `config/cheonsang/places.json` | Your observing location (separate for each server and world) |
-| `config/cheonsang/log_local.json` | The observing logbook when the server does not have Cheonsang |
 
-## 9. Observing Logbook, Observing Notebook, and Advancements
-
-### 9.1 Observing Logbook
-
-When you left-click an object with the telescope to select it (including the Alt and Ctrl combinations), it is recorded the first time if it is actually visible at that moment. The date, time, magnification, and naked eye or telescope are recorded.
-
-| Condition | Details |
-| --- | --- |
-| Visibility | Above the horizon, within the limiting magnitude after twilight and moonlight losses, and not raining |
-| Automatic entries | Solar and lunar eclipses (including partial eclipses, excluding penumbral lunar eclipses) and meteor shower peak nights, if you are in a spot open to the sky |
-| Date basis | World Universal Time (does not shift when you move your observing location) |
-| Storage | On the server (per player) if the server has Cheonsang, otherwise `config/cheonsang/log_local.json` |
-
-### 9.2 Observing Notebook
-
-Open it with `/clog` or the "Cheonsang observing notebook" key. There are three tabs, "Tonight", "Upcoming", and "Logbook", and the wheel switches between them.
-
-### 9.3 Advancements
-
-The "Cheonsang" tab of the advancements screen (L) has 24 advancements, judged from the observing logbook. Advancements that collect several targets show a progress fraction (for example, Messier 3/110, Saturn moons 2/7), and targets already found are filled in again when you join.
-
-| Advancement | Condition |
-| --- | --- |
-| Cheonsang | Get a telescope |
-| Honeymoon | Select the Moon with a telescope |
-| Once in a Blood Moon | Watch a lunar eclipse under open sky (partial lunar eclipses count) |
-| Throwing Shade | Watch a solar eclipse under open sky (partial solar eclipses count) |
-| Roll Call | The 7 planets |
-| Mercurial | Mercury |
-| Starry Messenger | The four Galilean moons of Jupiter |
-| The Fellowship of the Rings | The seven major moons of Saturn |
-| Minor Details | Ceres and Vesta |
-| All 88 Keys | The brightest star of each of the 88 constellations |
-| Messier Marathon | The 110 Messier objects |
-| Caldwell Done | The 109 Caldwell objects |
-| Far, Far Away | M31, M33, Large Magellanic Cloud, Small Magellanic Cloud, M51, M81, M82, M101, M104, C77 |
-| Wish Upon a Star | See a shooting star |
-| It's Raining Stars | Watch a meteor shower under a dark sky near its peak |
-| Demon's Wink | Select Algol when it is fainter than mag 3 |
-| Curtain Call | See an aurora above latitude 60° |
-| False Dawn | See the zodiacal light in a very dark sky |
-| Down Under | Acrux, Large Magellanic Cloud, Small Magellanic Cloud |
-| Rule of Thumb | Measure the angular distance between two objects |
-| Room for the Moon | The 28 brightest stars, one for each of the 28 lunar mansions |
-| Palace Hopping | One star each from Jamiwon, Taemiwon, and Cheonsiwon |
-| Full Ladle | The seven stars of Bukdu |
-| Live Long and Prosper | Noinseong (Canopus) |
-
-The four Cheonsang Yeolcha advancements are granted if the relevant stars are in the logbook. Stars selected while the Western constellations are displayed, and stars recorded earlier, also count. Auroras, the southern sky, and solar eclipses can all be reached by moving your location with `/cplace`, so these advancements can be earned without OP permission.
-
-## 10. Running a Multiplayer Server
+## 9. Running a Multiplayer Server
 
 ### 10.1 Basic Setup
 
@@ -602,7 +537,6 @@ The four Cheonsang Yeolcha advancements are granted if the relevant stars are in
 | Client-side computation | `/cwhen`, `/cfind`, and galaxy observing sketches are computed on each player's own client |
 | Meteors | Determined from each computer's clock, so everyone sees the same meteors. If computer clocks differ, meteors appear earlier or later by that difference |
 | Telescope pose | Others can see when a player is magnifying |
-| Observing logbook | Saved per player on the server |
 
 ### 10.2 Examples for Classes and Events
 
@@ -620,7 +554,7 @@ If an OP changes latitude or longitude with `/cele set`, every participant's `/c
 
 With the default settings, mob spawning and sleeping follow the vanilla 10-minute day cycle. The screen follows the Cheonsang Sun, so mobs can spawn even when the sky is bright. To match mob spawning and the night check to the actual solar altitude (−6°), set `vanillaNight` in `server.json` to true. The server has a per-second processing limit to prevent packet abuse.
 
-## 11. Performance
+## 10. Performance
 
 ### 11.1 Performance-Related Design
 
@@ -641,7 +575,7 @@ With the default settings, mob spawning and sleeping follow the vanilla 10-minut
 - When there are many meteors, lower `meteors` in `client.json`.
 - Use `/cbench` to measure FPS per scene on your own computer and compare.
 
-## 12. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
@@ -650,22 +584,20 @@ With the default settings, mob spawning and sleeping follow the vanilla 10-minut
 | On a server, the sky date is stuck at 2026-08-11, 0° 0° | The server does not have Cheonsang. Each player sets the date and location on the settings screen, or install Cheonsang on the server |
 | Meteors look slightly different from other players' | Meteors follow each computer's clock. Turning on automatic time sync in the operating system reduces the difference |
 | My observing location changed suddenly | An OP changed the world location with `/cele set`, which clears `/cplace`. Set it again with `/cplace` |
-| The wheel does not change magnification | While the notebook, settings, or advancements screen is open, the wheel goes to that screen. Check that the telescope is on (right-click) |
+| The wheel does not change magnification | While the settings screen is open, the wheel goes to that screen. Check that the telescope is on (right-click) |
 | The optics line is small or sits above the health bar | The screen is narrow or the GUI scale is large, so the line moved to avoid overlapping the hotbar |
 | Few stars are visible | Moonlight, twilight, light pollution, or dark adaptation. Check the Bortle value on the first line of `/cwhen` and the Moon line, and put down any light source in your hand |
 | Telescope stars stop at mag 13 | That is the limit of the main mod alone. Install cheonsang-extra to see down to mag 15.2 |
 | "Not found" from `/cfind` | Faint stars with no name or number cannot be searched. Check the spelling and the designation format (for example, α Lyr) |
-| An object is not added to the logbook | The object is below the horizon, beyond the limiting magnitude, or it is raining. Objects already recorded are not recorded again |
-| The solar eclipse advancement does not trigger | You must be under open sky, and more than about 5% of the Sun's diameter must be covered. Penumbral lunar eclipses do not count as lunar eclipses |
 | The long-exposure mode button is gray | The photo pack is not installed |
 | Solar transit is not at 12:00 | The Minecraft clock is local mean time, so it differs by the equation of time (up to about ±16 minutes) |
-| The sky is dark but no mobs spawn, or the reverse | Mob spawning follows the vanilla clock. See `vanillaNight` (section 10.3) |
+| The sky is dark but no mobs spawn, or the reverse | Mob spawning follows the vanilla clock. See `vanillaNight` (section 9.3) |
 | `/cele set` is refused in real time | While real time is on, set, rate, and reset are blocked. Run `/cele realtime off` first |
 | "Cheonsang ... error" at the top of the screen | Only that feature (Sky, Telescope, Find, Keys, and so on) is turned off for this session, and the game continues. It turns back on when you reconnect. Details are written to `latest.log` |
 | `/cplace` rejects the numbers | Use a period (.) as the decimal point. Latitude −90–90, longitude −180–180 |
 | The sky is vanilla in other dimensions | The Cheonsang sky works only in the Overworld |
 
-## 13. Known Limitations
+## 12. Known Limitations
 
 - Shader mods (Iris) are not supported.
 - If a server OP changes latitude or longitude with `/cele set`, everyone's `/cplace` is cleared.
@@ -683,7 +615,7 @@ With the default settings, mob spawning and sleeping follow the vanilla 10-minut
 - The calendar range is 2999 BC to AD 2999.
 - Stars fainter than mag 15.2 are included only in the Milky Way image. Pluto is not included.
 
-## 14. Data Sources
+## 13. Data Sources
 
 The detailed list is in CREDITS.txt inside the jar. The mod source code is under the MIT License, and the DSS-based sketch plates are under CC BY-NC-SA 4.0 (noncommercial).
 
@@ -704,7 +636,7 @@ Minecraft is a trademark of Mojang Synergies AB. Cheonsang is not affiliated wit
 
 ## Appendix A. Astronomical Observing Guide
 
-This appendix covers the concepts of real astronomical observing together with the matching features in Cheonsang. For telescope controls see section 5.2, for optical values section 6.2, for command syntax section 7, and for the observing logbook and advancements section 9.
+This appendix covers the concepts of real astronomical observing together with the matching features in Cheonsang. For telescope controls see section 5.2, for optical values section 6.2, and for command syntax section 7.
 
 ### A.1 Observing Conditions
 
@@ -746,7 +678,7 @@ Cheonsang's extinction coefficients are V 0.172, B 0.30, and R 0.09 mag/airmass.
 
 Scintillation (twinkling) is the rapid change in starlight intensity caused by fluctuations in the refractive index of the air, and it is strongest toward the horizon. In Cheonsang, stars twinkle to the naked eye and at low magnification, and the twinkling disappears at high magnification. Planets have an apparent disk, so they twinkle less in reality as well.
 
-Seeing is the amount by which the telescopic image is smeared by turbulence in the atmosphere, expressed as the diameter of a star image in arcseconds. At a typical mid-latitude site it is about 1–3″. Cheonsang fixes seeing at 1.5″ and adds a slight shimmer to the high-magnification view. Transparency refers to how clear the atmosphere is and is a separate condition from seeing. Cheonsang has no clouds and no day-to-day change in transparency, and nothing is recorded in the observing logbook while it is raining.
+Seeing is the amount by which the telescopic image is smeared by turbulence in the atmosphere, expressed as the diameter of a star image in arcseconds. At a typical mid-latitude site it is about 1–3″. Cheonsang fixes seeing at 1.5″ and adds a slight shimmer to the high-magnification view. Transparency refers to how clear the atmosphere is and is a separate condition from seeing. Cheonsang has no clouds and no day-to-day change in transparency.
 
 #### A.1.5 Moonlight and Twilight
 
@@ -811,7 +743,7 @@ At latitude φ, the transit altitude of an object at declination δ is 90° − 
 
 With your arm fully extended, the width of your little finger is about 1°, the width of your fist about 10°, and a hand span from thumb to little finger about 20°. The diameter of the full Moon is about 0.5°. The two stars at the end of the Big Dipper's bowl (Dubhe and Merak) are about 5° apart.
 
-In Cheonsang you can compare a hand estimate with a measured value using angular distance measurement (section 5.2, Ctrl + left-click). The first time you measure an angular distance, you get the advancement "Rule of Thumb".
+In Cheonsang you can compare a hand estimate with a measured value using angular distance measurement (section 5.2, Ctrl + left-click).
 
 #### A.3.3 Finding Constellations and Star Hopping
 
@@ -849,7 +781,7 @@ Planets have high surface brightness, so they can be observed even when the Moon
 
 | Target | Observing tips |
 | --- | --- |
-| Mercury | Never more than about 28° from the Sun, so it is seen low in twilight, in the western sky just after sunset or the eastern sky before sunrise. Find the time of greatest elongation with `/cwhen Mercury`. Finding it gives the advancement "Mercurial" |
+| Mercury | Never more than about 28° from the Sun, so it is seen low in twilight, in the western sky just after sunset or the eastern sky before sunrise. Find the time of greatest elongation with `/cwhen Mercury` |
 | Venus | The brightest planet. Shows phases like the Moon in a telescope, and the closer it is to Earth, the larger and thinner it looks |
 | Mars | Large and bright around opposition, when it comes close to Earth. A real map of the face turned toward Earth at that time is drawn |
 | Jupiter | Even at low magnification the four Galilean moons (Io, Europa, Ganymede, Callisto) appear in a line. At high magnification the belts and the Great Red Spot (at its longitude for that time) are visible |
@@ -871,7 +803,7 @@ Double stars are good targets for checking aperture and resolution. Pairs with c
 | ε Lyrae | 2.1″ / 2.4″ | The "Double Double": two stars at low magnification, each of which splits into two again at high magnification |
 | Sirius B | 11.1″ | Wide separation, but difficult because the primary is very bright |
 
-Among variable stars, Algol (β Persei) is an eclipsing binary that fades from mag 2.1 to 3.4 for about 10 hours every 2.8673 days. Mira (ο Ceti) varies between mag 3.4 and 9.3 with a period of about 332 days. In real observing, the magnitude is estimated by comparison with nearby comparison stars of known brightness. Selecting Algol when it is fainter than mag 3 gives the advancement "Demon's Wink".
+Among variable stars, Algol (β Persei) is an eclipsing binary that fades from mag 2.1 to 3.4 for about 10 hours every 2.8673 days. Mira (ο Ceti) varies between mag 3.4 and 9.3 with a period of about 332 days. In real observing, the magnitude is estimated by comparison with nearby comparison stars of known brightness.
 
 #### A.4.4 Star Clusters
 
@@ -922,7 +854,7 @@ A lunar eclipse is seen at the same moment from anywhere the Moon is up. Check t
 
 A meteor shower occurs when Earth passes through a trail of dust left by a comet. The meteors appear to spread out from one point in the sky, the radiant. The strength of a shower is given as the zenithal hourly rate (ZHR). The ZHR is the number of meteors one person could see in an hour under an ideal sky, with the radiant at the zenith and a limiting magnitude of 6.5. The number actually seen is reduced according to the radiant altitude and the sky brightness.
 
-Cheonsang computes the expected count per hour as ZHR × sin(radiant altitude) × moonlight correction. The number of meteors changes with the peak date, radiant altitude, moonlight, and rain, and in addition, 10 sporadic meteors appear per hour. Meteors run on the computer clock regardless of the compression rate of game time (section 10.1).
+Cheonsang computes the expected count per hour as ZHR × sin(radiant altitude) × moonlight correction. The number of meteors changes with the peak date, radiant altitude, moonlight, and rain, and in addition, 10 sporadic meteors appear per hour. Meteors run on the computer clock regardless of the compression rate of game time (section 9.1).
 
 | Shower | Code | ZHR | Peak | Parent body |
 | --- | --- | --- | --- | --- |
@@ -934,7 +866,7 @@ Cheonsang computes the expected count per hour as ZHR × sin(radiant altitude) �
 | Leonids | LEO | 15 | Mid-November | Comet Tempel–Tuttle |
 | Geminids | GEM | 150 | Mid-December | Asteroid 3200 Phaethon |
 
-Find the next peak with `/cwhen meteor [name]`. If the radiant is low from your location, a better place and a [go] button are added. Meteor showers do not need a telescope. In real observing, the practice is to find a place with a wide-open sky and look at the sky 40–60° away from the radiant. Your first meteor gives the advancement "Wish Upon a Star", and being in a spot open to the sky on a meteor shower peak night gives "It's Raining Stars".
+Find the next peak with `/cwhen meteor [name]`. If the radiant is low from your location, a better place and a [go] button are added. Meteor showers do not need a telescope. In real observing, the practice is to find a place with a wide-open sky and look at the sky 40–60° away from the radiant.
 
 #### A.5.5 Aurora
 
@@ -942,13 +874,13 @@ An aurora forms when charged particles from the solar wind follow Earth's magnet
 
 In Cheonsang, auroras appear at night (solar altitude below −10°) at latitudes above 60° (north or south), and are strongest at 67–75°. The strength of solar activity is chosen at random each night. The aurora is drawn along a layer 80–320 km high, green at the bottom and redder toward the top. The position of the auroral band is latitude 69° − 3° × strength. If the observer is on the equator side of the band, the aurora is seen in the poleward sky; if under the band, overhead; and if on the pole side of the band, in the equatorward sky. It weakens when moonlight is bright and fades as telescope magnification increases.
 
-Auroras are best viewed over a wide sky with the naked eye. Move your observing location with `/cplace 70 20` (near northern Norway), `/cplace longyearbyen`, or in the southern hemisphere `/cplace mcmurdo`, and wait several nights. Your first aurora gives the advancement "Curtain Call".
+Auroras are best viewed over a wide sky with the naked eye. Move your observing location with `/cplace 70 20` (near northern Norway), `/cplace longyearbyen`, or in the southern hemisphere `/cplace mcmurdo`, and wait several nights.
 
 #### A.5.6 Zodiacal Light and Gegenschein
 
 The zodiacal light is a faint column of light caused by interplanetary dust scattering sunlight. It rises at a slant from the horizon along the ecliptic. At northern mid-latitudes it is seen best in the western sky after sunset in spring and in the eastern sky before sunrise in autumn, when the ecliptic makes a steep angle with the horizon. The gegenschein is a fainter glow seen directly opposite the Sun.
 
-In Cheonsang these appear only in a very dark sky, with the Sun below −15°, no Moon, and Bortle below 4. Your first sighting gives the advancement "False Dawn".
+In Cheonsang these appear only in a very dark sky, with the Sun below −15°, no Moon, and Bortle below 4.
 
 #### A.5.7 Other Forecasts
 
@@ -1006,15 +938,15 @@ Targets in the southern sky can be seen only by moving your observing location. 
 
 | Target | Notes |
 | --- | --- |
-| Acrux in Crux, the Large Magellanic Cloud, the Small Magellanic Cloud | Finding all three gives the advancement "Down Under" |
+| Acrux in Crux, the Large Magellanic Cloud, the Small Magellanic Cloud | |
 | C80 ω Cen, C106 47 Tuc | The brightest globular clusters |
 | C92 Eta Carinae Nebula, C94 Jewel Box | |
-| Canopus (Noinseong) | Declination about −52.7°. In the northern hemisphere it rises low above the southern horizon only south of about 37°N. Can be seen from `/cplace 33.5 126.5` (near Jeju). Finding it gives the advancement "Live Long and Prosper" |
+| Canopus (Noinseong) | Declination about −52.7°. In the northern hemisphere it rises low above the southern horizon only south of about 37°N. Can be seen from `/cplace 33.5 126.5` (near Jeju) |
 | C77 Centaurus A | A bright peculiar galaxy in the southern sky |
 
 ### A.7 Observing Records
 
-The rules for the observing logbook, observing notebook, and advancements are in section 9. Real observers record the observing conditions with their results so that others can reproduce them. Most of these items can be read directly from Cheonsang's screens and command output.
+Real observers record the observing conditions with their results so that others can reproduce them. Cheonsang's screens and commands show current object information and forecasts.
 
 | Item | Where to find it in Cheonsang |
 | --- | --- |
@@ -1040,7 +972,7 @@ Goal: Record the changing positions of the Galilean moons to find their orbital 
 5. Plot angular distance against time. The result is a sine curve: one cycle is the orbital period, and the maximum angular distance corresponds to the orbital radius.
 6. Find the orbital radius a = Earth–Jupiter distance × maximum angular distance (in radians), then compute Jupiter's mass from M = 4π²a³ / (G T²).
 
-Reference values: the actual orbital periods are Io 1.769 days, Europa 3.551 days, Ganymede 7.155 days, and Callisto 16.69 days, and Jupiter's mass is about 1.90 × 10²⁷ kg. When a moon goes behind Jupiter it shows "Currently hidden", so record those times as well. Selecting all four moons gives the advancement "Starry Messenger".
+Reference values: the actual orbital periods are Io 1.769 days, Europa 3.551 days, Ganymede 7.155 days, and Callisto 16.69 days, and Jupiter's mass is about 1.90 × 10²⁷ kg. When a moon goes behind Jupiter it shows "Currently hidden".
 
 Discussion topics: What Galileo argued from the same observations in 1610, and where the measurement errors come from.
 
@@ -1112,7 +1044,7 @@ Points to observe: The brightness stays constant, then fades from mag 2.1 to 3.4
 
 ### A.9 Scope of the Model
 
-Observations in Cheonsang are simulations produced by a computational model, and the model's simplifications and accuracy are summarized in section 13. In class, it is worth covering the following differences among them.
+Observations in Cheonsang are simulations produced by a computational model, and the model's simplifications and accuracy are summarized in section 12. In class, it is worth covering the following differences among them.
 
 - Sky brightness applies the value at a single point at the zenith to the whole sky, so the light-pollution dome toward the horizon and the brightness near the Moon are not reflected in a direction-dependent limiting magnitude.
 - Dark adaptation recovers in 30 seconds, shorter than in reality (20–30 minutes).

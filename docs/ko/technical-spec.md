@@ -29,8 +29,7 @@
 | 실행 환경 | `environment: "*"` (서버·클라이언트 공통 jar, 클라이언트 단독 실행 가능) |
 | 라이선스 | 코드 MIT. 데이터 파일은 원 자료의 라이선스를 따름 (CREDITS.txt, 5.14절) |
 | 소스 규모 | Kotlin 56개·Java 13개 파일, 10,918줄 (VSOP87 계수 파일 포함), GLSL 셰이더 11개 |
-| 번역 | `ko_kr`·`en_us` 각 546개 키. 게임 언어가 한국어면 한국어, 그 밖에는 영어 |
-| 발전과제 | 24개 (`data/cheonsang/advancement/`) |
+| 번역 | `ko_kr`·`en_us` 각 470개 키. 게임 언어가 한국어면 한국어, 그 밖에는 영어 |
 | 모드 아이콘 | `assets/cheonsang/icon.png` 128×128 (직접 그린 그림, CC BY-SA 4.0). 확장팩은 `assets/cheonsang_extra/icon.png` 128×128 |
 | 배포 파일 크기 | 본체 `cheonsang-2.0.0.jar` 111.5 MB, 확장팩 `cheonsang-extra-1.0.1.jar` 434.0 MB |
 
@@ -61,15 +60,15 @@
 
 | 진입점 | 클래스 | 역할 |
 | --- | --- | --- |
-| `main` | `kr.inf.cheonsang.Cheonsang` | 서버·공통 초기화: `SkyServer`, `LogServer`, `PoseServer`, `VanillaSync`, `Telescope` 등록 |
+| `main` | `kr.inf.cheonsang.Cheonsang` | 서버·공통 초기화: `SkyServer`, `PoseServer`, `VanillaSync`, `Telescope` 등록 |
 | `client` | `kr.inf.cheonsang.client.CheonsangClient` | 렌더링, 클라이언트 명령, 키 매핑, 패킷 수신, 설정 파일 |
 | `modmenu` | `kr.inf.cheonsang.client.ModMenuEntry` | Mod Menu 설정 화면 연결 |
 
 | 소스 세트 | 패키지 | 주요 구성 |
 | --- | --- | --- |
-| main (공통) | `kr.inf.cheonsang` | `SkyServer`(하늘 상태·`/cele`), `LogServer`(관측 도감), `PoseServer`(망원경 자세), `RateLimit`, `RealTime`(실시간 도시 13곳), `VanillaSync`(바닐라 달 위상·밤), `Telescope`(아이템), `NextEvents`, `L`(번역) |
+| main (공통) | `kr.inf.cheonsang` | `SkyServer`(하늘 상태·`/cele`), `PoseServer`(망원경 자세), `RateLimit`, `RealTime`(실시간 도시 13곳), `VanillaSync`(바닐라 달 위상·밤), `Telescope`(아이템), `NextEvents`, `L`(번역) |
 | main (공통) | `kr.inf.cheonsang.astro` | `AstroMath`(벡터·행렬·ΔT), `Calendar`, `SkyClock`, `Frames`, `Sun`, `Moon`·`MoonTerms`, `Planets`·`Vsop87Data`, `Eclipse`, `RiseSet`, `Events`, `WhenCalc` |
-| client | `kr.inf.cheonsang.client` | `TelescopeView`·`TelescopeHud`·`Optics`(망원경), `Visibility`(가시성 모델), `AmbientLight`(빛공해·암순응·오로라 조건), `InfoCard`, `FindGuide`(`/cfind`), `CWhen`(`/cwhen`), `Place`(`/cplace`), `LogBook`·`NotebookScreen`, `SettingsScreen`, `Bench`, `Safety`, `PoseSync` |
+| client | `kr.inf.cheonsang.client` | `TelescopeView`·`TelescopeHud`·`Optics`(망원경), `Visibility`(가시성 모델), `AmbientLight`(빛공해·암순응·오로라 조건), `InfoCard`, `FindGuide`(`/cfind`), `CWhen`(`/cwhen`), `Place`(`/cplace`), `SettingsScreen`, `Bench`, `Safety`, `PoseSync` |
 | client | `kr.inf.cheonsang.client.sky` | `CheonsangSky`(하늘 렌더 본체), `StarCatalog`, `DeepStars`, `TileSky`, `PhotoSky`, `GalaxySketch`, `Meteors`, `SmallBodies`, `SkyData`, `Packs`, `VramBudget`, `VisualDay`, `GrayTexture` |
 
 천문 계산(`astro`)은 공통 소스 세트에 있어 서버 명령(`/cele`, 다음 현상 계산)과 클라이언트 렌더링이 같은 코드를 씁니다.
@@ -89,8 +88,6 @@
 | --- | --- | --- | --- |
 | `cheonsang:sky4` | 서버 → 클라이언트 | epochTick (VAR_LONG), epochJd (DOUBLE), rate (DOUBLE), lat (DOUBLE), lon (DOUBLE), city (STRING_UTF8) | 차원별 하늘 시계·압축률·월드 기본 위치·실시간 도시 |
 | `cheonsang:placegen` | 서버 → 클라이언트 | gen (VAR_INT) | 월드 기본 위치 변경 번호. 받은 값이 이전과 다르면 클라이언트가 자기 `/cplace`를 해제 |
-| `cheonsang:log_add` | 클라이언트 → 서버 | key (UTF-8 ≤96), name (UTF-8 ≤96), zoom (DOUBLE) | 관측 도감 등록, `adv:` 접두어는 발전과제 조건 부여 |
-| `cheonsang:log_all` | 서버 → 클라이언트 | lines (UTF-8 ≤256 문자열 목록, 최대 20,000줄) | 플레이어 도감 전체 |
 | `cheonsang:pose_set` | 클라이언트 → 서버 | on (BOOL) | 망원경 확대(×1 초과) 중인지 |
 | `cheonsang:pose` | 서버 → 클라이언트 | id (UUID), on (BOOL) | 다른 플레이어의 망원경 자세 |
 
@@ -101,11 +98,9 @@
 | 위치 | 형식 | 내용 |
 | --- | --- | --- |
 | 월드 저장 `cheonsang:sky` | `SavedData`, 문자열 → 실수 목록 | 차원 ID별 [기준 틱, 기준 율리우스일, 압축률, 위도] (+ 실시간 모드일 때 도시 번호와 켜기 전 값), `#lon` 키에 경도, `#gen` 키에 위치 변경 번호 |
-| 월드 저장 `cheonsang:log` | `SavedData`, UUID → (항목 키 → "율리우스일\|배율\|이름") | 관측 도감. 한 사람 최대 15,000항목 |
 | `config/cheonsang/server.json` | JSON | `rate`(1.0), `lat`(0), `lon`(0), `vanillaMoon`(true), `vanillaNight`(false) |
 | `config/cheonsang/client.json` | JSON | `enabled`(true), `nakedEyeLimit`(6.0, 4\~6.5), `meteors`(1.0, 0\~5), `display`(설정 화면 값) |
 | `config/cheonsang/places.json` | JSON | 개인 관측 위치, 서버·월드별 |
-| `config/cheonsang/log_local.json` | JSON | 서버에 천상이 없을 때의 도감 |
 
 ### 3.5 확장팩 구조
 
@@ -216,7 +211,6 @@ PyEphem 대조 최대 오차는 다음과 같습니다.
 | 화면 월식 | Meeus 54장 그림자 반지름, Danjon 1.02 확대. 본영 = 1.02(0.998340π − s + πₛ), 반영 = 1.02(0.998340π + s + πₛ). π: 달 지평시차, s: 해 겉보기 반지름, πₛ = 8.794″/거리(AU) |
 | 일식 예보 | 삭마다 그림자 축과 지구 타원체가 만나는 중심선을 1분 간격으로 계산, 중심선 점마다 관측자 시차로 개기·금환 판정 (도중에 바뀌면 혼성). 지속 시간 10초 간격. 탐색 범위 60년 |
 | 월식 예보 | 보름마다 본영·반영 피복률로 개기·부분·반영 구분, P1·U1·U2·최대·U3·U4·P4 시각 |
-| 도감 기록 기준 | 일식: 지평선 위 해 지름의 약 5% 초과 가림. 월식: 본영 2% 초과 (반영월식 제외) |
 
 NASA 자료와 대조한 결과는 다음과 같습니다.
 
@@ -247,7 +241,7 @@ NASA 자료와 대조한 결과는 다음과 같습니다.
 
 ### 4.12 가시성 모델
 
-한 함수가 관측 방향의 한계등급(limiting magnitude)을 계산하고, 별 표시·면광원 진하기·도감 판정이 모두 이 값을 씁니다. 적용 순서는 고정입니다.
+한 함수가 관측 방향의 한계등급(limiting magnitude)을 계산하고, 별 표시와 면광원 진하기가 이 값을 씁니다. 적용 순서는 고정입니다.
 
 | 단계 | 식·값 | 출처 |
 | --- | --- | --- |
@@ -758,7 +752,6 @@ jar 전체는 41,901개 항목(`fabric.mod.json`, `CREDITS.txt`, `LICENSE.txt`, 
 | `/cwhen lunar total\|partial\|penumbral` | 다음 월식 |
 | `/cwhen meteor [QUA\|LYR\|ETA\|PER\|ORI\|LEO\|GEM]` | 다음 유성우 극대 |
 | `/cwhen full` · `new` · `conj` · `next` | 다음 보름·삭·행성 근접·다음 현상 목록 |
-| `/clog` · `/clog list` | 관측 수첩 열기, 도감 요약 |
 | `/cbench` · `/cbench stop` | 성능 측정 |
 | `/cvis` · `/cvis <효과> on\|off` | 가시성 효과 상태·켜고 끄기 (저장 안 함). 효과: twilight, moon, airglow, extinction, refraction, colorloss, light, dark, zodiacal, twinkle, aurora |
 
@@ -776,7 +769,7 @@ jar 전체는 41,901개 항목(`fabric.mod.json`, `CREDITS.txt`, `LICENSE.txt`, 
 | 추적 고정 | 왼쪽 Alt + 좌클릭 |
 | 각거리 | Ctrl + 좌클릭 |
 | 선택 해제 | Shift + 좌클릭 |
-| 천상 설정 화면 · 관측 수첩 | 지정 없음 (조작 설정 "기타"에서 지정) |
+| 천상 설정 화면 | 지정 없음 (조작 설정 "기타"에서 지정) |
 
 망원경 아이템 `cheonsang:telescope`는 최대 1개씩 쌓이며 크리에이티브 "도구 및 유틸리티" 탭의 망원경(spyglass) 뒤에 놓입니다. 조합법은 위 가운데 유리판, 가운데 망원경(spyglass), 아래 줄 철 주괴 3개입니다.
 
@@ -794,8 +787,6 @@ jar 전체는 41,901개 항목(`fabric.mod.json`, `CREDITS.txt`, `LICENSE.txt`, 
 | --- | --- |
 | 하늘 시계·위치 | 서버가 차원별로 저장하고 접속 다음 틱, 차원 이동 시, 값 변경 시 `sky4`를 보냄 |
 | 개인 위치 | 클라이언트에만 저장. 월드 기본 위치(위도·경도)가 바뀌면 서버의 `#gen` 번호가 1 증가하고, `placegen`을 받은 클라이언트는 번호가 다르면 `/cplace`를 해제 (접속하지 않았던 플레이어도 다음 접속 때). 날짜·시각·압축률만 바뀌면 유지 |
-| 관측 도감 | 클라이언트가 가시성을 판정해 `log_add` 송신, 서버가 그 순간의 하늘 율리우스일을 붙여 저장. 목록 재전송은 1초(20틱)에 한 번 모아서 |
-| 발전과제 | 도감에서 판정, `adv:<id>/<조건>` 키로 서버가 조건 부여 |
 | 망원경 자세 | 상태가 바뀔 때만 `pose_set` 송신, 서버가 다른 플레이어에게 `pose` 중계. 새 접속자에게 현재 확대 중인 목록 전송, 퇴장 시 해제. 저장 안 함 |
 | 유성 | 패킷 없음. 각 클라이언트가 컴퓨터 시계(`System.currentTimeMillis`)의 0.2초 칸 번호로 같은 난수를 만들어, 시계가 맞는 클라이언트끼리 같은 유성 |
 | 서버에 천상이 없을 때 | 클라이언트가 기본값(2026-08-11, 0°·0°, 압축률 1) 또는 설정 화면 값으로 단독 계산 |
@@ -806,26 +797,19 @@ jar 전체는 41,901개 항목(`fabric.mod.json`, `CREDITS.txt`, `LICENSE.txt`, 
 
 | 패킷 | burst | 초당 | 비고 |
 | --- | --- | --- | --- |
-| `log_add` (도감·발전과제) | 300 | 20 | 접속 직후 몰아서 보내는 양보다 넉넉한 값 |
 | `pose_set` (망원경 자세) | 6 | 2 | 끄기(on = false)는 제한 없이 받음 |
 
 ### 9.3 입력 검증
 
 | 항목 | 규칙 |
 | --- | --- |
-| 도감 키 | `^[A-Za-z]+:[^\t\n\|]{1,80}$` 또는 `sun`·`moon` |
-| 이름 | 탭·줄바꿈·`\|` 치환, 80자로 자름 |
-| 배율 | 1\~1000으로 제한 |
-| 항목 수 | 한 사람 최대 15,000, 이미 있는 키는 무시 (최초 발견만 기록) |
-| 발전과제 ID·조건 | `^[a-z0-9_]{1,32}$` · `^[A-Za-z0-9_]{1,32}$`, 서버에 존재하는 `cheonsang:` 발전과제만 |
-| 문자열 길이 | 패킷 코덱에서 key·name 96바이트, 목록 문자열 256바이트·최대 20,000줄 |
 | 서버 설정 | `rate` 0.01\~1000, `lat` −90\~90, `lon` −180\~180으로 제한 |
 
 ---
 
 ## 10. 장애 격리
 
-클라이언트 기능은 하늘, 망원경, 찾기, 키, 오늘 밤, 수첩, 도감 단위로 나뉘어 `Safety.run`으로 감싸져 있습니다. 한 기능에서 예외가 나면 그 기능만 이번 접속 동안 끄고 기본 하늘이나 바닐라 동작으로 되돌리며, 전체 스택은 `latest.log`에 한 번 기록하고 화면에 기능 이름과 함께 오류를 표시합니다. `VirtualMachineError`는 다시 던집니다. 서버에 다시 접속하면 모든 기능이 다시 켜집니다. 셰이더를 쓸 수 없는 환경에서는 은하 스케치가 단순 빛무리로 대체됩니다.
+클라이언트 기능은 하늘, 망원경, 찾기, 키, 오늘 밤 단위로 나뉘어 `Safety.run`으로 감싸져 있습니다. 한 기능에서 예외가 나면 그 기능만 이번 접속 동안 끄고 기본 하늘이나 바닐라 동작으로 되돌리며, 전체 스택은 `latest.log`에 한 번 기록하고 화면에 기능 이름과 함께 오류를 표시합니다. `VirtualMachineError`는 다시 던집니다. 서버에 다시 접속하면 모든 기능이 다시 켜집니다. 셰이더를 쓸 수 없는 환경에서는 은하 스케치가 단순 빛무리로 대체됩니다.
 
 ---
 

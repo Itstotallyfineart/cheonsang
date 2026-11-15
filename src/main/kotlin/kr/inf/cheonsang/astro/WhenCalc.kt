@@ -18,7 +18,7 @@ object WhenCalc {
     private const val BA = 1.0 - FLAT
     private const val E2 = FLAT * (2.0 - FLAT)
     const val YEARS = 60.0
-    /** 일식으로 칠 겹침 — 해 지름의 약 5% (도감 판정·Events 와 같음) */
+    /** 일식으로 칠 겹침 — 해 지름의 약 5% (Events와 같음) */
     private const val SOLAR_MARGIN = 0.1
 
     // ── 공통 ──

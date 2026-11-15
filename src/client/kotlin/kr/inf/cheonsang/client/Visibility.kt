@@ -3,9 +3,6 @@ package kr.inf.cheonsang.client
 import kr.inf.cheonsang.L
 import kr.inf.cheonsang.astro.Vec3
 import kr.inf.cheonsang.client.sky.CheonsangSky
-import kr.inf.cheonsang.client.sky.SkyData
-import kr.inf.cheonsang.client.sky.VariableStars
-import net.minecraft.client.Minecraft
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.exp
@@ -18,7 +15,7 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 통합 가시성 모델 — 하늘 그리기·관측 도감이 같은 함수를 씀.
+ * 통합 가시성 모델 — 하늘 그리기와 천체 표시가 같은 함수를 씀.
  *
  * 적용 순서 (고정):
  *  ① 천체 고유 밝기 (등급 m, 면광원은 표면 밝기 S 등/초각²)
@@ -59,9 +56,6 @@ object Visibility {
     /** 손 망원경 구경 (mm) · 어두운 곳 눈동자 (mm) */
     const val APERTURE_MM = 80.0
     const val EYE_PUPIL_MM = 7.0
-    /** 기하 고도 이보다 높아야 보임 (굴절 약 0.5°) */
-    private const val HORIZON_DEG = -0.5
-
     fun altitude(w: Vec3): Double = Math.toDegrees(asin(w.normalized().y.coerceIn(-1.0, 1.0)))
 
     /** 등/초각² ↔ nL (Schaefer 1990) */
@@ -241,54 +235,6 @@ object Visibility {
 
     /** 색 빠짐: 어두운 면광원은 회색 (표면 밝기 20 → 23 등/초각² 사이에서 0 → 1) */
     fun colorLoss(surfaceEff: Double): Double = if (on(Fx.COLORLOSS)) ((surfaceEff - 20.0) / 3.0).coerceIn(0.0, 1.0) else 0.0
-
-    // ── 도감 판정 ──
-    private fun rain(): Float = Minecraft.getInstance().level?.let { 1f - it.getRainLevel(1f) * 0.9f } ?: 1f
-    private fun jdNow() = CheonsangSky.clock.jd((Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())
-
-    private fun pointOk(mag: Double, w: Vec3) = effMag(mag, w) <= pointLimit(w)
-
-    /** 고른 천체가 지금 실제로 보이는지 */
-    internal fun visible(t: Target): Boolean {
-        if (!CheonsangSky.isActive()) return false
-        val w = t.dir()?.normalized() ?: return false
-        if (altitude(w) < HORIZON_DEG) return false
-        if (rain() < 0.3f) return false
-        val k = t.key
-        return when {
-            k == "sun" -> true
-            k == "moon" || k.startsWith("moonf:") -> CheonsangSky.moonIllum > 0.01 || CheonsangSky.lunarUmbra > 0f
-            k.startsWith("planet:") -> CheonsangSky.planets.firstOrNull { "planet:" + it.planet.name == k }?.let { pointOk(it.mag, w) } ?: false
-            k.startsWith("asteroid:") -> CheonsangSky.asteroids.firstOrNull { "asteroid:" + it.body.en == k }?.let { pointOk(it.mag, w) } ?: false
-            k.startsWith("jovian:") -> pointOk(5.7, w)
-            k.startsWith("saturnian:") -> CheonsangSky.saturnMoonsWorld().firstOrNull { "saturnian:" + it.first.name == k }?.let { pointOk(it.first.mag, w) } ?: false
-            k.startsWith("dso:") -> SkyData.dso.firstOrNull { "dso:" + it.id == k }?.let { o ->
-                if (o.mag >= 90) false else {
-                    val minor = max(o.minor, o.major * 0.5)
-                    val s = o.mag + 2.5 * log10(Math.PI / 4 * o.major * minor * 3600)
-                    // 하늘 밝기만큼 문턱이 낮아짐 + 소광
-                    val i = diffuseIntensity(o.mag + extinction(altitude(w)) + skyLoss(w), s + extinction(altitude(w)) + skyLoss(w), o.major, zoomNow())
-                    i > 0.0
-                }
-            } ?: false
-            k.startsWith("star:") -> {
-                val cat = CheonsangSky.catalog ?: return false
-                val i = k.removePrefix("star:").toIntOrNull() ?: return false
-                if (i !in 0 until cat.realCount) return false
-                val mag = VariableStars.byHip[cat.hip[i]]?.mag(jdNow()) ?: cat.mag[i].toDouble()
-                pointOk(mag, w)
-            }
-            else -> false
-        }
-    }
-
-    /** 사람이 하늘을 볼 수 있는 자리인지 (머리 위가 트임) — 일식·월식·유성우 자동 등록 */
-    fun skyOpen(): Boolean {
-        val mc = Minecraft.getInstance()
-        val p = mc.player ?: return false
-        val level = mc.level ?: return false
-        return level.canSeeSky(net.minecraft.core.BlockPos.containing(p.getEyePosition()))
-    }
 
     /** `/cvis` — 효과 목록 */
     fun state(): String = Fx.entries.joinToString(" | ") { L.t("cheonsang.visibility.1", it.label, it.id, if (on(it)) L.t("cheonsang.visibility.4") else L.t("cheonsang.visibility.3")) } +
