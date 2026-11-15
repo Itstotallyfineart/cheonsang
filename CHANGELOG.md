@@ -23,6 +23,9 @@
 
 ## 2.0: Public release
 
+### 2.0.1 (2026-11-16)
+- Observing notebook, logbook, and advancements removed from view: the observing notebook, `/clog` and `/clog list`, the Cheonsang advancement tab and its toasts are gone. Observations are still recorded internally
+
 ### 2.0.0 (2026-11-15)
 - Telescope optics line at the lower left (aperture, focal length, eyepiece, magnification) no longer hidden by the hotbar: shrunk to fit the empty width left of the hotbar, and moved above the health bar if it still does not fit
 - Meteors based on the computer clock: in multiplayer, the same time gives the same meteors

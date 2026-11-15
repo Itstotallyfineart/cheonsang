@@ -22,7 +22,7 @@ Change history: [CHANGELOG.md](CHANGELOG.md).
 
 ## Download
 See [Releases](../../releases).
-- `cheonsang-2.0.0.jar`: the mod (required on client and server)
+- `cheonsang-2.0.1.jar`: the mod (required on client and server)
 - `cheonsang-extra-1.0.1.jar`: optional pack with Gaia stars to magnitude 15.2, Milky Way 16K/32K and an 8K Moon map (about 434 MB)
 
 ## Requirements

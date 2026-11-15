@@ -54,6 +54,7 @@ object TelescopeFilter {
     lateinit var apertureKey: CheonsangKey
     private lateinit var settingsKey: CheonsangKey
     private var keysChecked = false
+    val extraKeys = ArrayList<CheonsangKey>()
 
     /**
      * 26.3 은 키 번호가 SDL 스캔코드(N=17, 왼쪽 Alt=226, 없음=0) — "없음=-1" 이 저장되면 KeyMapping.setAll 이 범위 밖을 읽어 튕김.

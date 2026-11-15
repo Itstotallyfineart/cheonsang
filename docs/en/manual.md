@@ -1,6 +1,6 @@
-# Cheonsang 2.0.0 User Manual
+# Cheonsang 2.0.1 User Manual
 
-For Cheonsang 2.0.0 · 2026-11-15
+For Cheonsang 2.0.1 · 2026-11-16
 
 ## Contents
 
@@ -53,7 +53,7 @@ Development and testing used Fabric API 0.165.0+26.3 and Fabric Language Kotlin 
 
 1. Use the Fabric installer to install Fabric Loader (0.20.1 or later) for Minecraft 26.3.
 2. Put the Fabric API and Fabric Language Kotlin jars in the `mods` folder of your game directory.
-3. Put the Cheonsang main jar (`cheonsang-2.0.0.jar`, 111.5 MB) in the `mods` folder. Delete any cheonsang jar from an earlier version.
+3. Put the Cheonsang main jar (`cheonsang-2.0.1.jar`, 111.4 MB) in the `mods` folder. Delete any cheonsang jar from an earlier version.
 4. If needed, put Mod Menu and the extension pack in the same folder.
 5. Launch the game with the Fabric profile.
 
@@ -70,11 +70,11 @@ The extension pack `cheonsang-extra-1.0.1.jar` (434.0 MB) is optional and goes i
 
 The old Gaia star pack (`cheonsang-stars-*.jar`) contains the same files as the extension pack, so you can remove it. Leaving both installed causes no problems. The status of installed packs is shown at the bottom of the Cheonsang settings screen.
 
-Long-exposure (photo) mode requires a separate photo pack (`cheonsang-ultra`). The 2.0.0 release bundle consists of the main mod and cheonsang-extra and does not include the photo pack. If the photo pack is already installed, it keeps working.
+Long-exposure (photo) mode requires a separate photo pack (`cheonsang-ultra`). The 2.0.1 release bundle consists of the main mod and cheonsang-extra and does not include the photo pack. If the photo pack is already installed, it keeps working.
 
 ### 2.4 Server Installation
 
-On a multiplayer server, put the Cheonsang main mod, Fabric API, and Fabric Language Kotlin in the server's `mods` folder. The server and every player who connects must all have the same 2.0.0 installed. The extension pack only affects rendering, so it needs to go on each client only.
+On a multiplayer server, put the Cheonsang main mod, Fabric API, and Fabric Language Kotlin in the server's `mods` folder. The server and every player who connects must all have the same 2.0.1 installed. The extension pack only affects rendering, so it needs to go on each client only.
 
 The sky also works on the client alone when the server does not have Cheonsang. In that case each player sees the sky for the date and location set on their own settings screen (default 2026-08-11, 0° 0°).
 
@@ -531,7 +531,7 @@ The file is `config/cheonsang/server.json`. It is read when the server starts.
 
 | Item | Details |
 | --- | --- |
-| Version | Cheonsang 2.0.0 on the server and every client |
+| Version | Cheonsang 2.0.1 on the server and every client |
 | Sky synchronization | The server sends the date and time, compression rate, world default location, and real-time city to connected players |
 | Personal location | Each player sets their own with `/cplace`. No OP needed, no effect on others |
 | Client-side computation | `/cwhen`, `/cfind`, and galaxy observing sketches are computed on each player's own client |
@@ -580,7 +580,7 @@ With the default settings, mob spawning and sleeping follow the vanilla 10-minut
 | Symptom | Cause and fix |
 | --- | --- |
 | The game does not start | If Iris is installed as well, remove it. Check that Java 25, Fabric Loader 0.20.1 or later, Fabric API, and Fabric Language Kotlin are present |
-| On a server, my sky does not match other players' | The server and client versions differ. Bring everything to 2.0.0 |
+| On a server, my sky does not match other players' | The server and client versions differ. Bring everything to 2.0.1 |
 | On a server, the sky date is stuck at 2026-08-11, 0° 0° | The server does not have Cheonsang. Each player sets the date and location on the settings screen, or install Cheonsang on the server |
 | Meteors look slightly different from other players' | Meteors follow each computer's clock. Turning on automatic time sync in the operating system reduces the difference |
 | My observing location changed suddenly | An OP changed the world location with `/cele set`, which clears `/cplace`. Set it again with `/cplace` |

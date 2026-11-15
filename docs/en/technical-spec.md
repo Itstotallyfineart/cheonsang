@@ -1,6 +1,6 @@
-# Cheonsang 2.0.0 Technical Specification
+# Cheonsang 2.0.1 Technical Specification
 
-Based on Cheonsang 2.0.0 · 2026-11-15
+Based on Cheonsang 2.0.1 · 2026-11-16
 
 ## Contents
 
@@ -31,7 +31,7 @@ Cheonsang is a Fabric mod that replaces the sky of the Minecraft Java Edition Ov
 | Source size | 56 Kotlin and 13 Java files, 10,918 lines (including the VSOP87 coefficient file), 11 GLSL shaders |
 | Translations | 470 keys each in `ko_kr` and `en_us`. Korean when the game language is Korean, English otherwise |
 | Mod icon | `assets/cheonsang/icon.png` 128×128 (hand-drawn, CC BY-SA 4.0). Expansion pack: `assets/cheonsang_extra/icon.png` 128×128 |
-| Release file size | Main mod `cheonsang-2.0.0.jar` 111.5 MB, expansion pack `cheonsang-extra-1.0.1.jar` 434.0 MB |
+| Release file size | Main mod `cheonsang-2.0.1.jar` 111.4 MB, expansion pack `cheonsang-extra-1.0.1.jar` 434.0 MB |
 
 ---
 
@@ -284,7 +284,7 @@ The formulas were validated by reimplementing them in Python and comparing the f
 
 ### 5.1 Basis of measurement
 
-This section covers the external data included in the main mod `cheonsang-2.0.0.jar` and the expansion pack `cheonsang-extra-1.0.1.jar`, and the external material used as coefficients in the formulas. For each, it lists the source, edition, license, original size, processing method, output size, and validation results. The figures are based on the following.
+This section covers the external data included in the main mod `cheonsang-2.0.1.jar` and the expansion pack `cheonsang-extra-1.0.1.jar`, and the external material used as coefficients in the formulas. For each, it lists the source, edition, license, original size, processing method, output size, and validation results. The figures are based on the following.
 
 - Size and count of output files: measured directly by extracting the release jars. Counts of binary files were read from the count field in the file header. File sizes are in bytes.
 - Original size: measured directly from the files in `cheonsang/_data_raw/`.

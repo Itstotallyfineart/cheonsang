@@ -25,12 +25,19 @@ class NotebookScreen(private var tab: Int) : Screen(Component.literal(L.t("cheon
         private lateinit var notebookKey: TelescopeFilter.CheonsangKey
 
         fun register() {
-            notebookKey = TelescopeFilter.CheonsangKey("key.cheonsang.notebook", InputConstants.UNKNOWN.value, null)
-                .also { KeyMappingHelper.registerKeyMapping(it) }
+            notebookKey = TelescopeFilter.CheonsangKey(
+                "key.cheonsang.notebook",
+                InputConstants.UNKNOWN.value,
+                null
+            ).also { KeyMappingHelper.registerKeyMapping(it) }
             TelescopeFilter.extraKeys += notebookKey
             ClientTickEvents.END_CLIENT_TICK.register { mc ->
                 Safety.run(Safety.KEYS, Unit) {
-                    while (notebookKey.consumeClick()) if (mc.gui.screen() == null) open(0)
+                    while (notebookKey.consumeClick()) {
+                        if (mc.gui.screen() == null) {
+                            open(0)
+                        }
+                    }
                 }
             }
         }
