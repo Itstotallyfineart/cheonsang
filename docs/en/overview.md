@@ -1,6 +1,6 @@
-# Cheonsang 2.0.0 overview
+# Cheonsang 2.0.1 overview
 
-Cheonsang 2.0.0 · 2026-11-15
+Cheonsang 2.0.1 · 2026-11-16
 
 Cheonsang: an astronomical simulation mod for Minecraft  
 Astronomical Sky Simulation for Minecraft: Java Edition · Minecraft 26.3 · Fabric · Kotlin · itsnotfineart
@@ -31,7 +31,7 @@ The aim is to make the night sky in the game follow the same rules as real obser
 
 ### Comparison with the default Minecraft sky
 
-| Item | Default Minecraft | Cheonsang 2.0.0 |
+| Item | Default Minecraft | Cheonsang 2.0.1 |
 | --- | --- | --- |
 | Stars | Decorative dots unrelated to real stars | Real positions, magnitudes, and colors from the HYG, Tycho-2, and Gaia DR3 catalogs |
 | Sun and Moon | The same path every day, driven by game time | Real positions from Meeus's formulas, altitude changes with season and latitude, lunar phases and libration |
@@ -69,7 +69,7 @@ The sky in Cheonsang is built from public astronomical catalogs. Stars visible t
 | Variable stars | General Catalogue of Variable Stars (GCVS) | 2 | Light-curve models of Algol (eclipsing binary, period 2.8673 days, magnitude 2.1–3.4) and Mira (magnitude 3.4–9.3) |
 | Named famous stars | HYG v4.1, SIMBAD | 18 | Famous objects without proper names, such as Proxima Centauri, Barnard's Star, and Cygnus X-1 |
 
-Tycho-2 and Gaia DR3 are linked star by star through the cross-match table published with Gaia DR3, and stars with a match use the Gaia magnitude, color, and position. Gaia G magnitudes are converted to Johnson V magnitudes with the transformation of Riello et al. (2021). Close double stars that HYG merges into a single point are split into two stars using WDS data, so they separate into two stars when the telescope's resolution is sufficient (for example, Castor at 5.4″ and Epsilon Lyrae at 2.1″ and 2.4″). The processing steps and verification results for catalog merging, magnitude and color conversion, and double-star splitting are described in [analysis-2.0.0.md](analysis-2.0.0.md).
+Tycho-2 and Gaia DR3 are linked star by star through the cross-match table published with Gaia DR3, and stars with a match use the Gaia magnitude, color, and position. Gaia G magnitudes are converted to Johnson V magnitudes with the transformation of Riello et al. (2021). Close double stars that HYG merges into a single point are split into two stars using WDS data, so they separate into two stars when the telescope's resolution is sufficient (for example, Castor at 5.4″ and Epsilon Lyrae at 2.1″ and 2.4″). The processing steps and verification results for catalog merging, magnitude and color conversion, and double-star splitting are described in [analysis-2.0.1.md](analysis-2.0.1.md).
 
 ### Star colors and brightness
 
@@ -129,7 +129,7 @@ The direction of an object is first computed in equatorial coordinates (right as
 
 Planet positions are computed as heliocentric ecliptic coordinates of date from the VSOP87D series and converted to the J2000 ecliptic. The Earth's position, computed from the same series, is subtracted to give the direction as seen from the Earth. A light-time correction is included: the planet's position is taken at the earlier time when the light left it. One computation of all 7 planets takes 28µs.
 
-The formulas were reimplemented in Python and compared with PyEphem, the worked examples in Meeus's textbook, and NASA eclipse data, and all 82 test items passed. This verification covers the formulas only and does not include measurements taken directly from the game screen. The verification methods and per-item results are in [analysis-2.0.0.md](analysis-2.0.0.md).
+The formulas were reimplemented in Python and compared with PyEphem, the worked examples in Meeus's textbook, and NASA eclipse data, and all 82 test items passed. This verification covers the formulas only and does not include measurements taken directly from the game screen. The verification methods and per-item results are in [analysis-2.0.1.md](analysis-2.0.1.md).
 
 ### Observing location and the passage of time
 
@@ -245,7 +245,7 @@ The Milky Way uses Deep Star Maps 2020 from the Scientific Visualization Studio 
 
 ### Eyepiece sketches based on DSS
 
-Galaxies, nebulae, and globular clusters are drawn to match what the eye sees through an eyepiece. The base data are Digitized Sky Survey (DSS2, DSS1) plate images, and the set consists of 462 plates (339 galaxies, 123 nebulae and clusters). Stars are removed from the plates so that only the shape of the object remains, and the real stars are drawn by the star catalog. For nebulae, the blue plate is given more weight in the mix, because the dark-adapted eye is sensitive to blue-green light ([O III], Hβ) and insensitive to the red light of Hα. Galaxies without a DSS image are drawn with a computed bulge, disk, and spiral arms according to their Hubble type. The plate production steps are in [analysis-2.0.0.md](analysis-2.0.0.md).
+Galaxies, nebulae, and globular clusters are drawn to match what the eye sees through an eyepiece. The base data are Digitized Sky Survey (DSS2, DSS1) plate images, and the set consists of 462 plates (339 galaxies, 123 nebulae and clusters). Stars are removed from the plates so that only the shape of the object remains, and the real stars are drawn by the star catalog. For nebulae, the blue plate is given more weight in the mix, because the dark-adapted eye is sensitive to blue-green light ([O III], Hβ) and insensitive to the red light of Hα. Galaxies without a DSS image are drawn with a computed bulge, disk, and spiral arms according to their Hubble type. The plate production steps are in [analysis-2.0.1.md](analysis-2.0.1.md).
 
 ### Visibility under telescope conditions
 
@@ -318,9 +318,9 @@ Auroras appear at latitudes of 60° and above at night (Sun below −10°) and a
 
 ### Main mod and optional extension pack
 
-| Item | Main mod cheonsang 2.0.0 | Extension pack cheonsang-extra 1.0.1 |
+| Item | Main mod cheonsang 2.0.1 | Extension pack cheonsang-extra 1.0.1 |
 | --- | --- | --- |
-| File size | 111.5 MB | 434.0 MB |
+| File size | 111.4 MB | 434.0 MB |
 | Stars | 90,938 naked-eye + 2,409,260 telescope | + 32,061,510 Gaia DR3 |
 | Telescope limit | Magnitude 13.0 | Magnitude 15.2 |
 | Milky Way | 4K naked-eye, 12K telescope | 16K and 32K naked-eye tiles |
@@ -354,7 +354,7 @@ The internal structure and data formats are in [technical-spec.md](technical-spe
 
 ## 9. Educational and Scientific Value
 
-In Cheonsang, astronomy concepts from textbooks can be observed directly and checked under changing conditions. All of the uses below can be carried out with features implemented in 2.0.0.
+In Cheonsang, astronomy concepts from textbooks can be observed directly and checked under changing conditions. All of the uses below can be carried out with features implemented in 2.0.1.
 
 | Field | Related concepts | Activities in Cheonsang |
 | --- | --- | --- |
@@ -418,10 +418,10 @@ This work has made use of data from the European Space Agency (ESA) mission Gaia
 
 - [manual.md](manual.md): installation, full command list, controls
 - [technical-spec.md](technical-spec.md): formulas and derivations, internal structure, data formats
-- [analysis-2.0.0.md](analysis-2.0.0.md): data processing steps, accuracy verification results
+- [analysis-2.0.1.md](analysis-2.0.1.md): data processing steps, accuracy verification results
 - [facts.md](facts.md): source table for the figures used in the documents
 
 ## Credits
 
-Cheonsang 2.0.0, itsnotfineart.  
+Cheonsang 2.0.1, itsnotfineart.  
 The author handled the planning, design, and verification. The source code and this document were written in collaboration with a generative AI (Claude).

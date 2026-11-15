@@ -2,7 +2,7 @@ Cheonsang — Credits & Licenses
 =====================================
 
 Cheonsang by itsnotfineart
-This file covers Cheonsang 2.0.0 (updated 2026-11-15).
+This file covers Cheonsang 2.0.1 (updated 2026-11-16).
 
 LICENSING AT A GLANCE
 ---------------------
