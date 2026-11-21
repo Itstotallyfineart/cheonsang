@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** 노을: 바닐라는 동·서쪽을 볼 때만 안개에 노을색을 섞음 → 고개 돌리면 사라짐. 천상 박명 빛만 남김 */
+/** 노을: 바닐라는 동·서쪽을 볼 때만 안개에 노을색을 섞음 → 고개 돌리면 사라짐. 천상 박명 빛만 남김 (0.1.6) */
 @Mixin(AtmosphericFogEnvironment.class)
 public abstract class AtmosphericFogMixin {
     @Redirect(method = "getBaseColor", at = @At(value = "INVOKE", target = "Lorg/joml/Vector3fc;dot(FFF)F"))
@@ -17,7 +17,7 @@ public abstract class AtmosphericFogMixin {
         return CheonsangSky.isActive() ? 0f : forward.dot(x, y, z);
     }
 
-    /** 밤: 안개색을 하늘색에 맞춤 / 일식: 안개색도 하늘처럼 어둡게 */
+    /** 밤 (1.1.5): 안개색을 하늘색에 맞춤 / 일식 (0.1.11): 안개색도 하늘처럼 어둡게 */
     @Inject(method = "getBaseColor", at = @At("RETURN"), cancellable = true)
     private void cheonsang$eclipseFog(CallbackInfoReturnable<Vector3fc> cir) {
         if (!CheonsangSky.isActive()) return;

@@ -34,8 +34,9 @@ object Eclipse {
     }
 
     /**
-     * 관측자 기준 달 방향 (그날 적도좌표): 지구 중심 달 위치 − 관측자 위치 (지구 반지름, 위도·지방항성시).
+     * 1.3.0 관측자 기준 달 방향 (그날 적도좌표): 지구 중심 달 위치 − 관측자 위치 (지구 반지름, 위도·지방항성시).
      * 시차 최대 약 1° — 일식은 이 방향으로 해를 가려야만 보임 (그 장소에서 실제로 보이는 일식만, Stellarium 과 같음).
+     * 1.2.x 의 "위도 위 가장 잘 보이는 경도" 탐색(경도 무시)은 폐지
      */
     fun topocentricMoon(moonEq: Vec3, distKm: Double, latDeg: Double, lstDeg: Double): Vec3 =
         (moonEq * distKm - Vec3.fromSpherical(lstDeg, latDeg) * Moon.EARTH_RADIUS_KM).normalized()

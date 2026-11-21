@@ -4,8 +4,8 @@ import kr.inf.cheonsang.L
 import kotlin.math.floor
 
 /**
- * `/ctonight next`: 다음 현상 찾기.
- * 그 장소(위도·경도)에서 실제로 보이는지 판정 (지방항성시 = GMST + 경도), 시각 = 그 장소 지방평균시 (경도/15). 일식은 관측자 위치 시차 그대로 계산.
+ * 1.1.0 `/cele next` → 1.2.1 `/ctonight next`: 다음 현상 찾기.
+ * 1.3.0: 그 장소(위도·경도)에서 실제로 보이는지 판정 (지방항성시 = GMST + 경도), 시각 = 그 장소 지방평균시 (경도/15). 일식은 관측자 위치 시차 그대로 ("경도 무시" 폐지)
  */
 object Events {
     /** jd = 현상 시각, view = 보러 갈 시각 (이동 버튼), text = 한 줄 정보 */
@@ -45,10 +45,10 @@ object Events {
         return (a + b) / 2
     }
 
-    /** 반영월식은 뺌 (본영이 2% 넘게 덮는 것만) */
+    /** 1.9.0: 반영월식은 뺌 (본영이 2% 넘게 덮는 것만 — 도감 판정과 같게) */
     const val UMBRA_MIN = 0.02
 
-    /** 다음 보이는 월식 (본영, 반영월식 제외) */
+    /** 다음 보이는 월식 (본영 — 1.9.0 반영월식 제외) */
     fun lunarEclipse(jd0: Double, lat: Double, lon: Double): Found? {
         var full = nextPhase(jd0, 180.0)
         while (full < jd0 + YEARS * 365.25) {
@@ -59,7 +59,7 @@ object Events {
                 val alt = altOfDate(t, lat, lon, moon.dir)
                 if (alt > 0) {
                     val kind = when { s.umbraCover >= 1.0 -> L.t("cheonsang.events.3"); s.umbraCover > 0 -> L.t("cheonsang.events.2").format(s.umbraCover * 100); else -> L.t("cheonsang.events.1") }
-                    return Found(t, t, L.t("cheonsang.events.4", kind, local(t, lon), "%.0f".format(alt)))  // kind 에 % 가 들어 있어 다시 format 하면 오류
+                    return Found(t, t, L.t("cheonsang.events.4", kind, local(t, lon), "%.0f".format(alt)))  // 1.5.2.1: kind 에 % 가 들어 있어 다시 format 하면 오류
                 }
             }
             full = nextPhase(full + 20, 180.0)
@@ -67,7 +67,7 @@ object Events {
         return null
     }
 
-    /** 다음 보이는 일식 (그 장소 관측자 기준) */
+    /** 다음 보이는 일식 (그 장소 관측자 기준 — 1.3.0) */
     fun solarEclipse(jd0: Double, lat: Double, lon: Double): Found? {
         var nm = nextPhase(jd0, 0.0)
         while (nm < jd0 + YEARS * 365.25) {
@@ -99,10 +99,10 @@ object Events {
         return null
     }
 
-    /** 일식으로 칠 겹침 — 해 지름의 약 5% 넘게 가려짐 */
+    /** 1.9.0: 일식으로 칠 겹침 — 해 지름의 약 5% 넘게 가려짐 (도감 판정과 비슷하게) */
     private const val SOLAR_MARGIN = 0.1
 
-    /** 위도 이동: 현상 + 경도 lon 에서 보이는 위도 (1° 간격, 남→북) */
+    /** 1.9.0 위도 이동: 현상 + 경도 lon 에서 보이는 위도 (1° 간격, 남→북) */
     data class Band(val found: Found, val lats: List<Int>, val best: Int = lats[lats.size / 2])
 
     /** 다음 일식 중 경도 lon 의 어느 위도에서든 보이는 것 — 위도마다 관측자 시차로 판정 */
@@ -164,7 +164,7 @@ object Events {
 
     /** 밤(해 고도 -12° 아래) 중 score 가 가장 큰 시각 — 그 날 18:00 ~ 다음날 06:00, 30분 간격 */
     fun bestNight(jdDay0: Double, lat: Double, lon: Double, score: (Double) -> Double): Double {
-        // −12° 아래가 없으면(고위도 여름) −6° 아래 중에서, 그것도 없으면 해가 가장 낮은 시각
+        // 1.10.1-dev4: −12° 아래가 없으면(고위도 여름) −6° 아래 중에서, 그것도 없으면 해가 가장 낮은 시각 — 전엔 22:00 으로 돌려 해가 떠 있었음 (11-14 지율님 75°N 4월)
         val slots = (0..24).map { jdDay0 + (18.0 + it * 0.5) / 24 }
         val sun = slots.map { altOfDate(it, lat, lon, Sun.position(it).dir) }
         for (lim in doubleArrayOf(-12.0, -6.0)) {

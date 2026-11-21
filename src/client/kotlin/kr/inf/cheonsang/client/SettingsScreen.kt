@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 
 /**
- * 천상 설정 화면. 여는 법: 조작 설정 "천상 설정" 키 (기본 없음) · ModMenu 모드 목록
+ * 1.2.1: 천상 설정 화면 — `/cfilter` 대신. 여는 법: 조작 설정 "천상 설정" 키 (기본 없음) · ModMenu 모드 목록
  * 왼쪽 = 하늘 표시, 오른쪽 = 장노출·정보 카드·글씨. 바꾸면 바로 저장 (client.json display)
  */
 class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t("cheonsang.settingsscreen.1"))) {
@@ -52,14 +52,14 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
         addRenderableWidget(toggle(L.t("cheonsang.settingsscreen.16"), { f.cardRaDec }, { f.cardRaDec = it }, right, y, colW, bh)); y += row
         addRenderableWidget(toggle(L.t("cheonsang.settingsscreen.17"), { f.cardRiseSet }, { f.cardRiseSet = it }, right, y, colW, bh)); y += row
         addRenderableWidget(cycle(L.t("cheonsang.settingsscreen.18"), SCALES.map { "×$it" }, { SCALES.indexOfClosest(f.uiScale) }, { f.uiScale = SCALES[it] }, right, y, colW, bh)); y += row
-        addRenderableWidget(toggle(L.t("cheonsang.settingsscreen.visualday"), { f.visualDay }, { f.visualDay = it }, right, y, colW, bh)); y += row
+        addRenderableWidget(toggle(L.t("cheonsang.settingsscreen.visualday"), { f.visualDay }, { f.visualDay = it }, right, y, colW, bh)); y += row   // 1.10.1
 
-        // 관측 위치 (누구나, 내 하늘만) — 왼쪽 칸 위도 경도 · 적용 · 기본
+        // 1.9.0-dev3: 관측 위치 (누구나, 내 하늘만) — 왼쪽 칸 위도 경도 · 적용 · 기본
         val sy = top + row * 9 + 14
         val py = sy + row + 14
         val pbox = net.minecraft.client.gui.components.EditBox(font, left, py, colW, bh, Component.literal(L.t("cheonsang.settingsscreen.21")))
         pbox.setMaxLength(32)
-        pbox.setValue(Place.mine?.let { "%.2f %.2f".format(java.util.Locale.ROOT, it.first, it.second) } ?: "")  // 소수점 점 고정 (다시 적용할 때 읽히게)
+        pbox.setValue(Place.mine?.let { "%.2f %.2f".format(java.util.Locale.ROOT, it.first, it.second) } ?: "")  // 1.10.0: 소수점 점 고정 (다시 적용할 때 읽히게)
         pbox.setHint(Component.literal(L.t("cheonsang.place.hint")))
         addRenderableWidget(pbox)
         addRenderableWidget(Button.builder(Component.literal(L.t("cheonsang.settingsscreen.23"))) { b ->
@@ -68,7 +68,7 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
             else b.setMessage(Component.literal(L.t("cheonsang.settingsscreen.25")))
         }.bounds(right, py, 70, bh).build())
         addRenderableWidget(Button.builder(Component.literal(L.t("cheonsang.place.reset"))) { _ -> Place.reset(); pbox.setValue("") }.bounds(right + 74, py, colW - 74, bh).build())
-        // 서버에 천상이 없을 때만 — 날짜(현지). 서버가 있으면 서버 값 (바꾸려면 OP 가 /cele set)
+        // 1.3.1: 서버에 천상이 없을 때만 — 날짜(현지). 서버가 있으면 서버 값 (바꾸려면 OP 가 /cele set)
         if (!kr.inf.cheonsang.client.sky.CheonsangSky.serverSky) {
             val cur = kr.inf.cheonsang.client.sky.CheonsangSky.clock.let { c -> kr.inf.cheonsang.astro.Calendar.toLocal(c.jd((minecraft.level?.defaultClockTime ?: 0L).toDouble()), c.zoneHours) }
             val date = net.minecraft.client.gui.components.EditBox(font, left, sy, colW, bh, Component.literal(L.t("cheonsang.settingsscreen.19")))
@@ -82,7 +82,7 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
                 else b.setMessage(Component.literal(L.t("cheonsang.settingsscreen.25")))
             }.bounds(right, sy, 70, bh).build())
         }
-        // 완료 버튼은 관측 위치 글줄 아래
+        // 1.9.0-dev5: 완료 버튼은 관측 위치 글줄 아래 (전: 글줄 위에 겹침)
         addRenderableWidget(Button.builder(Component.literal(L.t("cheonsang.settingsscreen.26"))) { onClose() }.bounds(width / 2 - 100, (placeTextY(py, bh) + PLACE_TEXT_H + 4).coerceAtMost(height - bh - 2), 200, bh).build())
     }
 
@@ -94,7 +94,7 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
         val sy = TOP + row * 9 + 14
         g.centeredText(font, fit(if (kr.inf.cheonsang.client.sky.CheonsangSky.serverSky) L.t("cheonsang.settingsscreen.28") else L.t("cheonsang.settingsscreen.27")),
             width / 2, sy + row + 1, 0xFFB0B0B0.toInt())
-        // 관측 위치 글줄은 " · " 마디로 끊어 두 줄까지
+        // 1.9.0-dev5: 관측 위치 글줄은 " · " 마디로 끊어 두 줄까지 (전: 한 줄이 화면 폭 가득)
         val py = sy + row + 14
         val bh = (row - 2).coerceAtMost(20)
         wrap(Place.text()).take(2).forEachIndexed { i, s -> g.centeredText(font, s, width / 2, placeTextY(py, bh) + i * 10, 0xFFB0B0B0.toInt()) }
@@ -106,12 +106,12 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
 
     private fun onOff(b: Boolean) = if (b) L.t("cheonsang.settingsscreen.30") else L.t("cheonsang.settingsscreen.29")
 
-    /** 화면 높이에 맞춘 줄 간격 (GUI 배율이 커서 높이가 작으면 촘촘히, 최소 14) */
+    /** 1.5.2.1: 화면 높이에 맞춘 줄 간격 (GUI 배율이 커서 높이가 작으면 촘촘히, 최소 14) */
     private fun rowH(): Int = ((height - TOP - 90) / 10).coerceIn(14, 22)
 
     private fun placeTextY(py: Int, bh: Int) = py + bh + 3
 
-    /** 화면 폭에 맞게 " · " 마디 단위로 줄 나눔 */
+    /** 1.9.0-dev5: 화면 폭에 맞게 " · " 마디 단위로 줄 나눔 */
     private fun wrap(s: String): List<String> {
         val maxW = width - 20
         val out = ArrayList<String>()
@@ -145,7 +145,7 @@ class SettingsScreen(private val parent: Screen?) : Screen(Component.literal(L.t
     companion object {
         private const val TOP = 22
         private const val PLACE_TEXT_H = 20
-        // 열 때마다 번역
+        // 1.9.0-dev5: 열 때마다 번역 (전: 처음 한 번만 → 언어 바꿔도 처음 언어로 남음)
         val CORNERS get() = listOf(L.t("cheonsang.settingsscreen.34"), L.t("cheonsang.settingsscreen.33"), L.t("cheonsang.settingsscreen.32"), L.t("cheonsang.settingsscreen.31"))
         val OPACITY = listOf(0.25f, 0.5f, 0.69f, 0.85f, 1f)
         val SCALES = listOf(0.75f, 1f, 1.25f, 1.5f)

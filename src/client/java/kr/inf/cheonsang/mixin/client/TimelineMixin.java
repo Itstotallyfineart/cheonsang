@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-/** 하루(24000틱) 타임라인의 하늘색·안개·구름·땅 빛 트랙만 표시 → 화면 낮밤을 천상 해 고도로. 몹·잠자기(gameplay)는 그대로 */
+/** 1.10.1-dev4 (11-14 지율님): 하루(24000틱) 타임라인의 하늘색·안개·구름·땅 빛 트랙만 표시 → 화면 낮밤을 천상 해 고도로. 몹·잠자기(gameplay)는 그대로 */
 @Mixin(Timeline.class)
 public abstract class TimelineMixin {
     @Shadow public abstract Optional<Integer> periodTicks();

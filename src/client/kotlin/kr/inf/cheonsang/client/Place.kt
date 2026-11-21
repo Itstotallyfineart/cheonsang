@@ -15,8 +15,10 @@ import net.minecraft.network.chat.Component
 import java.nio.file.Files
 
 /**
- * 내 관측 위치 `/cplace` — 위도·경도를 블록 좌표와 떼어 각자 자유롭게 설정. OP 권한 불필요, 내 하늘만 바뀜.
- * 월드별로 config/cheonsang/places.json 에 저장되며, 마크 시계는 항상 내 위치의 현지 평균시를 따른다.
+ * 1.9.0-dev3 내 관측 위치 `/cplace` (11-13 23:05 지율님 확정) — 위도·경도를 블록 좌표와 떼어 사람마다 자유롭게.
+ * - 내 하늘만 바뀜 (OP 필요 없음). 월드마다 저장 (config/cheonsang/places.json, 키 = 서버 주소 또는 싱글 월드 이름)
+ * - 마크 시계 = 언제나 내 관측 위치의 현지 평균시 → 경도를 바꾸면 세계시만 (월드 경도 − 내 경도)/15 시간 밀림, 낮밤 그대로
+ * - 날짜·시각 흐름은 월드 공통 (OP 의 /cele set·rate). 옮겨서 본 것도 도감·발전과제 인정 (여행한 셈)
  */
 object Place {
     private val file get() = FabricLoader.getInstance().configDir.resolve(Cheonsang.MOD_ID).resolve("places.json")
@@ -57,7 +59,10 @@ object Place {
         CheonsangSky.latitude = lat
     }
 
-    /** 서버가 보낸 월드 기본 위치 번호가 바뀌면(OP 가 /cele set 으로 위치 변경) 내 /cplace 를 해제한다. */
+    /**
+     * 2.0.0-rc1: 서버 월드 기본 위치 번호 — 전에 받은 번호와 다르면 (OP 가 /cele set 으로 위치를 바꿈) 내 /cplace 해제.
+     * 처음 받는 서버(번호 기록 없음)는 기록만
+     */
     fun onGen(gen: Int) {
         val k = loadedKey ?: worldKey()
         val gk = "$k#gen"

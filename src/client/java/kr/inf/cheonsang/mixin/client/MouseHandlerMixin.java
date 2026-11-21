@@ -20,7 +20,7 @@ public abstract class MouseHandlerMixin {
         if (TelescopeView.scroll(yOffset)) ci.cancel();
     }
 
-    /** 적도의·추적 고정은 매 프레임 (화면·채팅이 열려 turnPlayer 가 안 불려도 계속 따라감) */
+    /** 1.9.0-dev5: 적도의·추적 고정은 매 프레임 (화면·채팅이 열려 turnPlayer 가 안 불려도 계속 따라감) */
     @Inject(method = "handleAccumulatedMovement", at = @At("HEAD"))
     private void cheonsang$track(CallbackInfo ci) {
         TelescopeView.track();
@@ -28,7 +28,7 @@ public abstract class MouseHandlerMixin {
 
     @Inject(method = "turnPlayer", at = @At("HEAD"))
     private void cheonsang$slow(double movementTime, CallbackInfo ci) {
-        // 추적 고정 중엔 마우스 움직임 버림 (크게 움직이면 해제)
+        // 1.1.3: 추적 고정 중엔 마우스 움직임 버림 (크게 움직이면 해제)
         if (TelescopeView.consumeMouse(accumulatedDX, accumulatedDY)) { accumulatedDX = 0; accumulatedDY = 0; }
         if (TelescopeView.getActive()) {
             double f = 1.0 / TelescopeView.getZoom();

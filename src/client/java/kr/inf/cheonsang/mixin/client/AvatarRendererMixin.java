@@ -19,8 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 망원경 배율 ×1 초과 시 바닐라 망원경처럼 팔은 눈에 대는 자세, 모델은 머리(눈)에 붙임. ×1 은 그냥 손에 든 모습.
- * 다른 사람은 서버가 알려 준 확대 여부({@link PoseSync})로 같은 자세를 적용.
+ * 1.7.1: 망원경 배율 ×1 넘을 때 = 바닐라 망원경과 같게 — 팔은 눈에 대는 자세, 모델은 손이 아니라 머리(눈)에 붙임 (3인칭, 내 캐릭터).
+ * ×1 은 그냥 손에 든 모습.
+ * 1.9.2: 다른 사람도 — 서버가 알려 준 확대 여부 ({@link PoseSync}) 로 같은 자세.
  */
 @Mixin(AvatarRenderer.class)
 public abstract class AvatarRendererMixin {

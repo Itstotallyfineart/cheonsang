@@ -8,8 +8,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 
 /**
- * 다음 천문 현상 (일식·월식·보름·삭·유성우·행성 근접) — `/ctonight next` (내 화면) 에서 씀.
- * 그 장소(위도·경도) 기준, 시각은 현지 평균시
+ * 다음 천문 현상 (일식·월식·보름·삭·유성우·행성 근접) — 1.2.1 부터 `/ctonight next` (내 화면) 에서 씀.
+ * 1.1.0~1.2.0 은 `/cele next` (서버). 1.3.0: 그 장소(위도·경도) 기준, 시각은 현지 평균시
  */
 object NextEvents {
     val KINDS = listOf("solar", "lunar", "full", "new", "meteor", "conj")
@@ -25,7 +25,7 @@ object NextEvents {
         } catch (_: Exception) { emptyList() }
     }
 
-    /** 위도 범위 → "25°N~89°N" — 이어진 구간마다 */
+    /** 1.9.0-dev3: 위도 범위 → "25°N~89°N" — 이어진 구간마다 */
     private fun bandText(lats: List<Int>): String {
         val runs = ArrayList<IntRange>()
         for (l in lats) if (runs.isNotEmpty() && runs.last().last == l - 1) runs[runs.size - 1] = runs.last().first..l else runs += l..l
@@ -34,14 +34,14 @@ object NextEvents {
     }
 
     /**
-     * 현상마다 한 줄. jumpLink = true 면 OP 용 [이동] (`/cwhen go`, worldLon 은 안 씀)
-     * 일식·월식은 내 경도에서 보이는 위도 띠 + 누구나 [여기로 옮기기] (`/cplace 위도 경도`, 내 하늘만)
+     * 현상마다 한 줄. jumpLink = true 면 OP 용 [이동] (`/cwhen go` — 1.10.1-dev3, worldLon 은 이제 안 씀)
+     * 1.9.0-dev3: 일식·월식은 내 경도에서 보이는 위도 띠 + 누구나 [여기로 옮기기] (`/cplace 위도 경도`, 내 하늘만)
      */
     fun lines(jd0: Double, lat: Double, lon: Double, kind: String?, jumpLink: Boolean, latText: String, worldLon: Double = lon): List<Component> =
         (kind?.let { listOf(it) } ?: KINDS).map { k ->
             val band = when (k) { "solar" -> Events.solarEclipseBand(jd0, lon); "lunar" -> Events.lunarEclipseBand(jd0, lon); else -> null }
             val here = band != null && Math.round(lat).toInt() in band.lats
-            val f = if (band != null) band.found.copy(text = band.found.text + L.t("cheonsang.m.visible_from") + bandText(band.lats) + " (" + SkyServer.lonText(lon) + ")")
+            val f = if (band != null) band.found.copy(text = band.found.text + L.t("cheonsang.m.visible_from") + bandText(band.lats) + " (" + SkyServer.lonText(lon) + ")")   // 1.10.1-dev5: "여기서 보임/안 보임" 뺌
             else when (k) {
                 "solar", "lunar" -> null
                 "full" -> Events.fullMoon(jd0, lat, lon)
@@ -51,14 +51,14 @@ object NextEvents {
             }
             val msg = Component.literal(f?.text ?: L.t("cheonsang.nextevents.7", NAMES[k], latText))
             if (f != null && jumpLink) {
-                // [이동] = /cwhen go (클라이언트가 내 경도 기준으로 /cele set)
+                // 1.10.1-dev3: [이동] = /cwhen go (클라이언트가 내 경도 기준으로 /cele set — /cplace 로 경도 따로 둔 때 어긋나던 것)
                 val cmd = "/cwhen go %.5f".format(java.util.Locale.ROOT, f.view)
                 msg.append(Component.literal(L.t("cheonsang.m.go")).withStyle { st ->
                     st.withColor(ChatFormatting.AQUA).withClickEvent(ClickEvent.RunCommand(cmd)).withHoverEvent(HoverEvent.ShowText(Component.literal(cmd)))
                 })
             }
             if (band != null && !here) {
-                // 소수점은 언제나 점 (쉼표 소수점 언어에서 /cplace 가 거절)
+                // 1.10.0: 소수점은 언제나 점 (쉼표 소수점 언어에서 /cplace 가 거절하던 것)
                 val cmd = "/cplace %d %.1f".format(java.util.Locale.ROOT, band.best, lon)
                 msg.append(Component.literal(L.t("cheonsang.m.move_here", (if (band.best >= 0) "${band.best}°N" else "${-band.best}°S"))).withStyle { st ->
                     st.withColor(ChatFormatting.GREEN).withClickEvent(ClickEvent.RunCommand(cmd)).withHoverEvent(HoverEvent.ShowText(Component.literal(cmd)))

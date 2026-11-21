@@ -24,9 +24,12 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 타일 스트리밍: 초고화질팩의 큰 은하수(맨눈 16K·32K, 장노출 16K)를 1024px 조각(+2px 여백, 바이큐빅 이음선 방지)으로 나눠 화면에 보이는 조각만 올린다.
- * 단계는 텍셀이 화면 픽셀보다 작아지는 가장 낮은 단계로 고르고, PNG 디코딩은 별도 스레드, 업로드는 렌더 패스 밖에서 프레임당 [UPLOADS_PER_FRAME] 장.
- * 조각이 없으면 한 단계 낮은 조각으로 대체해 [FADE_NANOS] 동안 페이드하고, 메모리가 [BUDGET] 넘으면 오래 안 쓴 조각부터 내린다.
+ * 1.6.1 타일 스트리밍: 초고화질팩의 큰 은하수(맨눈 16K·32K, 장노출 16K)를 1024px 조각으로 나눠 **화면에 보이는 조각만** 올림.
+ * - 조각 = textures/sky/tiles/<단계>/<x>_<y>.png, 1024 + 사방 2px 여백 (바이큐빅이 경계를 넘어 읽어도 이음선 없음)
+ * - 단계: 화면 한 픽셀보다 텍셀이 작아지는 가장 낮은 단계 (기본 8K 로 충분하면 안 씀)
+ * - PNG 풀기는 별도 스레드, 올리기는 렌더 패스 밖(prepare)에서 한 프레임에 [UPLOADS_PER_FRAME] 장
+ * - 조각이 오기 전엔 한 단계 낮은 조각(없으면 기본 8K)을 그리다 [FADE_NANOS] 동안 부드럽게 바꿈
+ * - 그래픽 메모리 [BUDGET] 넘으면 오래 안 본 조각부터 내림
  */
 object TileSky {
     const val TS = 1024
@@ -38,7 +41,7 @@ object TileSky {
     private const val FADE_NANOS = 300_000_000L
     /** 조각용 그래픽 메모리 한도 (맨눈 조각 1MiB, 장노출 4MiB) */
     var BUDGET = 512L shl 20
-    /** 기본 은하수 한 텍셀 (°) — 장노출 8K, 현실 12K */
+    /** 기본 은하수 한 텍셀 (°) — 장노출 8K, 현실 12K (1.7.0) */
     private const val BASE_TEXEL = 360.0 / 8192
     private const val EYE_BASE_TEXEL = 360.0 / 12288
 
@@ -53,7 +56,7 @@ object TileSky {
     class Tile(val level: Level, val tx: Int, val ty: Int) {
         val id: Identifier = Cheonsang.id("tile/${level.name}/${tx}_$ty")
         val path: Identifier = Cheonsang.id("textures/sky/tiles/${level.name}/${tx}_$ty.png")
-        /** 상태: 0=안 올림, 1=푸는 중, 2=올라감, 3=파일 없음 */
+        /** 0 안 올림 · 1 푸는 중 · 2 올라감 · 3 파일 없음 */
         @Volatile var state = 0
         var loadedAt = 0L
         var lastUse = 0L
@@ -70,7 +73,7 @@ object TileSky {
         }
         var mesh: GpuBuffer? = null
         var meshCount = 0
-        /** 바이큐빅 셰이더 값: [0].x 흑백 여부, [1].x 가로도 끝에서 멈춤 여부, [2] 전체 uv를 이 조각 텍셀 uv로 바꾸는 배율·이동 */
+        /** 바이큐빅 셰이더 값: [0].x 흑백 · [1].x 가로도 끝에서 멈춤 · [2] = 전체 uv → 이 조각 텍셀 uv (배율, 이동) */
         val params: Matrix4f by lazy {
             Matrix4f().zero().m00(if (level.gray) 1f else 0f).m10(1f)
                 .m20((level.nx * TS / FULL.toDouble()).toFloat()).m21((level.ny * TS / FULL.toDouble()).toFloat())
@@ -209,7 +212,7 @@ object TileSky {
         t.state = 0
     }
 
-    /** 전부 내림 — 망원경을 오래 안 써서 자원을 다시 불러올 때 */
+    /** 전부 내림 (망원경 안 쓴 지 오래 · 자원 다시 불러오기) */
     fun releaseAll() {
         for (t in loaded) drop(t)
         loaded.clear()

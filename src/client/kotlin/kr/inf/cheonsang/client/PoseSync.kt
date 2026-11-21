@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import java.util.UUID
 
-/** 망원경 자세 멀티 동기화 (클라이언트 쪽): 내 확대 여부를 바뀔 때만 보내고, 다른 사람 것을 받아 둠 */
+/** 1.9.2 망원경 자세 멀티 동기화 (클라이언트 쪽): 내 확대 여부를 바뀔 때만 보내고, 다른 사람 것을 받아 둠 */
 object PoseSync {
     private val others = HashSet<UUID>()
     private var sent = false

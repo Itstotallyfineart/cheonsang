@@ -8,8 +8,9 @@ import net.minecraft.resources.Identifier
 import org.lwjgl.system.MemoryUtil
 
 /**
- * 흑백 그림을 한 채널(R8)로 올리는 텍스처 — 현실 은하수. RGBA 로 올리면 8192×4096 기준 128MiB, R8 이면 32MiB.
- * gray 셰이더가 r 을 rgb 로 펼쳐서 그림 ([CheonsangSky.GRAY_PIPELINE])
+ * 1.2.0 (O1): 흑백 그림을 한 채널(R8)로 올리는 텍스처 — 현실 은하수.
+ * 바닐라는 PNG 를 늘 RGBA 로 올려서 8192×4096 이면 128MiB. R8 이면 32MiB.
+ * 읽은 RGBA 에서 빨강 값만 모아 올림. 그릴 때는 gray 셰이더가 r 을 rgb 로 펼침 ([CheonsangSky.GRAY_PIPELINE])
  */
 class GrayTexture(id: Identifier) : SimpleTexture(id) {
     override fun doLoad(image: NativeImage) {

@@ -35,9 +35,12 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * `/cwhen` — 클라이언트 명령, OP 필요 없음. 오늘 밤·천체 이름·`solar`·`lunar`·`meteor`·`full`·`new`·`conj`·`next` 를 받고, 천체 이름은 /cfind 와 같은 방식으로 찾음.
- * 일식·월식·유성우는 지구 전체에서 가장 좋은 곳을 찾아 [이동] 버튼으로 안내하며, 시각은 그 지점의 지방평균시.
- * 계산은 전용 스레드 하나에서 돌고 새 명령이 오면 이전 계산을 취소하며, 숨은 쪽수 `@<율리우스일>` 로 [다음] 결과를 이어감.
+ * 1.10.0-dev2 `/cwhen` (설계서 cwhen_설계_1.10.0, 11-14 10:16 지율님 확정) — 클라이언트 명령, OP 필요 없음.
+ * - `/cwhen` = 오늘 밤 (`/ctonight` 그대로) · `/cwhen <천체>` · `solar total|annular|partial` · `lunar total|partial|penumbral`
+ *   · `meteor [이름]` · `full` · `new` · `conj` · `next`. 명령 낱말은 영어만, 천체 이름은 /cfind 와 같은 찾기 (한국어·영어)
+ * - 일식·월식·유성우는 지구 어디든 가장 좋은 곳 → [이동] = `/cplace 위도 경도` (내 관측 위치만, 시각은 그대로)
+ * - 시각 = 그곳 지방평균시 (= 그곳으로 옮긴 뒤 마크 시계). 알림 없음
+ * - 계산은 별도 스레드 하나, 새로 치면 앞 계산 취소. 숨은 쪽수 `@<율리우스일>` 은 [다음] 이 붙임
  */
 object CWhen {
     enum class Kind { FIXED, DEEP, CONST, SHOWER, SUN, MOON, PLANET, ASTEROID, SATELLITE, FEATURE }
@@ -49,7 +52,7 @@ object CWhen {
     private val pool = Executors.newSingleThreadExecutor { r -> Thread(r, "Cheonsang cwhen").apply { isDaemon = true; priority = Thread.NORM_PRIORITY - 1 } }
     private val gen = AtomicInteger()
 
-    /** 자동완성 목록에서만 안 보이게 숨김(바닐라 명령 나무 소속 여부 판정용) — 실행에는 영향 없음 */
+    /** `/ctonight` 처럼 자동완성 목록(바닐라 명령 나무로 옮기는 중)에만 안 보이게 — 실행은 됨 */
     internal fun copyingTree(): Boolean = try {
         StackWalker.getInstance().walk { s -> s.anyMatch { it.methodName == "copyChildren" && it.className.endsWith("ClientCommandInternals") } }
     } catch (_: Exception) { false }
@@ -142,7 +145,10 @@ object CWhen {
         }
     }
 
-    /** /cfind 뒤에 이어붙임 — 지금 보기 조건이 아니면 "가장 좋은 밤" 줄과 [위치]·[이동]·[다음] 버튼을 보냄. 머리줄은 /cfind 가 이미 보냈으므로 생략, 해는 대상에서 제외 */
+    /**
+     * 1.10.1-dev8: /cfind 뒤에 붙임 (11-14 17:44 지율님 "cwhen 이랑 cfind 합쳐서") — 지금 관측 조건(지평선 위 + 해가 그 천체 기준 문턱 아래)이
+     * 아니면 /cwhen <천체> 의 "가장 좋은 밤" 줄과 [위치]·[이동]·[다음] 을 이어서 보냄. 머리줄은 /cfind 가 이미 보냈으므로 뺌. 해는 안 함
+     */
     internal fun afterFind(src: FabricClientCommandSource, name: String) {
         val level = Minecraft.getInstance().level ?: return
         val (f, _) = FindGuide.whenLookup(name)
@@ -204,8 +210,9 @@ object CWhen {
     }
 
     /**
-     * [이동](OP) = `/cwhen go <jd> [위도 경도]` 로 그 순간·장소에 한 번에 이동. 장소가 있으면 `/cele set` 에 위도·경도까지 같이 보냄.
-     * 내 하늘 시각 = 월드 시각 + (월드 경도 − 내 경도)/15 시간
+     * 1.10.1-dev3 [이동] (OP, 11-14 13:06 지율님) = 그 순간·그 장소로 한 번에: `/cwhen go <jd> [위도 경도]`.
+     * 장소가 있으면 내 /cplace 해제 + `/cele set` 에 위도·경도까지, 시각은 그 장소 경도의 현지시. 없으면 날짜만, 시각은 내 경도 현지시
+     * (내 하늘 = 월드 시각 + (월드 경도 − 내 경도)/15 시간 이라 — dev2 [날짜] 가 어긋나던 것)
      */
     private fun moveButton(msg: MutableComponent, h: Here, jd: Double, lat: Double? = null, lon: Double? = null) {
         if (!h.date) return
@@ -246,13 +253,13 @@ object CWhen {
         })
     }
 
-    /** 미래 판정: 쪽수가 있으면 그 뒤, 없으면 결과 위치 현지 시각이 지금 마크 시계보다 뒤 */
+    /** 2-1 미래 판정: 쪽수가 있으면 그 뒤, 없으면 결과 위치 현지 시각이 지금 마크 시계보다 뒤 */
     private fun acceptor(h: Here, page: Double?): (Double, Double) -> Boolean =
         if (page != null) { t, _ -> t > page } else { t, lon -> t + lon / 360.0 > h.jd0 + h.lon / 360.0 }
 
     private fun from(h: Here, page: Double?) = page ?: (h.jd0 - 0.5)
 
-    // ── 일식 ──
+    // ── 일식 (4절) ──
     private fun solarName(kind: Int) = L.t("cheonsang.cwhen.solar.$kind")
 
     private fun solar(h: Here, want: String, page: Double?, alive: () -> Boolean): List<Component> {
@@ -261,7 +268,7 @@ object CWhen {
         return solarLines(h, r, "solar $want", full = true)
     }
 
-    /** 이름·시각·장소·숫자·버튼만 한 줄 */
+    /** 1.10.1-dev5 (11-14 14:02 지율님 "곁정보 걷어내자"): 이름·시각·장소·숫자·버튼만 한 줄 */
     private fun solarLines(h: Here, r: WhenCalc.Solar, tag: String, full: Boolean): List<Component> {
         val l1 = StringBuilder(L.t("cheonsang.cwhen.head", tag, solarName(r.kind), lt(r.jd, r.lon), place(r.lat, r.lon)))
         if (r.durSec > 0) { val s = r.durSec.roundToInt(); l1.append(L.t("cheonsang.cwhen.dur", s / 60, s % 60)) }
@@ -274,7 +281,7 @@ object CWhen {
         return listOf(c)
     }
 
-    // ── 월식 ──
+    // ── 월식 (5절) ──
     private fun lunar(h: Here, want: String, page: Double?, alive: () -> Boolean): List<Component> {
         val r = WhenCalc.lunar(from(h, page), want, h.lat, h.lon, alive, acceptor(h, page))
             ?: return listOf(Component.literal(L.t("cheonsang.cwhen.none", "lunar $want", WhenCalc.YEARS.toInt())))
@@ -304,7 +311,7 @@ object CWhen {
         return listOf(l1, l2)
     }
 
-    // ── 유성우 ──
+    // ── 유성우 (6절) ──
     private fun findShower(name: String): Shower? {
         val q = FindGuide.nameKey(name)
         return SkyData.showers.firstOrNull { s ->
@@ -336,7 +343,7 @@ object CWhen {
         return listOf(c)
     }
 
-    // ── 보름·삭·행성 근접 — 내 관측 위치 기준 ──
+    // ── 보름·삭·행성 근접 (6절) — 내 관측 위치 기준 ──
     private fun simple(h: Here, k: String, page: Double?, alive: () -> Boolean): List<Component> {
         val from = page ?: h.jd0
         val f = when (k) {
@@ -367,7 +374,7 @@ object CWhen {
         val rl = WhenCalc.recommendLat(h.lat, dec, 8.0)
         val v = Events.bestNight(Events.localDay0(f.jd, h.lon), rl, h.lon) { Events.altJ2000(it, rl, h.lon, mid) }
         val alt2 = Events.altJ2000(v, rl, h.lon, mid)
-        val c = Component.literal(L.t("cheonsang.cwhen.conj_alt", hm(v, h.lon), alt2.roundToInt()))   // 추천 위도는 [위치] 버튼으로만
+        val c = Component.literal(L.t("cheonsang.cwhen.conj_alt", hm(v, h.lon), alt2.roundToInt()))   // dev5: 추천 위도는 [위치] 버튼으로만
         goButton(c, h, rl, h.lon)
         moveButton(c, h, v, rl, h.lon)
         return c
@@ -391,7 +398,7 @@ object CWhen {
         return out
     }
 
-    // ── 천체 ──
+    // ── 천체 (2·3절) ──
     private class Cls(val sunThr: Double, val minAlt: Double, val moonCut: Double, val days: Int)
 
     private fun clsFor(f: FindGuide.Found, h: Here): Cls = when (f.kind) {
@@ -429,7 +436,7 @@ object CWhen {
         val start = page ?: h.jd0
         var r = WhenCalc.objectSearch(spec, start, cls.days, h.lat, h.lon, alive)
         var recLat: Double? = null
-        // 위도 추천(달 제외): 점수가 낮으면 적위 쪽, 안 되면 5°씩 적도 쪽으로
+        // 3-4 위도 추천 (달·달 지형 제외): 점수가 낮으면 적위 쪽으로, 안 되면 5° 씩 적도 쪽으로
         if (r.maxScore < 0.35 && f.kind != Kind.MOON && f.kind != Kind.FEATURE) {
             var rl = WhenCalc.recommendLat(h.lat, decFor(pos, start, cls.days), cls.minAlt)
             for (i in 0 until 12) {
@@ -448,7 +455,7 @@ object CWhen {
         if (e == null || b == null) {
             out += Component.literal(L.t("cheonsang.cwhen.no_night", cls.days))
         } else {
-            // 가장 좋은 밤 한 줄(시각·고도·방위, 달은 위상도) — 추천 위도면 [위치] 버튼 포함
+            // dev5: 가장 좋은 밤 한 줄 (시각·고도·방위, 달·달 지형은 위상) — 추천 위도면 그 위도 [위치]
             val phase = if (f.kind == Kind.MOON || f.kind == Kind.FEATURE) L.t("cheonsang.cwhen.moon_phase", pct(b.illum)) else ""
             val lb = Component.literal(L.t("cheonsang.cwhen.best", lt(b.jd, h.lon), b.alt.roundToInt(), compass(b.az), phase))
             recLat?.let { goButton(lb, h, it, h.lon) }

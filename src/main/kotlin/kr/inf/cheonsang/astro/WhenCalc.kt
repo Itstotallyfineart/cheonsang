@@ -6,8 +6,11 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * `/cwhen` 계산 — 숫자만 다루고 번역·출력은 클라이언트 CWhen 쪽. 일식은 그림자 축이 지구 타원체와 만나는 중심선에서 축이 지구 중심에 가장 가까운 순간을 식 최대로 삼고,
- * 월식은 식 최대 순간 달 바로 아래 지점(개기는 U2·U3 가운데), 유성우는 해가 −18° 아래이고 복사점이 가장 높은 곳, 천체는 날마다 밤 20분 간격 점수로 가장 빠른 좋은 날과 가장 좋은 날을 찾음.
+ * 1.10.0-dev2 `/cwhen` 계산 (설계서 cwhen_설계_1.10.0 4·5·6·3절) — 글자 없이 숫자만 (번역·출력은 클라이언트 CWhen).
+ * - 일식: 그림자 축(해→달)이 지구 타원체와 만나는 점 = 중심선, 축이 지구 중심에 가장 가까운 순간 = 식 최대 = 가장 좋은 곳
+ * - 월식: 식 최대 순간 달 바로 아래 지점 (개기는 U2·U3 가운데)
+ * - 유성우: 극대 순간 해 −18° 아래이고 복사점이 가장 높은 곳
+ * - 천체: 날마다 밤 20분 간격 점수 → 가장 빠른 좋은 날 (최고의 90%) · 가장 좋은 날
  * alive() 가 false 가 되면 [Cancel] 을 던짐 (새 `/cwhen` 이 앞 계산 취소)
  */
 object WhenCalc {
@@ -18,7 +21,7 @@ object WhenCalc {
     private const val BA = 1.0 - FLAT
     private const val E2 = FLAT * (2.0 - FLAT)
     const val YEARS = 60.0
-    /** 일식으로 칠 겹침 — 해 지름의 약 5% (Events와 같음) */
+    /** 일식으로 칠 겹침 — 해 지름의 약 5% (도감 판정·Events 와 같음) */
     private const val SOLAR_MARGIN = 0.1
 
     // ── 공통 ──
@@ -57,7 +60,7 @@ object WhenCalc {
         return (a + b) / 2
     }
 
-    // ── 일식 ──
+    // ── 일식 (4절) ──
     /** 그 점에서 본 달-해 각거리 d, 달·해 겉보기 반지름, 해 고도 */
     class Local(val d: Double, val rm: Double, val rs: Double, val sunAlt: Double) {
         val total get() = rm > rs && d <= rm - rs
@@ -95,7 +98,7 @@ object WhenCalc {
         } else Axis(gamma, unscale(f * (RE / f.length())), false)
     }
 
-    /** kind: 0=부분, 1=금환, 2=개기, 3=혼성(개기·금환 둘 다) */
+    /** 0 부분 · 1 금환 · 2 개기 · 3 혼성 (개기·금환 둘 다) */
     class Solar(
         val kind: Int, val jd: Double, val lat: Double, val lon: Double, val sunAlt: Double,
         /** 개기·금환 지속 (초), 부분은 0 */
@@ -110,7 +113,10 @@ object WhenCalc {
         val central: Boolean = true,
     )
 
-    /** want: "total"·"annular"·"partial"(어디서도 개기·금환이 안 되는 일식, NASA 분류)·"any". from 이후 식 최대가 오는 첫 것, accept(식 최대 jd, 결과 경도) 가 false 면 건너뜀(미래 판정) */
+    /**
+     * want: "total" · "annular" · "partial" (어디서도 개기·금환이 안 되는 일식, NASA 분류) · "any".
+     * from 이후 식 최대가 오는 첫 것. accept(식 최대 jd, 결과 경도) 가 false 면 건너뜀 (2-1 미래 판정)
+     */
     fun solar(from: Double, want: String, myLat: Double, myLon: Double, alive: () -> Boolean, accept: (Double, Double) -> Boolean): Solar? {
         var nm = Events.nextPhase(from - 0.3, 0.0)
         val end = from + YEARS * 365.25
@@ -211,8 +217,8 @@ object WhenCalc {
         return best to kind
     }
 
-    // ── 월식 ──
-    /** kind: 0=반영, 1=부분, 2=개기. contacts = P1 U1 U2 U3 U4 P4 (없으면 NaN) */
+    // ── 월식 (5절) ──
+    /** kind 0 반영 · 1 부분 · 2 개기. contacts = P1 U1 U2 U3 U4 P4 (없으면 NaN) */
     class Lunar(val kind: Int, val jd: Double, val umbraMag: Double, val penMag: Double, val contacts: DoubleArray,
                 val viewJd: Double, val lat: Double, val lon: Double, val hereAlt: Double)
 
@@ -260,7 +266,7 @@ object WhenCalc {
             find({ it.third }, 1.0), find({ it.second }, 1.0), find({ it.first }, 1.0))
     }
 
-    // ── 유성우 ──
+    // ── 유성우 (6절) ──
     fun showerPeak(from: Double, peakSunLon: Double): Double? {
         fun f(jd: Double) = norm180(Sun.position(jd).lon - peakSunLon)
         var a = from; var fa = f(a)
@@ -302,7 +308,7 @@ object WhenCalc {
         return best
     }
 
-    /** 지구 어디든: 극대 순간 해 −18° 아래, 시간당 예상이 가장 많은 곳(|위도| 작은 쪽 우선) */
+    /** 지구 어디든: 극대 순간 해 −18° 아래 · 시간당 예상이 가장 많은 곳 (|위도| 작은 쪽 우선) */
     fun meteorBest(peak: Double, raJ: Double, decJ: Double, zhr: Double): MeteorSpot? {
         val sun = Sun.position(peak); val moon = Moon.position(peak); val illum = Moon.phase(moon, sun).illuminated
         val rad = Frames.precession(peak) * Vec3.fromSpherical(raJ, decJ)
@@ -315,8 +321,11 @@ object WhenCalc {
         return best
     }
 
-    // ── 천체 ──
-    /** 천체 하나의 보기 조건. pos(jd)=그 순간 날짜 적도 단위벡터, extra(jd)=그 밖의 조건 0~1(달 지형: 지형 위 해 고도) */
+    // ── 천체 (3절) ──
+    /**
+     * 천체 하나의 보기 조건 (3-1 표). pos(jd) = 그 순간 날짜 적도 단위벡터.
+     * extra(jd) = 그 밖의 조건 0~1 (달 지형: 지형 위 해 고도)
+     */
     class Spec(val pos: (Double) -> Vec3, val sunThr: Double, val minAlt: Double, val moonCutK: Double, val extra: ((Double) -> Double)? = null)
 
     class Night(val jd: Double, val score: Double, val alt: Double, val az: Double, val moonAlt: Double, val illum: Double)
@@ -345,7 +354,10 @@ object WhenCalc {
         return Night(jd, altScore * dark * moonScore * ex, alt, az, ma, illum)
     }
 
-    /** from 이후 days 일, 날마다 현지 정오~다음 정오 20분 간격으로 그 밤 최고 점수를 구함. 가장 빠른 좋은 날=최고의 90% 넘는 첫날, 가장 좋은 날=최고, 시각은 5분 간격으로 다듬음 */
+    /**
+     * from 이후 days 일: 날마다 현지 정오~다음 정오 20분 간격 → 그 밤 최고 점수.
+     * 가장 빠른 좋은 날 = 최고의 90% 넘는 첫날 · 가장 좋은 날 = 최고. 시각은 5분 간격으로 다듬음
+     */
     fun objectSearch(s: Spec, from: Double, days: Int, lat: Double, lon: Double, alive: () -> Boolean): ObjResult {
         val loc = Calendar.toLocal(from, lon / 15.0)
         var noon = Calendar.julianDayLocal(loc.year, loc.month, loc.day, 12.0, lon / 15.0)
@@ -375,7 +387,7 @@ object WhenCalc {
         return ObjResult(nowN, refine(early), refine(best), max)
     }
 
-    /** 위도 추천 — 남중 고도가 (60° 근처) 넉넉한 위도 범위 중 내 위도에 가장 가까운 곳 */
+    /** 3-4: 위도 추천 — 남중 고도가 (60° 근처) 넉넉한 위도 범위 중 내 위도에 가장 가까운 곳 */
     fun recommendLat(myLat: Double, dec: Double, minAlt: Double): Double {
         val span = 60.0 - minAlt
         return myLat.coerceIn(dec - span, dec + span).coerceIn(-66.0, 66.0)

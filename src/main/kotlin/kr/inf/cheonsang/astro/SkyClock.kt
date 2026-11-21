@@ -6,9 +6,9 @@ import kotlin.math.floor
  * 타임랩스 천문 시계.
  *
  * - 느린 것(해의 황경·달·행성·날짜): jd = epochJd + (tick - epochTick) / 24000 × rate
- * - 하루 회전(별이 도는 것): **지방평균시** — 마크 시계 = 경도 lon 의 평균 태양시 (06:00 = 0틱).
+ * - 하루 회전(별이 도는 것): 1.3.0 부터 **지방평균시** — 마크 시계 = 경도 lon 의 평균 태양시 (06:00 = 0틱).
  *   지방항성시 = 평균 태양 적경 + 평균 태양 시간각 → 압축률 1 이면 GMST + 경도와 정확히 같음 (해 남중은 균시차만큼 ±16분).
- *   압축률을 바꿔도 낮밤 시각은 마크 시계 그대로.
+ *   압축률을 바꿔도 낮밤 시각은 마크 시계 그대로. (1.2.x 까지는 참태양시·KST 고정)
  * - rate = 1.0 이면 실제 속도(스텔라리움).
  * - lon: 경도 (동 +). 날짜·시각 표시 = 현지 평균시 (경도/15 시간대)
  */
@@ -24,7 +24,7 @@ data class SkyClock(
     /** 하늘의 율리우스일(UT) */
     fun jd(tick: Double): Double = epochJd + (tick - epochTick) / TICKS_PER_DAY * rate
 
-    /** 지방항성시(도) = 평균 태양 적경 + 마크 시각의 평균 태양 시간각 */
+    /** 지방항성시(도) = 평균 태양 적경 + 마크 시각의 평균 태양 시간각 (1.3.0) */
     fun lst(tick: Double): Double = norm360(meanSunRa(jd(tick)) + sunHourAngle(tick))
 
     /**
@@ -51,18 +51,18 @@ data class SkyClock(
     companion object {
         const val TICKS_PER_DAY = 24000.0
 
-        /** 기본 압축률: 1.0 = 실제 속도 */
+        /** 기본 압축률: 1.0 = 실제 속도 (11-08 지율님. 3.261 = 1년 112일은 이슬라 합칠 때 다시 정함) */
         const val DEFAULT_RATE = 1.0
 
-        /** 기준점: 2026-08-11 06:00 (경도 0° 지방평균시 = UTC) = 월드 0틱 — 하루 준비 뒤 8-12 개기일식·페르세우스 극대·그믐 */
+        /** 1.3.0 기준점 → 1.9.0: 2026-08-11 06:00 (경도 0° 지방평균시 = UTC) = 월드 0틱 — 하루 준비 뒤 8-12 개기일식·페르세우스 극대·그믐 (11-13 지율님) */
         const val DEFAULT_LAT = 0.0
         const val DEFAULT_LON = 0.0
         val DEFAULT_EPOCH_JD = Calendar.julianDayLocal(2026, 8, 11, 6.0, 0.0)
 
-        /** 옛 기본: 2019-03-21 06:00 KST, 남위 30° — 저장 기준이 없는 옛 월드 이어 붙이기용 */
+        /** 1.2.x 까지의 기본: 2019-03-21 06:00 KST, 남위 30° — 저장 기준이 없는 옛 월드 이어 붙이기용 */
         val OLD_EPOCH_JD = Calendar.julianDayKst(2019, 3, 21, 6, 0)
         const val OLD_LAT = -30.0
-        /** 옛 월드 경도 (KST 자오선) */
+        /** 옛 월드 경도 (KST 자오선, C-04) */
         const val OLD_LON = 135.0
 
         /** 평균 태양 적경 (도) — GMST(Meeus 12.4) 에서 정오 UT 의 값 */

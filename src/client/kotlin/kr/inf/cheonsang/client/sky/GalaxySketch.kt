@@ -16,8 +16,9 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 은하 관측 스케치 (shaders/core/galaxy.fsh): 사진(DSS2)이나 형태(Hubble)별 표면 밝기 모양과 보이는 밝기 문턱을 정함.
- * 형태 번호·무늬 씨앗을 정하고 셰이더와 같은 모양 식을 적분해 가장 밝은 곳의 표면 밝기를 구한 뒤, 배율·구경·겉보기 크기로 정한 문턱을 정점색에 담는다.
+ * 1.10.0 은하 관측 스케치 (shaders/core/galaxy.fsh): 실제 사진(DSS2, dev1b) 또는 형태(Hubble)별 표면 밝기 모양 + 보이는 밝기 문턱.
+ * 여기서는 형태 번호·무늬 씨앗을 정하고, 셰이더와 같은 모양 식을 적분해 "가장 밝은 곳의 표면 밝기"를 구함
+ * → 배율·구경(출사동)·겉보기 크기로 문턱(가장 밝은 곳 대비 몇 배 어두운 곳까지 보이나)을 정점색에 넣음.
  */
 object GalaxySketch {
     const val EXT = 1.3
@@ -90,13 +91,13 @@ object GalaxySketch {
 
     /** 모양 + 가장 밝은 곳 표면 밝기 (등/초각²) — 적분 등급이 이 모양 전체에 퍼졌다고 보고 */
     fun shape(o: Dso): Shape = cache.getOrPut(o.id) {
-        val q = (if (o.minor > 0) o.minor / o.major else 1.0).coerceIn(0.05, 1.0).let { if (o.type != "galaxy") maxOf(it, 0.8) else it }   // 성운·성단 칸은 거의 둥글게 (make_galaxy_atlas.py 와 같게)
-        // 구상성단 12 · 성운 13 · 행성상성운 14 (셰이더가 밝은 곳 색만 다르게)
+        val q = (if (o.minor > 0) o.minor / o.major else 1.0).coerceIn(0.05, 1.0).let { if (o.type != "galaxy") maxOf(it, 0.8) else it }   // 1.10.1: 성운·성단 칸은 거의 둥글게 (make_galaxy_atlas.py 와 같게)
+        // 1.10.1: 구상성단 12 · 성운 13 · 행성상성운 14 (셰이더가 밝은 곳 색만 다르게)
         val code = when (o.type) { "globular" -> 12; "nebula" -> 13; "planetary" -> 14; else -> code(SkyData.dsoMorph[o.id]) }
         val seed = seed(o.id)
         val qq = max(q, 0.15)
         val rArcsec = o.major / 2.0 * 60.0
-        // DSS2 사진 판이 있으면 그 빛 분포로 (가장 밝은 곳 대비 빛 면적은 판 만들 때 계산)
+        // 1.10.0-dev1b: DSS2 사진 판이 있으면 그 빛 분포로 (가장 밝은 곳 대비 빛 면적은 판 만들 때 계산)
         SkyData.galaxySketch[o.id]?.let { (tile, k) ->
             return@getOrPut Shape(q, code, seed, o.mag + 2.5 * (k + log10(rArcsec * rArcsec)), tile)
         }
@@ -114,7 +115,8 @@ object GalaxySketch {
 
     /**
      * 이 배율에서 정점색 (r 축비 · g 형태×16+씨앗 · b 진하기 · a 문턱) 0~255.
-     * 문턱 = 10^(−0.4·(문턱 표면 밝기 − 가장 밝은 곳 겉보기 표면 밝기)) (Visibility.surfaceThreshold, 빛무리와 같은 식). 가장 밝은 곳도 문턱 밖이면 0.7로 둬 흐린 얼룩은 남김.
+     * 문턱 = 가장 밝은 곳 대비 보이는 가장 어두운 곳의 밝기 비 = 10^(−0.4·(문턱 표면 밝기 − 가장 밝은 곳 겉보기 표면 밝기)).
+     * 문턱 표면 밝기는 Visibility.surfaceThreshold (빛무리와 같은 식, TBD). 가장 밝은 곳도 문턱 밖이면 0.7 로 (흐린 얼룩은 남김)
      */
     fun colors(o: Dso, zoom: Double, strength: Double): IntArray {
         val s = shape(o)

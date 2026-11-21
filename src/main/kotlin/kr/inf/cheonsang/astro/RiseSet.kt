@@ -4,7 +4,7 @@ import kr.inf.cheonsang.L
 import kotlin.math.floor
 
 /**
- * 출·남중·몰. 천상 하늘과 똑같은 규칙으로 계산 (마크 시계 = 그 자리 해 기준 시각, 대기 굴절 없음).
+ * 1.1.0 출·남중·몰. 천상 하늘과 똑같은 규칙으로 계산 (마크 시계 = 그 자리 해 기준 시각, 대기 굴절 없음).
  * 시각은 그날 0시부터의 분(0~1440, 다음날로 넘어가면 1440 이상).
  */
 object RiseSet {
@@ -88,7 +88,7 @@ class SkyDay(val clock: SkyClock, val lat: Double, anyTick: Long) {
     /** J2000 방향 → 고도 */
     fun altJ2000(min: Double, dir: Vec3) = asinD((horizon(min) * Frames.precession(jd(min)) * dir).normalized().y)
 
-    // 출몰 기준 고도 (Stellarium·Meeus, 대기굴절 34′ 포함): 해 -50′, 별·행성 -34′, 달 0.7275×지평시차 - 34′
+    // 출몰 기준 고도 (Stellarium·Meeus 표준, 대기 굴절 34′ 포함): 해 -0°50′(반지름 16′) · 별·행성 -0°34′ · 달 0.7275×지평시차 - 34′ (관측자 기준)
     fun sun(t0: Double = 0.0, t1: Double = 1440.0) = RiseSet.find(-0.8333, t0, t1) { altOfDate(it, Sun.position(jd(it)).dir) }
     fun sunAlt(min: Double) = altOfDate(min, Sun.position(jd(min)).dir)
     fun moon(t0: Double = 0.0, t1: Double = 1440.0) = RiseSet.find(0.0, t0, t1) {

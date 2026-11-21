@@ -25,8 +25,8 @@ data class Dso(
 )
 
 /**
- * 이름 없는 유명 별 (famous_stars.json, HYG v4.1 좌표 J2000). hip 이 있으면 맨눈 목록 별과 HIP 로, 없으면 위치(1′ 안)로 맞춤.
- * fixMag = 자료 등급이 부정확한 별의 보정값 (예: 용골자리 에타 6.21 → 4.3)
+ * 1.9.0-dev2 이름 없는 유명 별 (famous_stars.json, HYG v4.1 좌표 J2000) — /cfind 이름 · 카드에 거리·한 줄 설명.
+ * hip 이 있으면 맨눈 목록 별과 HIP 로, 없으면 위치(1′ 안)로 맞춤. fixMag = 자료 밝기가 옛 값인 별 (용골자리 에타 6.21 → 4.3)
  */
 class Famous(val id: String, val ko: String, val en: String, val alt: List<String>, val ra: Double, val dec: Double, val hip: Int,
              val mag: Double, val ly: Double, val fixMag: Double?, private val noteKo: String, private val noteEn: String) {
@@ -39,7 +39,7 @@ class Famous(val id: String, val ko: String, val en: String, val alt: List<Strin
 data class Shower(
     val id: String,
     val ko: String,
-    /** 영어 이름 (Perseids) · 단수 (Perseid, "Perseid meteor shower") */
+    /** 1.9.0-dev2 영어 이름 (Perseids) · 단수 (Perseid, "Perseid meteor shower") */
     val en: String,
     val en1: String,
     /** 극대 때 해의 황경 (도) */
@@ -109,8 +109,9 @@ object SkyData {
     }
 
     /**
-     * 천상열차분야지도 별자리 289개 (korean_constellations.json, _tools/make_korean_sky2.py — 보천가 목록 + Stellarium 중국 전통 별자리 선, Unihan 한자음 검증).
-     * 이름은 한글 (영어 화면은 음역, 한자 없음)
+     * 1.9.0-dev4 천상열차분야지도 별자리 289개 (korean_constellations.json, _tools/make_korean_sky2.py — 보천가 목록 + Stellarium 중국 전통 별자리 선 CC BY-SA
+     * + Unihan 한자음 검증, 보고서 _tools/korean_sky_report.md)
+     * 이름: 한글 (영어 화면은 음역, 한자 없음 — 11-13 지율님)
      */
     val korean: List<Constellation> by lazy {
         json("korean_constellations.json").asJsonArray.map { e ->
@@ -126,15 +127,31 @@ object SkyData {
         }
     }
 
-    /** 망원경 화면에 그릴 별자리 — 설정 "별자리: 서양 / 천상열차" */
+    /** 1.9.0-dev4 천상열차 발전과제용: 28수 가장 밝은 별(각→진 순) · 삼원 별들 · 북두 일곱 별 · 노인성 (HIP) */
+    class KoreanMeta(val mansions: List<Int>, val enclosures: Map<String, Set<Int>>, val ladle: List<Int>, val noin: Int)
+    val koreanMeta: KoreanMeta by lazy {
+        val arr = json("korean_constellations.json").asJsonArray.map { it.asJsonObject }
+        fun hips(o: com.google.gson.JsonObject) = o["hips"]?.asJsonArray?.map { it.asInt } ?: emptyList()
+        val enc = linkedMapOf("jami" to "자미원", "taemi" to "태미원", "cheonsi" to "천시원").mapValues { (_, g) ->
+            arr.filter { it["group"]?.asString?.endsWith(g) == true }.flatMap { hips(it) }.toSet()
+        }
+        KoreanMeta(
+            arr.filter { it["mansion"]?.asBoolean == true }.map { it["bright"].asInt },
+            enc,
+            arr.firstOrNull { it["hz"]?.asString == "北斗" }?.let { hips(it) } ?: emptyList(),
+            arr.firstOrNull { it["hz"]?.asString == "老人" }?.let { hips(it).firstOrNull() } ?: 30438,
+        )
+    }
+
+    /** 망원경 화면에 그릴 별자리 — 설정 "별자리: 서양 / 천상열차" (발전과제·별 부호는 늘 서양 88) */
     val drawnConstellations: List<Constellation> get() = if (kr.inf.cheonsang.client.TelescopeFilter.korean) korean else constellations
 
-    /** 심원천체 거리 (광년) — 위키백과 메시에·캘드웰 표 (_tools/make_dso_dist.py) */
+    /** 1.1.0: 심원천체 거리 (광년) — 위키백과 메시에·캘드웰 표 (_tools/make_dso_dist.py) */
     val dsoDist: Map<String, Double> by lazy {
         json("dso_dist.json").asJsonObject.entrySet().associate { (k, v) -> k to v.asDouble }
     }
 
-    /** 별자리 그림 (Stellarium) — 아틀라스 uv, 그림 크기, 맞출 별 3개 [x, y, ra, dec] */
+    /** 1.1.2: 별자리 그림 (Stellarium) — 아틀라스 uv, 그림 크기, 맞출 별 3개 [x, y, ra, dec] */
     class ArtPiece(val id: String, val uv: DoubleArray, val w: Double, val h: Double, val anchors: List<DoubleArray>)
     val art: List<ArtPiece> by lazy {
         json("art.json").asJsonArray.map { e ->
@@ -144,24 +161,24 @@ object SkyData {
         }
     }
 
-    /** 은하 드보클레르 형태 — 위키백과 정보상자 (_tools/make_galaxy_types.py) */
+    /** 1.1.1: 은하 드보클레르 형태 — 위키백과 정보상자 (_tools/make_galaxy_types.py) */
     val dsoMorph: Map<String, String> by lazy {
         json("dso_morph.json").asJsonObject.entrySet().associate { (k, v) -> k to v.asString }
     }
 
-    /** 은하 관측 스케치 판 (galaxy_sketch.json — _tools/make_galaxy_atlas.py): id → (판 칸 번호, log10 빛 면적) */
+    /** 1.10.0-dev1b: 은하 관측 스케치 판 (galaxy_sketch.json — _tools/make_galaxy_atlas.py): id → (판 칸 번호, log10 빛 면적) */
     val galaxySketch: Map<String, Pair<Int, Double>> by lazy {
         runCatching {
             json("galaxy_sketch.json").asJsonObject["tiles"].asJsonObject.entrySet().associate { (k, v) -> k to (v.asJsonArray[0].asInt to v.asJsonArray[1].asDouble) }
         }.getOrDefault(emptyMap())
     }
 
-    /** 별자리 경계선 (d3-celestial, J2000) — 다각형마다 [ra0, dec0, ra1, dec1, ...] */
+    /** 1.1.0: 별자리 경계선 (d3-celestial, J2000) — 다각형마다 [ra0, dec0, ra1, dec1, ...] */
     val bounds: List<DoubleArray> by lazy {
         json("bounds.json").asJsonArray.map { e -> val a = e.asJsonArray; DoubleArray(a.size()) { a[it].asDouble } }
     }
 
-    /** 별 정보 (stars.bin 과 같은 순서, 실제 별만) — 거리(광년, 0 = 모름) · 절대등급(NaN = 모름) · HD · 분광형 */
+    /** 1.1.0: 별 정보 (stars.bin 과 같은 순서, 실제 별만) — 거리(광년, 0 = 모름) · 절대등급(NaN = 모름) · HD · 분광형 */
     class StarInfo(val distLy: FloatArray, val absMag: FloatArray, val hd: IntArray, val spect: Array<String>)
     val starInfo: StarInfo? by lazy {
         val input = SkyData::class.java.getResourceAsStream("/assets/cheonsang/sky/star_info.bin") ?: return@lazy null
@@ -187,7 +204,7 @@ object SkyData {
         }
     }
 
-    /** 화면에 쓸 별 이름 (한국어 화면 = 한국어, 아니면 영어). 이름 없는 유명 별은 그 이름 */
+    /** 1.9.0-dev2: 화면에 쓸 별 이름 (한국어 화면 = 한국어, 아니면 영어). 이름 없는 유명 별은 그 이름 */
     fun starLabel(hip: Int): String? = (if (kr.inf.cheonsang.L.ko) starNames[hip] else starNamesEn[hip] ?: starNames[hip])
         ?: famousByHip[hip]?.label
 
@@ -207,7 +224,7 @@ object SkyData {
         return famous.firstOrNull { f -> f.dirJ.x * x + f.dirJ.y * y + f.dirJ.z * z > cosLim && (mag == null || kotlin.math.abs(mag - f.mag) < 1.5) }
     }
 
-    /** /cfind: 별 영어 이름 (HIP → en) */
+    /** 1.8.3 /cfind: 별 영어 이름 (HIP → en) */
     val starNamesEn: Map<Int, String> by lazy {
         json("star_names.json").asJsonObject.entrySet().mapNotNull { (k, v) ->
             v.asJsonObject["en"]?.asString?.takeIf { it.isNotBlank() }?.let { k.toInt() to it }

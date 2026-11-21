@@ -29,7 +29,7 @@ object Telescope {
 
     val ITEM: Item = Registry.register(BuiltInRegistries.ITEM, KEY, TelescopeItem(Item.Properties().setId(KEY).stacksTo(1)))
 
-    /** 크리에이티브 "도구 및 유틸리티" 탭 — 망원경(spyglass) 바로 뒤 */
+    /** 1.6.0: 크리에이티브 "도구 및 유틸리티" 탭 — 망원경(spyglass) 바로 뒤 */
     private val TOOLS_TAB: ResourceKey<net.minecraft.world.item.CreativeModeTab> =
         ResourceKey.create(Registries.CREATIVE_MODE_TAB, net.minecraft.resources.Identifier.withDefaultNamespace("tools_and_utilities"))
 

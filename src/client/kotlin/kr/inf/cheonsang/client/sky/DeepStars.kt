@@ -16,14 +16,18 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /**
- * 망원경용 깊은 별 (9등 초과 ~ 13등) — deep_stars.bin (Tycho-2, Gaia 짝이 있으면 그 등급·색·위치 사용). 메모리를 아끼려 시야 근처 칸만 작은 버퍼로 그림.
- * Gaia 별 팩(`cheonsang_stars/cNNNNN.bin`, Gaia 15.2등까지)이 있으면 백그라운드 스레드 하나가 칸을 읽어 통째로 바꿔 그리고(렌더 스레드는 안 기다림), 캐시가 [CACHE_STARS] 를 넘으면 오래 안 쓴 칸부터 버림.
+ * 1.7.0 망원경용 깊은 별 (9등 초과 ~ 13등) — deep_stars.bin (_tools/make_deep_stars.py, Tycho-2).
+ * 전부 올리면 수백 MB 라, 망원경 시야 근처 하늘 칸 (약 1°²) 의 별만 골라 작은 버퍼로 그림 (CheonsangSky.drawDeep).
+ * 1.8.0: Gaia 짝이 있는 Tycho 별은 Gaia 값 (등급·색·J2000 위치) · 12~13등 보충 별 없앰.
+ * 1.8.0 Gaia 별 팩 (cheonsang-stars, _tools/make_gaia_pack.py): 칸마다 `cheonsang_stars/cNNNNN.bin` (본체 별 + Gaia 15.2등까지).
+ *   팩이 있으면 칸을 통째로 팩 칸으로 바꿈 (본체 별은 팩에 같은 값으로 들어 있어 어두운 별만 늘어남).
+ *   칸은 백그라운드 스레드 하나가 읽음 — 아직 안 읽힌 칸은 본체 칸으로 대신 그림 (렌더 스레드는 안 기다림), 읽힌 별 수 상한 [CACHE_STARS] 넘으면 오래 안 쓴 칸부터 버림.
  */
 object DeepStars {
     private const val PATH = "/assets/cheonsang/sky/deep_stars.bin"
     private const val PACK_DIR = "/cheonsang_stars/"
     const val MAX_STARS = 150_000
-    /** 팩 칸 캐시 상한 (별 수, 별 하나 14바이트 → 약 42MB) */
+    /** 1.8.0: 팩 칸 캐시 상한 (별 수, 별 하나 14바이트 → 약 42MB) */
     private const val CACHE_STARS = 3_000_000
 
     private var loaded = false
@@ -39,7 +43,7 @@ object DeepStars {
     val outDir = FloatArray(MAX_STARS * 3)
     val outMag = FloatArray(MAX_STARS)
     val outBv = FloatArray(MAX_STARS)
-    /** 마지막 collect 로 out* 에 담긴 별 수 (좌클릭 카드가 이 목록에서 고름) */
+    /** 1.8.1: 마지막 collect 로 out* 에 담긴 별 수 (좌클릭 카드가 이 목록에서 고름) */
     var lastCount = 0
         private set
     /** 마지막 collect 가 [MAX_STARS] 에서 잘렸는지 */
@@ -77,7 +81,7 @@ object DeepStars {
         loadPack()
     }
 
-    // ── Gaia 별 팩 ──
+    // ── 1.8.0 Gaia 별 팩 ──
     private class Cell(val dir: FloatArray, val mag: ShortArray, val bv: ShortArray) { @Volatile var used = 0L }
     /** 읽기 실패·없는 칸 → 본체 칸으로 */
     private val FAILED = Cell(FloatArray(0), ShortArray(0), ShortArray(0))
@@ -169,7 +173,7 @@ object DeepStars {
     fun loading() = pending.isNotEmpty()
 
     /**
-     * 은하수 그림에서 남길 몫 — 팩이 있을 때만, 그 방향 칸의 "그림 속 별빛(Tycho 에 없는 Gaia 별) 중 한계 등급까지의 몫" 을 뺌.
+     * 1.8.0: 은하수 그림에서 남길 몫 — 팩이 있을 때만, 그 방향 칸의 "그림 속 별빛(Tycho 에 없는 Gaia 별) 중 한계 등급까지의 몫" 을 뺌.
      * 팩이 없으면 1 (본체 Tycho 별은 그림에 안 들어 있어 겹침 없음)
      */
     fun milkyKeep(center: Vec3, limit: Float): Float {

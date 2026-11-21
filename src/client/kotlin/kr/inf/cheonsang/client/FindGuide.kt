@@ -24,8 +24,11 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
- * `/cfind <이름>` (클라이언트 명령): 별·행성·달·해·심원천체(M/C 번호)·별자리·위성·유성우 복사점·달 지명 위치 한 줄 + 방향 화살표 (시점은 안 돌림). 이름은 한글/영어/약자/소유격·별 부호(그리스 문자·플램스티드)·HD·반성(B·C) 도 받음.
- * 화살표는 60초, 천체가 화면 안에 들어오면 테두리로 바뀜. 서버 `/cele` 와 이름이 겹쳐 자동완성이 깨지는 문제 때문에 클라이언트 명령으로 따로 둠.
+ * `/cfind <이름>` (클라이언트 명령, 0.1.3-b · 0.1.8 이름 변경): 별·행성·달·해·심원천체(M/C 번호)·별자리 위치 한 줄 + 방향 화살표.
+ * 1.8.3: 위성·유성우 복사점·달 지명 · 영어 이름 · 별 부호(그리스 문자·플램스티드, 한글/영어/약자/소유격) · HD · 반성(B·C) 도.
+ * 시점은 돌리지 않는다. 화살표는 60초 동안, 천체가 화면 안에 들어오면 화살표 대신 테두리 표시.
+ * 0.1.3-b~0.1.7 은 `/cele find` 였으나, 서버 `/cele` 와 이름이 겹치면 Fabric 이 클라이언트 하위 명령을 자동완성에서 버리고
+ * 나머지 하위 명령은 가로채 서버로 넘기다 튕기는 문제가 있어 따로 뺌. `/cele` 는 서버 명령 그대로.
  */
 object FindGuide {
     private const val SHOW_MS = 60_000L
@@ -34,10 +37,10 @@ object FindGuide {
 
     /** 찾을 수 있는 것 하나. names = 입력과 맞춰 볼 이름들 (첫 번째가 자동완성에 뜨는 이름) */
     private class Target(val names: List<String>, val display: String, val dir: () -> Vec3?, val info: () -> String?) {
-        /** true 추적 때 가운데 다시 고르지 않고 이 대상을 그대로 (위성) */
+        /** 1.8.4: true 추적 때 가운데 다시 고르지 않고 이 대상을 그대로 (위성) */
         var lock: (() -> kr.inf.cheonsang.client.Target)? = null
         var lockNote: (() -> String?)? = null
-        /** `/cwhen`: 무엇인지 (기본 = 고정 천체) · 밝기 */
+        /** 1.10.0-dev2 `/cwhen`: 무엇인지 (기본 = 고정 천체) · 밝기 */
         var kind = CWhen.Kind.FIXED
         var planet: Planet? = null
         var asteroid: kr.inf.cheonsang.client.sky.Asteroids.Body? = null
@@ -51,7 +54,7 @@ object FindGuide {
 
     private fun jdNow() = CheonsangSky.clock.jd((Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())
 
-    // ── 모든 이름 형태 (한글·영어·약자·소유격·그리스 문자·플램스티드·HIP·HD·반성) ──
+    // ── 1.8.3: 모든 이름 형태 (한글·영어·약자·소유격·그리스 문자·플램스티드·HIP·HD·반성) ──
     private val MOON_EN = linkedMapOf("타이탄" to "Titan", "레아" to "Rhea", "이아페투스" to "Iapetus", "테티스" to "Tethys", "디오네" to "Dione",
         "엔셀라두스" to "Enceladus", "미마스" to "Mimas", "이오" to "Io", "유로파" to "Europa", "가니메데" to "Ganymede", "칼리스토" to "Callisto")
     private val MOON_NUM = mapOf("타이탄" to "Ⅵ", "레아" to "Ⅴ", "이아페투스" to "Ⅷ", "테티스" to "Ⅲ", "디오네" to "Ⅳ", "엔셀라두스" to "Ⅱ", "미마스" to "Ⅰ", "이오" to "Ⅰ", "유로파" to "Ⅱ", "가니메데" to "Ⅲ", "칼리스토" to "Ⅳ")
@@ -93,24 +96,24 @@ object FindGuide {
             list += Target(listOf(pl.ko, planetEn(pl)), pl.label, { pos()?.let { CheonsangSky.skyMat3 * it.dir } }) { pos()?.let { L.t("cheonsang.findguide.1").format(it.mag) } }
                 .also {
                     it.kind = CWhen.Kind.PLANET; it.planet = pl; it.mag = { pos()?.mag }
-                    // true 추적은 가운데를 다시 고르지 않고 이 행성 그대로
+                    // 1.10.0-dev2: true 추적은 가운데를 다시 고르지 않고 이 행성 그대로 (어두운 해왕성이 한계 밖이라 근처 C51 이 잡히던 것, 11-14 지율님)
                     it.lock = { TelescopeHud.planetTarget(pos() ?: error("no planet")) }
                 }
         }
-        // 천상열차분야지도 별자리 (한글·음역) — 이름 위치로 안내, 서양 별자리 이름과 겹치면 서양이 먼저
+        // 1.9.0-dev4 천상열차분야지도 별자리 (한글·음역) — 이름 위치로 안내, 서양 별자리 이름과 겹치면 서양이 먼저
         for (k in SkyData.korean) {
             if (k.ko.isEmpty()) continue
             val dirJ = Vec3.fromSpherical(k.labelRa, k.labelDec)
             list += Target(listOf(k.ko, k.en), L.t("cheonsang.korean.target", L.name(k.ko, k.en)), { CheonsangSky.skyMat3 * dirJ }) { L.t("cheonsang.korean.joseon") }.also { it.kind = CWhen.Kind.CONST }
         }
-        // 이름 없는 유명 별 (맨눈 목록에 이름이 있는 별은 그쪽으로)
+        // 1.9.0-dev2 이름 없는 유명 별 (맨눈 목록에 이름이 있는 별은 그쪽으로)
         for (f in SkyData.famous) {
             if (f.hip > 0 && f.hip in SkyData.starNames) continue
             list += Target(listOf(f.ko, f.en) + f.alt, f.label, {
                 (if (f.hip > 0) starIndex(f.hip)?.let { starDir(it) } else null) ?: CheonsangSky.skyMat3 * f.dirJ
             }) { L.t("cheonsang.findguide.1").format(f.fixMag ?: f.mag) + " · " + f.note }.also { it.mag = { f.fixMag ?: f.mag } }
         }
-        // 위성: 이름 · 영어 · "토성 Ⅵ"·"토성 6"·"Saturn VI"
+        // 1.8.3 위성: 이름 · 영어 · "토성 Ⅵ"·"토성 6"·"Saturn VI"
         for ((ko, en) in MOON_EN) {
             fun now() = CheonsangSky.moonsNow().firstOrNull { it.ko == ko }
             val pl = if (ko in JOVIAN_KO) Planet.JUPITER else Planet.SATURN
@@ -124,14 +127,14 @@ object FindGuide {
                 t.kind = CWhen.Kind.SATELLITE; t.planet = pl; t.mag = { now()?.mag }
             }
         }
-        // 소행성
+        // 1.2.5 소행성
         for (b in kr.inf.cheonsang.client.sky.Asteroids.bodies) {
             fun pos() = CheonsangSky.asteroids.firstOrNull { it.body === b }
             list += Target(listOf(b.ko, b.en, "${b.num} ${b.en}", "${b.num} ${b.ko}"), if (L.ko) "${b.ko} (${b.num} ${b.en})" else "${b.num} ${b.en}", { pos()?.let { CheonsangSky.skyMat3 * it.dir } }) {
                 pos()?.let { L.t("cheonsang.findguide.1").format(it.mag) } ?: L.t("cheonsang.findguide.5")
             }.also { it.kind = CWhen.Kind.ASTEROID; it.asteroid = b; it.mag = { pos()?.mag } }
         }
-        // 변광성 중 이름 목록에 없는 것 (미라)
+        // 1.2.5 변광성 중 이름 목록에 없는 것 (미라)
         for (v in kr.inf.cheonsang.client.sky.VariableStars.list) if (v.hip !in SkyData.starNames) {
             fun idx() = CheonsangSky.catalog?.let { c -> (0 until c.realCount).firstOrNull { c.hip[it] == v.hip } }
             list += Target(listOf(v.ko), L.t("cheonsang.findguide.6", v.label), { idx()?.let { starDir(it) } }) {
@@ -148,7 +151,7 @@ object FindGuide {
         }
         for (o in SkyData.dso) {
             val name = L.name(o.ko, o.en)
-            // NGC·IC·Mel·Cr 번호로도 (앞 0 빼고, "NGC104"·"NGC 104") · "Messier 31"·"Caldwell 14"
+            // 1.1.3: NGC·IC·Mel·Cr 번호로도 (앞 0 빼고, "NGC104"·"NGC 104") · 1.8.3: "Messier 31"·"Caldwell 14"
             val cat = Regex("^(NGC|IC|Mel|Cr)0*(\\d+)").find(o.ngc)?.let { listOf("${it.groupValues[1]}${it.groupValues[2]}", "${it.groupValues[1]} ${it.groupValues[2]}") }.orEmpty()
             val long = Regex("^([MC])(\\d+)$").find(o.id)?.let { listOf((if (it.groupValues[1] == "M") "Messier " else "Caldwell ") + it.groupValues[2]) }.orEmpty()
             list += Target(listOfNotNull(o.id, o.ko.ifEmpty { null }, o.en.ifEmpty { null }) + cat + long, if (name.isEmpty()) o.id else "${o.id} $name",
@@ -160,13 +163,13 @@ object FindGuide {
             list += Target(listOfNotNull(ko, c.en, c.id, GENITIVE[c.id], ko?.removeSuffix("자리")?.takeIf { it != ko && it.isNotEmpty() }), L.name(c.ko, c.en),
                 { CheonsangSky.skyMat3 * Vec3.fromSpherical(c.labelRa, c.labelDec) }) { null }.also { it.kind = CWhen.Kind.CONST }
         }
-        // 유성우 복사점 (별자리 이름과 겹치는 "거문고자리" 등은 별자리가 먼저 걸림)
+        // 1.8.3 유성우 복사점 (별자리 이름과 겹치는 "거문고자리" 등은 별자리가 먼저 걸림)
         for (s in SkyData.showers) {
             list += Target(listOf(L.t("cheonsang.findguide.10", s.ko), s.ko, L.t("cheonsang.findguide.9", s.ko), s.id), L.t("cheonsang.findguide.8", s.label),
                 { CheonsangSky.skyMat3 * Vec3.fromSpherical(s.ra, s.dec) }) { "ZHR %.0f".format(s.zhr) }.also { it.kind = CWhen.Kind.SHOWER; it.showerId = s.id }
         }
-        // 달 지명 — 달 뒷면이면 달 가운데로 안내
-        for (f in MoonNames.list) {
+        // 1.8.3 달 지명 — 달 뒷면이면 달 가운데로 안내. 2.0.2-dev1: 유명 지명만
+        for (f in MoonNames.famous) {
             list += Target(listOfNotNull(f.ko.ifEmpty { null }, f.name), f.title, { MoonNames.world(f.lat, f.lon) ?: CheonsangSky.moonWorld }) {
                 L.t("cheonsang.findguide.12", f.typeLabel) + if (MoonNames.world(f.lat, f.lon) == null) L.t("cheonsang.findguide.11") else ""
             }.also { it.kind = CWhen.Kind.FEATURE; it.feature = f }
@@ -209,7 +212,7 @@ object FindGuide {
         return b.toString()
     }
 
-    /** 이름으로 지금 월드 방향 (/cbench) */
+    /** 이름으로 지금 월드 방향 (1.0.0a /cbench) */
     internal fun dirOf(name: String) = lookup(name)?.dir?.invoke()
 
     /** 정확히 같은 이름 → 번호(HIP·HD) → 별 부호 → 반성(B·C…) → 앞부분이 같은 이름 → 이름 안에 들어 있음 순서로 */
@@ -237,7 +240,7 @@ object FindGuide {
         return Target(listOf(label), label, { starDir(i) }) { L.t("cheonsang.findguide.1").format(cat.mag[i]) }.also { it.mag = { cat.mag[i].toDouble() } }
     }
 
-    /** "HIP 21421"·"hip21421"·"21421" → 카탈로그 전체(이름 없는 별 포함)에서 HIP 번호로 */
+    /** 1.6.0: "HIP 21421"·"hip21421"·"21421" → 카탈로그 전체(이름 없는 별 포함)에서 HIP 번호로 */
     private fun hipTarget(q: String): Target? {
         val n = Regex("^(?:hip)?(\\d{1,6})$").find(q)?.groupValues?.get(1)?.toIntOrNull() ?: return null
         val cat = CheonsangSky.catalog ?: return null
@@ -245,7 +248,7 @@ object FindGuide {
         return starTarget(i)
     }
 
-    /** "HD 48915" */
+    /** 1.8.3: "HD 48915" */
     private fun hdTarget(q: String): Target? {
         val n = Regex("^hd(\\d{1,6})$").find(q)?.groupValues?.get(1)?.toIntOrNull() ?: return null
         val cat = CheonsangSky.catalog ?: return null
@@ -284,7 +287,7 @@ object FindGuide {
         return null
     }
 
-    /** 별 부호: "거문고자리 α"·"α 거문고자리"·"알파 거문고"·"α Lyr"·"Alpha Lyrae"·"Lyr 3"·"3 Lyrae"·"백조자리 61" */
+    /** 1.8.3 별 부호: "거문고자리 α"·"α 거문고자리"·"알파 거문고"·"α Lyr"·"Alpha Lyrae"·"Lyr 3"·"3 Lyrae"·"백조자리 61" */
     private fun designationTarget(q: String): Target? {
         val cat = CheonsangSky.catalog ?: return null
         for ((tok, id) in conTokens) {
@@ -304,7 +307,7 @@ object FindGuide {
         return null
     }
 
-    /** 반성: "시리우스 B"·"알마크 C" — 주성 120″ 안 다른 별을 밝은 순으로 B, C, … */
+    /** 1.8.3 반성: "시리우스 B"·"알마크 C" — 주성 120″ 안 다른 별을 밝은 순으로 B, C, … */
     private fun companionTarget(q: String): Target? {
         if (q.length < 2) return null
         val letter = q.last()
@@ -345,7 +348,7 @@ object FindGuide {
 
     internal val COMPASS get() = arrayOf(L.t("cheonsang.findguide.30"), L.t("cheonsang.findguide.29"), L.t("cheonsang.findguide.28"), L.t("cheonsang.findguide.27"), L.t("cheonsang.findguide.26"), L.t("cheonsang.findguide.25"), L.t("cheonsang.findguide.24"), L.t("cheonsang.findguide.23"), L.t("cheonsang.findguide.22"), L.t("cheonsang.findguide.21"), L.t("cheonsang.findguide.20"), L.t("cheonsang.findguide.19"), L.t("cheonsang.findguide.18"), L.t("cheonsang.findguide.17"), L.t("cheonsang.findguide.16"), L.t("cheonsang.findguide.15"))
 
-    // ── `/cwhen <천체>`: /cfind 와 같은 찾기 ──
+    // ── 1.10.0-dev2 `/cwhen <천체>`: /cfind 와 같은 찾기 ──
     /** 찾은 것 하나 (메인 스레드에서 만든 값 — 계산 스레드로 넘김) */
     internal class Found(val name: String, val display: String, val kind: CWhen.Kind, val dirJ: Vec3?, val mag: Double?, val planet: Planet?,
                          val asteroid: kr.inf.cheonsang.client.sky.Asteroids.Body?, val feature: MoonNames.Feature?, val showerId: String?)
@@ -386,7 +389,7 @@ object FindGuide {
                 ClientCommands.literal("cfind").then(
                     ClientCommands.argument("name", StringArgumentType.greedyString())
                         .suggests { _, b ->
-                            // 이름 뒤 공백이면 true·false 를 끝 단어 자리에 (바닐라 on/off 처럼)
+                            // 1.10.1-dev7: 이름 뒤 공백이면 true·false 를 끝 단어 자리에 (바닐라 on/off 처럼)
                             val rem = b.remaining
                             val sp = rem.lastIndexOf(' ')
                             if (sp > 0) {
@@ -399,14 +402,14 @@ object FindGuide {
                                 }
                             }
                             val q = key(b.remaining)
-                            // 첫 이름만이 아니라 모든 이름 (앞부분이 같은 것 먼저)
+                            // 1.8.3: 첫 이름만이 아니라 모든 이름 (앞부분이 같은 것 먼저)
                             val all = targets.flatMap { it.names }.distinct()
                             (all.filter { key(it).startsWith(q) } + all.filter { q.isNotEmpty() && !key(it).startsWith(q) && key(it).contains(q) })
                                 .take(60).forEach { b.suggest(it) }
                             b.buildFuture()
                         }
                         .executes { c ->
-                            // 끝 단어 true/false = 바로 추적 (true 면 그 천체로 시점 + 망원경을 들고 있으면 켜고 추적 고정)
+                            // 1.5.4: 끝 단어 true/false = 바로 추적 (true 면 그 천체로 시점 + 망원경을 들고 있으면 켜고 추적 고정)
                             val raw = StringArgumentType.getString(c, "name").trim()
                             val last = raw.substringAfterLast(' ').lowercase()
                             val auto = last == "true"
@@ -435,7 +438,7 @@ object FindGuide {
                                             current = null
                                         }
                                     }
-                                    // 지금 관측 조건이 아니면 가장 좋은 밤 + [위치]·[이동](OP)·[다음] (/cwhen <천체> 와 같은 계산)
+                                    // 1.10.1-dev8: 지금 관측 조건이 아니면 가장 좋은 밤 + [위치]·[이동](OP)·[다음] (/cwhen <천체> 와 같은 계산)
                                     try { CWhen.afterFind(c.source, name) } catch (e: Exception) { Cheonsang.LOG.warn("Cheonsang: /cfind when", e) }
                                 }
                             }
@@ -458,7 +461,7 @@ object FindGuide {
         val pr = TelescopeHud.Projector(mc)
         val p = pr.project(dir)
         val inView = p != null && p[0] in 8.0..pr.w - 8 && p[1] in 8.0..pr.h - 8 && (!TelescopeView.active || pr.fromCenter(p) < pr.radius * 0.8)
-        // 조준선 가운데(반경 16 GUI 픽셀)에 들어오면 찾은 것으로 보고 표시 끝
+        // 조준선 가운데(반경 16 GUI 픽셀)에 들어오면 찾은 것으로 보고 표시 끝 (0.1.9)
         if (p != null && pr.fromCenter(p) <= FOUND_RADIUS) { current = null; return }
         if (inView) {
             // 테두리 (모서리 4개)

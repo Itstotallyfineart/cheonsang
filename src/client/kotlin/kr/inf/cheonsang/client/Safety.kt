@@ -6,7 +6,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
 /**
- * 튕김 안전망: 천상 코드에서 오류가 나도 게임은 계속. 오류 난 부분(하늘·망원경·찾기·키)만 이번 접속 동안 끄고 바닐라로 두며, 로그에는 전체 오류를 한 번 남김.
+ * 0.2.0 튕김 안전망: 천상 코드에서 오류가 나도 게임은 계속.
+ * 오류 난 부분(하늘·망원경·찾기·키)만 이번 접속 동안 끄고 바닐라로 둔다. 로그에는 전체 오류를 한 번 남김.
  * 서버를 나갔다 들어오면 다시 켜 봄.
  */
 object Safety {
@@ -14,8 +15,10 @@ object Safety {
     const val TELESCOPE = "망원경"
     const val FIND = "찾기"
     const val KEYS = "키"
-    /** 찾기 하나가 걸려도 나머지는 꺼지지 않게 따로 둠 */
+    /** 1.5.2.1: 찾기 하나가 걸리면 다 꺼지던 것을 나눔 */
     const val TONIGHT = "오늘 밤"
+    const val BOOK = "수첩"
+    const val LOG = "도감"
 
     @PublishedApi internal val off = HashSet<String>()
 
@@ -42,7 +45,7 @@ object Safety {
 
     fun reset() = off.clear()
 
-    /** 기능 이름 (상수는 한국어 식별자) → 화면 이름 */
-    private val PART_KEY = mapOf(SKY to "sky", TELESCOPE to "telescope", FIND to "find", KEYS to "keys", TONIGHT to "tonight")
+    /** 1.9.0-dev2: 기능 이름 (상수는 한국어 식별자) → 화면 이름 */
+    private val PART_KEY = mapOf(SKY to "sky", TELESCOPE to "telescope", FIND to "find", KEYS to "keys", TONIGHT to "tonight", BOOK to "book", LOG to "log")
     @PublishedApi internal fun partLabel(part: String) = PART_KEY[part]?.let { L.t("cheonsang.part.$it") } ?: part
 }

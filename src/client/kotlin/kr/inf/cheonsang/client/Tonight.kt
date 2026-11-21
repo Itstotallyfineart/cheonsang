@@ -17,12 +17,13 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
 /**
- * `/ctonight` (내 화면): 오늘 밤 볼거리 — 해·박명, 달, 행성, 높이 뜨는 심원천체 5개, 유성우.
+ * 1.1.0 `/ctonight` (내 화면): 오늘 밤 볼거리 — 해·박명, 달, 행성, 높이 뜨는 심원천체 5개, 유성우.
  * 지금 천상 하늘(날짜·위도·압축률) 그대로 계산. 새벽(해 뜨기 전)에 치면 지금 이어지는 밤.
  */
 object Tonight {
     fun register() {
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
+            // 1.10.0-dev2: `/cwhen` 의 옛 이름 — 1.10.x 동안 그대로 되지만 자동완성에는 안 보임 (2.0 에서 뺌)
             dispatcher.register(ClientCommands.literal("ctonight").requires { !CWhen.copyingTree() }.executes { c ->
                 Safety.run(Safety.TONIGHT, Unit) { report().forEach { line -> c.source.sendFeedback(Component.literal(line)) } }
                 1
@@ -31,7 +32,7 @@ object Tonight {
         }
     }
 
-    /** 다음 천문 현상 — [날짜] 는 리얼타임 아니고 OP 일 때만 */
+    /** 1.2.1: 다음 천문 현상 (전 `/cele next`) — [날짜] 는 리얼타임 아니고 OP 일 때만 (1.10.1-dev2, 전엔 누구나 보이고 OP 만 됨) */
     private fun next(src: net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource, kind: String?): Int {
         Safety.run(Safety.TONIGHT, Unit) {
             val level = Minecraft.getInstance().level ?: return@run

@@ -1,8 +1,8 @@
-Cheonsang — Credits & Licenses
+Cheonsang (천상) — Credits & Licenses
 =====================================
 
 Cheonsang by itsnotfineart
-This file covers Cheonsang 2.0.1 (updated 2026-11-16).
+This file covers Cheonsang 2.0.2 (updated 2026-11-21).
 
 LICENSING AT A GLANCE
 ---------------------
@@ -145,6 +145,10 @@ moon_map*.png
   NASA imagery, not copyrighted in the US (NASA media guidelines). Modified: resized, toned.
   lroc_color_poles_4k: 4096, 2048, 1024 and 256 px versions.
   cheonsang-extra: lroc_color_poles_8k, moon_map_8k.png, 8192 px.
+  Elevation (2.0.2, crater relief): NASA LRO LOLA elevation model, CGI Moon Kit ldem_16 (16 px/degree)
+  https://svs.gsfc.nasa.gov/4720 — NASA data, not copyrighted in the US.
+  Modified: resampled to each map size; east/north slope and height stored in the G, B, A channels
+  of moon_map_1k.png, moon_map.png, moon_map_4k.png and (cheonsang-extra 1.0.2) moon_map_8k.png.
 
 moon_names.json
   Gazetteer of Planetary Nomenclature — IAU WGPSN / USGS Astrogeology Science Center
@@ -160,6 +164,7 @@ jupiter.png, saturn.png, saturn_ring*.png
   https://www.solarsystemscope.com/textures/ (based on NASA data).
   Modified: averaged along longitude (band colours only), contrast and saturation reduced, rendered as discs;
   ring profile rescaled to Saturn radii and rendered face-on.
+  2.0.2: smaller copies (jupiter_64…512, saturn_64…512, saturn_ring*_128…1024) with softened disc edge.
 
 Saturn's moons, asteroids (asteroids.bin), rotation checks
   NASA/JPL Horizons System — https://ssd.jpl.nasa.gov/horizons/ — US Government data.

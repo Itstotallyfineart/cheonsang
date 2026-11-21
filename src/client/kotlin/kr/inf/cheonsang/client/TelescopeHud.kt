@@ -27,8 +27,10 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 망원경 화면(HUD): 둥근 시야·조준선·별자리 선/이름·행성/달 이름을 그리는 바닐라 조준점 대체 요소(망원경 켰을 때만).
- * 좌클릭으로 천체 선택(정보 카드), Shift+좌클릭으로 해제. 격자·경계선은 /cfilter grid·altaz·bounds.
+ * 망원경 화면 (HUD, 0.1.3): 둥근 시야 · 가운데 조준선 · 별자리 선/이름 · 행성/달 이름 · 조준 중인 천체 이름.
+ * 바닐라 조준점 자리를 대신 쓴다 (망원경 켰을 때만). 하늘 방향은 카메라 앞·위·왼쪽 벡터로 화면 좌표로 바꾼다.
+ * 별자리 선과 조준선은 실제 화면 1픽셀 굵기 (GUI 배율을 풀고 그림).
+ * 1.1.0: 좌클릭 = 선택 고정(원 표시) + 왼쪽 위 정보 카드 (1.1.1: Shift+좌클릭 = 해제), 좌표 격자·지평 격자·별자리 경계선 (/cfilter grid·altaz·bounds)
  */
 object TelescopeHud {
     private const val LINE_RGB = 0x9FC4FF
@@ -37,7 +39,7 @@ object TelescopeHud {
     /** 행성·달 이름 (별자리와 구분) */
     private const val BODY_RGB = 0xFFB060
     private const val RETICLE_COLOR = 0x80FFFFFF.toInt()
-    /** 광학 정보 글씨 (옅은 회색) */
+    /** 1.7.0 광학 정보 글씨 (옅은 회색) */
     private const val OPTICS_COLOR = 0xC0B8C0C8.toInt()
     private const val TARGET_COLOR = 0xFFE0E0E0.toInt()
 
@@ -48,27 +50,24 @@ object TelescopeHud {
     /** 조준선 가운데 빈칸 반지름 · 선 길이 (GUI 픽셀) */
     private const val RETICLE_GAP = 3
     private const val RETICLE_LEN = 8
-    /** 별자리 선이 별 앞에서 끊기는 길이 (GUI 픽셀). 배율이 커질수록 간격도 늘어남 */
+    /** 별자리 선이 별 앞에서 끊기는 길이 (GUI 픽셀, 0.1.12) — ×1 거의 붙임 → 확대할수록 조금 뗌 */
     private fun starGap(): Double {
         val z = if (TelescopeView.active) TelescopeView.zoom else 1.0
         return (0.4 + 3.2 * kotlin.math.ln(z) / kotlin.math.ln(25.0)).coerceIn(0.4, 3.6)
     }
-    /** 한 번에 보이는 별자리 수, 나타나고 사라지는 시간(초) */
+    /** 한 번에 보이는 별자리 수 · 나타나고 사라지는 시간 (초) */
     private const val MAX_CONSTELLATIONS = 3
-    /** 천상열차 별자리는 작고 많아서 더 */
+    /** 1.9.0-dev4: 천상열차 별자리는 작고 많아서 더 (TBD) */
     private const val MAX_KOREAN = 8
     private const val FADE_SEC = 0.3f
 
-    /** 둥근 시야 테두리: 지름 = 화면 가로, 가장자리로 갈수록 서서히 어두워짐 (유리 무늬 없음) */
+    /** 둥근 시야 테두리 (0.1.4): 지름 = 화면 가로, 가장자리로 갈수록 서서히 어두워짐 (유리 무늬 없음) */
     private val VIGNETTE = Cheonsang.id("textures/gui/telescope_vignette.png")
 
-    /** 좌클릭으로 고른 천체 (빈 하늘 좌클릭 = 해제) */
+    /** 1.1.0: 좌클릭으로 고른 천체 (빈 하늘 좌클릭 = 해제) */
     private var selected: Target? = null
-    /** Alt+좌클릭으로 추적 고정한 천체 (TelescopeView 가 화면 가운데에 붙잡음) */
+    /** 1.1.3: Alt+좌클릭으로 추적 고정한 천체 (TelescopeView 가 화면 가운데에 붙잡음) */
     internal var locked: Target? = null
-    /** 각거리: 선택한 천체에서 Ctrl+좌클릭으로 고른 두 번째 천체 */
-    private var measure: Target? = null
-    private const val MEASURE_COLOR = 0xD070D0FF.toInt()
     private const val SELECT_COLOR = 0xD0FFD070.toInt()
     private const val CARD_BG = 0xB0000000.toInt()
     private const val CARD_TITLE = 0xFFFFE0A0.toInt()
@@ -93,7 +92,7 @@ object TelescopeHud {
         val w = mc.window.guiScaledWidth.toDouble()
         val h = mc.window.guiScaledHeight.toDouble()
         val t = tan(Math.toRadians(cam.getFov().toDouble() / 2))
-        /** 둥근 시야 반지름 — 원 전체가 보이게 지름 = 화면 세로 */
+        /** 둥근 시야 반지름 — 1.7.0: 원 전체가 보이게 지름 = 화면 세로 (전: 가로라 위아래가 잘려 둥글지 않았음, 11-12 지율님) */
         val radius = min(w, h) / 2
 
         /** 월드 방향 → 화면 (x, y), 카메라 뒤면 null */
@@ -117,14 +116,14 @@ object TelescopeHud {
         val center get() = Vec3(f.x().toDouble(), f.y().toDouble(), f.z().toDouble()).normalized()
     }
 
-    /** 그리는 별처럼 굴절만큼 올림 (지평선 근처 별자리 선이 별과 맞게) */
+    /** 1.5.0: 그리는 별처럼 굴절만큼 올림 (지평선 근처 별자리 선이 별과 맞게) */
     private fun sky(ra: Double, dec: Double) = Visibility.refractWorld(CheonsangSky.skyMat3 * Vec3.fromSpherical(ra, dec))
 
-    // ── 별자리 선 투영 캐시 ──
+    // ── 1.2.2 (O4): 별자리 선 투영 캐시 ──
     /** 별자리마다 J2000 선 점들을 감싸는 원 (가운데 방향, 반지름 cos) — 처음 한 번 */
     private class ConCap(val c: kr.inf.cheonsang.client.sky.Constellation, val center: Vec3, val radiusDeg: Double)
     private val capsCache = java.util.IdentityHashMap<List<kr.inf.cheonsang.client.sky.Constellation>, List<ConCap>>()
-    /** 그리는 별자리 체계마다 한 번 */
+    /** 1.9.0-dev4: 그리는 별자리 체계마다 한 번 */
     private val conCaps: List<ConCap> get() = SkyData.drawnConstellations.let { list -> capsCache.getOrPut(list) { makeCaps(list) } }
     private fun makeCaps(list: List<kr.inf.cheonsang.client.sky.Constellation>): List<ConCap> =
         list.map { c ->
@@ -183,15 +182,17 @@ object TelescopeHud {
         lastNanos = now
         val scale = mc.window.guiScale.toFloat()
 
-        // 별자리: 시야가 안 바뀌었으면 지난 프레임 결과 재사용, 바뀌면 근처 별자리만 다시 투영
+        // ── 별자리: 선이 조준점에 가장 가까이 지나는 것부터 최대 3개 ──
+        // 1.2.2 (O4): 시야 방향·배율·시각이 그대로면 지난 프레임 결과를 씀. 다시 계산할 때도 시야 근처 별자리만 투영
         if (constellationsChanged(pr)) projectConstellations(pr)
         val projected = conProjected
         val shown = conShown
         for (c in SkyData.drawnConstellations) fadeTo(c.id, c.id in shown, step)
 
-        // 격자·경계선은 별자리 선 아래에 그림
+        // 1.1.0: 격자·경계선 (별자리 선 아래)
         if (TelescopeFilter.grid || TelescopeFilter.altaz || TelescopeFilter.bounds) drawGrids(g, mc, pr, scale)
 
+        // 0.1.12: 끊김 간격은 배율로만 (×1 은 별에 거의 붙여 모양이 그대로 보이게). 표시 필터 '선'
         val gapNow = starGap()
         if (TelescopeFilter.lines) {
             g.pose().pushMatrix()
@@ -208,12 +209,12 @@ object TelescopeHud {
             g.pose().popMatrix()
         }
 
-        // 이름표는 하늘에 고정: 별자리 이름은 기준점, 행성·달 이름은 바로 아래
+        // ── 글씨 (0.1.12): 하늘에 고정 — 별자리 이름은 기준점, 행성·달 이름은 바로 아래. 자리 옮기기·숨기기 없음 ──
         val aim = find(pr, AIM_RADIUS)
         val aimY = (pr.h * 0.62)
-        val lim = Visibility.pointLimit(pr.center) + 0.5  // 가시성 모델 (하늘 밝기는 천정 고정)
+        val lim = Visibility.pointLimit(pr.center) + 0.5  // 1.5.0 가시성 모델 (1.5.2.1: 하늘 밝기는 천정 고정)
         fun body(key: String, name: String, dir: Vec3, radiusDeg: Double, visible: Boolean) {
-            val p = pr.project(Visibility.refractWorld(dir))
+            val p = pr.project(Visibility.refractWorld(dir))  // 1.5.2.1: 그려진 위치
             fadeTo(key, visible && TelescopeFilter.bodies && p != null && pr.fromCenter(p) < pr.radius - 6, step)
             val a = fade[key] ?: return
             if (p == null) return
@@ -228,7 +229,7 @@ object TelescopeHud {
             text(g, mc, L.name(c.ko, c.en), lp[0], lp[1], NAME_RGB, a)
         }
 
-        // 둥근 시야 가장자리를 서서히 어둡게 (화면이 원보다 좁으면 모서리만 어두워짐)
+        // ── 둥근 시야: 가장자리만 서서히 어둡게 (화면 위아래가 원보다 좁으면 원이 잘려 모서리만 어두움) ──
         val d = (pr.radius * 2).roundToInt()
         val x0 = ((pr.w - d) / 2).roundToInt(); val y0 = ((pr.h - d) / 2).roundToInt()
         val gw = pr.w.roundToInt(); val gh = pr.h.roundToInt()
@@ -238,8 +239,8 @@ object TelescopeHud {
             if (x0 > 0) { g.fill(0, 0, x0, gh, BLACK); g.fill(x0 + d, 0, gw, gh, BLACK) }
         }
 
-        // 구경·초점거리·접안·배율 (왼쪽 아래, 작게)
-        // 핫바(가운데 182 + 왼손 칸 29)와 겹치지 않게. 왼쪽 빈 폭에 맞춰 줄이고 (최소 0.5배), 그래도 넘으면 체력·방어 칸 위로 올림
+        // ── 1.7.0: 구경·초점거리·접안·배율 (왼쪽 아래, 작게, 늘) ──
+        // 2.0.0: 핫바(가운데 182 + 왼손 칸 29)와 겹치지 않게. 왼쪽 빈 폭에 맞춰 줄이고 (최소 0.5배), 그래도 넘으면 체력·방어 칸 위로 올림
         run {
             val line = TelescopeView.opticsLine()
             val room = gw / 2f - 91f - 29f - 4f - 6f
@@ -256,7 +257,7 @@ object TelescopeHud {
             g.pose().popMatrix()
         }
 
-        // 조준선: 실제 1픽셀, 가운데 비움, 상하좌우 대칭
+        // ── 조준선: 실제 1픽셀, 가운데 비움, 상하좌우 대칭 ──
         g.pose().pushMatrix()
         g.pose().scale(1f / scale, 1f / scale)
         val s = scale.toInt()
@@ -266,10 +267,10 @@ object TelescopeHud {
         g.fill(cx, cy - gap - len, cx + 1, cy - gap, RETICLE_COLOR); g.fill(cx, cy + 1 + gap, cx + 1, cy + 1 + gap + len, RETICLE_COLOR)
         g.pose().popMatrix()
 
-        // 조준 중인 천체 이름 (조준선 아래)
+        // ── 조준 중인 천체 이름 (조준선 아래) ──
         if (TelescopeFilter.aim) aim?.let { g.centeredText(mc.font, it.short, gw / 2, aimY.roundToInt(), TARGET_COLOR) }
 
-        // 선택 원 + 정보 카드. 깊게 확대해 원이 화면보다 커지면 그리지 않음
+        // ── 1.1.0 선택 원 + 정보 카드 (1.1.1: 원이 화면보다 크면 안 그림 — 깊게 확대하면 천체가 화면을 채움) ──
         selected?.let { t ->
             t.dir()?.let { w -> pr.project(drawnDir(t, w))?.let { p ->
                 val r = max(pr.degToPixels(t.radiusDeg()) + 3, 6.0)
@@ -279,34 +280,11 @@ object TelescopeHud {
                     g.pose().popMatrix()
                 }
             } }
-            measure?.let { m -> drawMeasure(g, mc, pr, scale, t, m) }
-            if (TelescopeFilter.card) drawCard(g, mc, cardLines(t).let { l -> if (locked === t && l.isNotEmpty()) listOf(l[0] + L.t("cheonsang.m.tracking")) + l.drop(1) else l } +
-                (measure?.let { m -> angleText(t, m)?.let { listOf(L.t("cheonsang.telescopehud.2", m.short, it)) } } ?: emptyList()))
+            if (TelescopeFilter.card) drawCard(g, mc, cardLines(t).let { l -> if (locked === t && l.isNotEmpty()) listOf(l[0] + L.t("cheonsang.m.tracking")) + l.drop(1) else l })
         }
     }
 
-    /** 각거리 글자: "12.35° (12° 20′ 42″)" — 두 천체 지금 방향 사이 */
-    private fun angleText(a: Target, b: Target): String? {
-        val wa = a.dir()?.normalized() ?: return null
-        val wb = b.dir()?.normalized() ?: return null
-        val deg = wa.angleTo(wb)
-        val s = Math.round(deg * 3600)
-        return "%.2f° (%d° %02d′ %02d″)".format(deg, s / 3600, s / 60 % 60, s % 60)
-    }
-
-    /** 두 번째 천체 원 + 두 천체 잇는 선 (화면 안 부분만) */
-    private fun drawMeasure(g: GuiGraphicsExtractor, mc: Minecraft, pr: Projector, scale: Float, a: Target, b: Target) {
-        val pa = a.dir()?.let { pr.project(drawnDir(a, it)) }
-        val pb = b.dir()?.let { pr.project(drawnDir(b, it)) } ?: return
-        g.pose().pushMatrix(); g.pose().scale(1f / scale, 1f / scale)
-        val sw = mc.window.width.toDouble(); val sh = mc.window.height.toDouble()
-        val r = max(pr.degToPixels(b.radiusDeg()) + 3, 6.0)
-        if (r < hypot(pr.w, pr.h)) ring(g, pb[0] * scale, pb[1] * scale, r * scale, MEASURE_COLOR, sw, sh)
-        if (pa != null) fastLine(g, pa[0] * scale, pa[1] * scale, pb[0] * scale, pb[1] * scale, (0x60 shl 24) or (MEASURE_COLOR and 0xFFFFFF), sw, sh)
-        g.pose().popMatrix()
-    }
-
-    /** 화면에 그려진 방향 — 별·행성·해·달은 굴절만큼 올려 그림, 심원천체 빛무리는 굴절 없음 */
+    /** 1.5.2.1: 화면에 그려진 방향 — 별·행성·해·달은 굴절만큼 올려 그림, 심원천체 빛무리는 굴절 없음 */
     internal fun drawnDir(t: Target, w: Vec3): Vec3 = if (t.key.startsWith("dso:")) w else Visibility.refractWorld(w)
 
     private fun ring(g: GuiGraphicsExtractor, cx: Double, cy: Double, r: Double, color: Int, sw: Double, sh: Double) {
@@ -317,7 +295,10 @@ object TelescopeHud {
         }
     }
 
-    /** 선분 하나 = 화면 안으로 자른 뒤 기울인 얇은 사각형 1개 (실제 픽셀 좌표, 굵기 2) */
+    /**
+     * 1.1.1: 선분 하나 = 화면 안으로 자른 뒤 기울인 얇은 사각형 1개 (실제 픽셀 좌표, 굵기 2).
+     * 전에는 픽셀 줄마다 사각형을 따로 그려 긴 사선 하나가 수백~수천 개 → 격자·큰 선택 원에서 렉
+     */
     private fun fastLine(g: GuiGraphicsExtractor, ax: Double, ay: Double, bx: Double, by: Double, color: Int, sw: Double, sh: Double) {
         var t0 = 0.0; var t1 = 1.0
         val dx = bx - ax; val dy = by - ay
@@ -332,11 +313,14 @@ object TelescopeHud {
         g.pose().pushMatrix()
         g.pose().translate(x0.toFloat(), y0.toFloat())
         g.pose().rotate(kotlin.math.atan2(dy, dx).toFloat())
-        g.fill(-1, -1, kotlin.math.ceil(len).toInt() + 1, 1, color)  // 양 끝 1px 늘려 꺾이는 이음매 틈 덮기
+        g.fill(-1, -1, kotlin.math.ceil(len).toInt() + 1, 1, color)  // 1.1.3: 양 끝 1px 늘려 꺾이는 이음매 틈 덮기
         g.pose().popMatrix()
     }
 
-    /** 카드 천문 계산은 [CARD_NANOS] 마다(초당 약 7번), 그리기는 매 프레임 같은 글자로. 천체가 바뀌거나 시간이 점프하면 바로 다시 계산 */
+    /**
+     * 1.2.2 (O5): 카드 천문 계산은 [CARD_NANOS] 마다 (초당 약 7번, TBD) — 그리기는 매 프레임 같은 글자로.
+     * 고른 천체가 바뀌거나 하늘 시각이 크게 바뀌면(시간 점프) 바로 다시 계산
+     */
     private const val CARD_NANOS = 150_000_000L
     private var cardFor: Target? = null
     private var cardAt = 0L
@@ -351,7 +335,7 @@ object TelescopeHud {
         return cardCache
     }
 
-    /** 카드 줄 고르기 — 방위·고도 / 적경·적위 / 출몰 줄은 설정으로 숨김 */
+    /** 1.2.1: 카드 줄 고르기 — 방위·고도 / 적경·적위 / 출몰 줄은 설정으로 숨김 */
     private fun keepCardLine(s: String): Boolean = when {
         s.startsWith(L.t("cheonsang.telescopehud.3")) -> TelescopeFilter.cardAltAz
         s.startsWith(L.t("cheonsang.telescopehud.4")) -> TelescopeFilter.cardRaDec
@@ -360,12 +344,12 @@ object TelescopeHud {
     }
     private val RISE_SET get() = listOf(L.t("cheonsang.telescopehud.14"), L.t("cheonsang.telescopehud.13"), L.t("cheonsang.telescopehud.12"), L.t("cheonsang.telescopehud.11"), L.t("cheonsang.telescopehud.10"), L.t("cheonsang.telescopehud.9"), L.t("cheonsang.telescopehud.8"), L.t("cheonsang.telescopehud.7"), L.t("cheonsang.telescopehud.6"))
 
-    /** 카드 기본 크기 (설정 화면 글씨 크기와 곱함) */
+    /** 1.3.0: 카드 기본 크기 (설정 화면 글씨 크기와 곱함, TBD) */
     private const val CARD_SCALE = 0.85f
 
-    /** 위치(네 귀퉁이)·투명도·글씨 배율 (설정 화면) */
+    /** 1.2.1: 위치(네 귀퉁이)·투명도·글씨 배율 (설정 화면) */
     private fun drawCard(g: GuiGraphicsExtractor, mc: Minecraft, lines0: List<String>) {
-        // " · " 로 이은 항목을 한 줄씩 (세로로 길고 폭 좁게)
+        // 1.3.0: " · " 로 이은 항목을 한 줄씩 (세로로 길고 폭 좁게)
         val lines = lines0.filterIndexed { k, s -> k == 0 || keepCardLine(s) }.flatMapIndexed { k, s -> if (k == 0) listOf(s) else s.split(" · ") }
         if (lines.isEmpty()) return
         val font = mc.font
@@ -385,7 +369,7 @@ object TelescopeHud {
         g.pose().popMatrix()
     }
 
-    // ── 격자 (점은 처음 한 번만 만들고, 시야 밖 점은 투영 안 함) ──
+    // ── 1.1.0 격자 (1.1.1: 점은 처음 한 번만 만들고, 시야 밖 점은 투영 안 함) ──
     private const val GRID_RGB = 0x6080C0; private const val EQUATOR_RGB = 0x90B0FF; private const val ECLIPTIC_RGB = 0xE0C060
     private const val ALTAZ_RGB = 0x60B080; private const val HORIZON_RGB = 0x90E0A0; private const val BOUNDS_RGB = 0xC08870
     private const val OBLIQUITY_J2000 = 23.4392911
@@ -400,7 +384,7 @@ object TelescopeHud {
 
     private fun xyz(vs: List<Vec3>) = DoubleArray(vs.size * 3).also { a -> vs.forEachIndexed { i, v -> a[i * 3] = v.x; a[i * 3 + 1] = v.y; a[i * 3 + 2] = v.z } }
 
-    /** 적도 격자(J2000): 시간선 24개, 적위선 17개(0° = 천구 적도), 황도 */
+    /** 적도 격자 (J2000): 시간선 24 · 적위선 17 (0° = 천구 적도) · 황도 */
     private val eqGrid: LineSet by lazy {
         val polys = ArrayList<DoubleArray>(); val cols = ArrayList<Int>()
         for (h in 0 until 24) { polys += xyz((-88..88 step 2).map { Vec3.fromSpherical(h * 15.0, it.toDouble()) }); cols += (0x50 shl 24) or GRID_RGB }
@@ -412,7 +396,7 @@ object TelescopeHud {
         LineSet(polys, cols.toIntArray())
     }
 
-    /** 지평 격자(월드): 방위선 24개, 고도선 9개(0° = 지평선) */
+    /** 지평 격자 (월드): 방위선 24 · 고도선 9 (0° = 지평선) */
     private val altazGrid: LineSet by lazy {
         val polys = ArrayList<DoubleArray>(); val cols = ArrayList<Int>()
         for (az in 0 until 360 step 15) { polys += xyz((0..88 step 2).map { altAzWorld(it.toDouble(), az.toDouble()) }); cols += (0x50 shl 24) or ALTAZ_RGB }
@@ -428,8 +412,8 @@ object TelescopeHud {
     private var moonPathCache: Pair<LineSet, Vec3>? = null
 
     /**
-     * 백도: 황도에 5.145° 기운 큰원. 승교점 = 그날 달의 평균 승교점(Meeus 47.7, 18.6년에 한 바퀴 서쪽으로).
-     * 하루에 한 번만 다시 만듦. 반환 = (선, 승교점 J2000 방향)
+     * 1.1.2 백도: 황도에 5.145° 기운 큰원. 승교점 = 그날 달의 평균 승교점 (Meeus 47.7, 18.6년에 한 바퀴 서쪽으로).
+     * 그날 황도·적도 → J2000 (세차 되돌림). 하루에 한 번만 다시 만듦. 반환 = (선, 승교점 J2000 방향)
      */
     private fun moonPath(): Pair<LineSet, Vec3> {
         val level = Minecraft.getInstance().level
@@ -472,8 +456,10 @@ object TelescopeHud {
     }
 
     /**
-     * 선 묶음 그리기: mat = J2000 → 월드 (null 이면 이미 월드). 선분 양 끝 중 하나라도 시야(대각 반각 + 4°) 안이면 그려서 화면 끝까지 이어지게 함(밖은 fastLine 이 자름).
-     * decimate: 경계선용 — 배율에 따라 점을 듬성듬성 쓰고(×1 4점마다, ×7 2점마다, ×25↑ 전부) 꺾이는 모서리는 항상 씀.
+     * 선 묶음 그리기: mat = J2000 → 월드 (null 이면 이미 월드).
+     * 1.1.3: 카메라 앞에 있는 점은 다 투영하고, 선분 양 끝 중 하나라도 시야(대각 반각 + 4°) 안이면 그림 → 화면 끝까지 이어짐 (화면 밖은 fastLine 이 잘라냄).
+     * decimate: 경계선 — 배율로 정한 간격(×1 4점마다 · ×7 2점마다 · ×25↑ 전부)만 쓰고 꺾이는 모서리는 항상 씀.
+     * (1.1.2 의 "화면에서 6px 안 되면 합치기"는 프레임마다 고르는 점이 달라져 선이 떨렸음)
      */
     private fun drawLineSet(g: GuiGraphicsExtractor, mc: Minecraft, pr: Projector, scale: Float, set: LineSet, mat: kr.inf.cheonsang.astro.Mat3?, decimate: Boolean = false) {
         val m = mat?.m
@@ -520,7 +506,7 @@ object TelescopeHud {
         val labels = ArrayList<Triple<String, Vec3, Int>>()
         if (TelescopeFilter.grid) {
             drawLineSet(g, mc, pr, scale, eqGrid, CheonsangSky.skyMat3)
-            // 백도 + 승교점·강교점
+            // 1.1.2 백도 + 승교점·강교점
             val mp = moonPath()
             drawLineSet(g, mc, pr, scale, mp.first, CheonsangSky.skyMat3)
             labels += Triple(L.t("cheonsang.telescopehud.15"), CheonsangSky.skyMat3 * mp.second, MOONPATH_RGB)
@@ -563,7 +549,7 @@ object TelescopeHud {
         if (alpha < 10) return
         val sc = TelescopeFilter.uiScale
         if (sc == 1f) { g.centeredText(mc.font, s, x.roundToInt(), y.roundToInt(), (alpha shl 24) or rgb); return }
-        // 글씨 배율 — 기준점(x, y)은 그대로
+        // 1.2.1: 글씨 배율 — 기준점(x, y)은 그대로
         g.pose().pushMatrix()
         g.pose().translate(x.toFloat(), y.toFloat())
         g.pose().scale(sc, sc)
@@ -583,7 +569,7 @@ object TelescopeHud {
         var x0 = a[0] * s; var y0 = a[1] * s; var x1 = b[0] * s; var y1 = b[1] * s
         val len = hypot(x1 - x0, y1 - y0)
         val ga = gapA * s; val gb = gapB * s
-        // 길이 상한 없음 — 화면 밖은 아래에서 잘라냄
+        // 1.8.3: 길이 상한(2만 px) 없앰 — ×700 쯤이면 별자리 선 한 토막이 수만 px 라 선이 통째로 사라졌음. 화면 밖은 아래에서 잘라냄
         if (len <= ga + gb || !len.isFinite()) return
         val ux = (x1 - x0) / len; val uy = (y1 - y0) / len
         x0 += ux * ga; y0 += uy * ga; x1 -= ux * gb; y1 -= uy * gb
@@ -610,7 +596,7 @@ object TelescopeHud {
         return true
     }
 
-    /** 2픽셀 선. 같은 줄에 이어지는 픽셀은 사각형 하나로 묶어 그림 (반투명이 겹쳐 진해지지 않게) */
+    /** 2픽셀 선 (0.1.11, 1 → 2). 같은 줄에 이어지는 픽셀은 사각형 하나로 묶어 그림 (반투명이 겹쳐 진해지지 않게) */
     private fun line(g: GuiGraphicsExtractor, x0: Double, y0: Double, x1: Double, y1: Double, color: Int) {
         val dx = x1 - x0; val dy = y1 - y0
         val horizontal = abs(dx) >= abs(dy)
@@ -631,9 +617,12 @@ object TelescopeHud {
         run(start, prev, row)
     }
 
-    /** 화면 가운데에서 radiusPx 안의 가장 가까운 천체(해·달·행성·심원천체·별, 지금 보이는 한계등급까지) */
+    /**
+     * 화면 가운데에서 radiusPx 안의 가장 가까운 천체 → (짧은 이름, 자세한 한 줄).
+     * 해·달·행성·심원천체·별 (지금 보이는 한계등급까지).
+     */
     private fun find(pr: Projector, radiusPx: Double): Target? {
-        // 별·행성·달은 굴절해서 그리므로 조준 방향을 굴절 전으로 되돌려 비교, 빛무리는 조준 방향 그대로
+        // 1.5.2.1: 별·행성·달은 굴절해서 그리므로 조준 방향을 굴절 전으로 되돌려 비교, 빛무리는 조준 방향 그대로
         val raw = pr.center
         val center = Visibility.unrefractWorld(raw)
         val maxDeg = pr.pixelsToDeg(radiusPx)
@@ -645,22 +634,23 @@ object TelescopeHud {
         }
         fun offer(dir: Vec3, radiusDeg: Double, label: () -> Target) = offer(center.angleTo(dir.normalized()), radiusDeg, label)
 
-        // ×200↑ 에서 가운데가 달 위면 그 자리 지명 (지형이 없으면 아래에서 "달")
+        // 1.2.3: ×200↑ 에서 가운데가 달 위면 그 자리 지명 (지형이 없으면 아래에서 "달")
         MoonNames.at(center)?.let { return MoonNames.target(it.first) }
 
         offer(CheonsangSky.sunWorld, 0.27) { InfoCard.sun() }
         offer(CheonsangSky.moonWorld, CheonsangSky.moonRadius) { InfoCard.moon() }
-        // 목성 위성: 원판이 보일 만큼 확대했을 때만. 목성은 원판 크기만큼 넓게 잡아 원판 위면 목성
+        // 목성 위성 (0.1.12): 원판이 보일 만큼 확대했을 때만. 목성은 원판 크기만큼 넓게 잡아 원판 위면 목성
         for ((name, dir) in CheonsangSky.jovianMoonsWorld()) offer(dir, 0.0) {
             val (num, mag) = JOVIAN[name] ?: ("" to 5.5)
             InfoCard.jovianMoon(name, num, mag, dir)
         }
-        // 토성 위성 (원판이 보일 만큼 확대했을 때만)
+        // 1.2.4 토성 위성 (원판이 보일 만큼 확대했을 때만)
         for ((m, dir) in CheonsangSky.saturnMoonsWorld()) offer(dir, 0.0) { InfoCard.saturnMoon(m.name, m.num, m.mag, dir) }
-        val limNow = Visibility.pointLimit(center) + 0.5  // 가시성 모델
+        val limNow = Visibility.pointLimit(center) + 0.5  // 1.5.0 가시성 모델
         for (p in CheonsangSky.planets) if (p.mag <= limNow) offer(CheonsangSky.skyMat3 * p.dir, p.diameterArcsec / 7200.0) { InfoCard.planet(p) }
         for (a in CheonsangSky.asteroids) if (a.mag <= limNow) offer(CheonsangSky.skyMat3 * a.dir, 0.0) { InfoCard.asteroid(a) }
-        // 빛무리가 조준 반경보다 넓으면(히아데스·플레이아데스 등) 가운데 25% 안에서만 거리 0 쪽으로, 그 밖은 조준 반경의 60% 로 쳐서 가까운 별·행성이 이기게 함
+        // 1.6.0: 빛무리가 조준 반경보다 넓으면 (히아데스·플레이아데스·대마젤란 …) 안쪽을 거리 0 으로 치지 않음 —
+        // 가운데 25% 안에서만 0 쪽으로, 그 밖은 조준 반경의 60% 로 쳐서 그보다 가까운 별·행성이 이김 (전: 안쪽이면 늘 0 이라 알데바란 못 고름)
         for (o in SkyData.dso) {
             val ang = raw.angleTo(CheonsangSky.skyMat3 * Vec3.fromSpherical(o.ra, o.dec))
             val rad = o.major / 120.0
@@ -677,7 +667,8 @@ object TelescopeHud {
             val cy = m[1] * center.x + m[4] * center.y + m[7] * center.z
             val cz = m[2] * center.x + m[5] * center.y + m[8] * center.z
             val cosLimit = cos(Math.toRadians(maxDeg * 1.2))
-            // 별 방향은 float (크기 1 에서 ±1e-8) → double 로 정규화한 뒤 atan2(|외적|, 내적) 로 정밀하게 계산
+            // 1.8.2: 별 방향은 float (크기 1 에서 ±1e-8) → double 로 정규화한 뒤 atan2(|외적|, 내적).
+            // 전에는 acos(float 내적) 이라 정확히 조준해도 각이 0 이 안 됨 (카스토르 A 37.7″ > ×712 조준 반경 31″ → 고배율에서 못 고름)
             fun cosTo(x: Float, y: Float, z: Float): Double {
                 val nn = sqrt(x.toDouble() * x + y.toDouble() * y + z.toDouble() * z)
                 return (x * cx + y * cy + z * cz) / nn
@@ -688,18 +679,18 @@ object TelescopeHud {
                 val crx = ay * cz - az * cy; val cry = az * cx - ax * cz; val crz = ax * cy - ay * cx
                 return Math.toDegrees(kotlin.math.atan2(sqrt(crx * crx + cry * cry + crz * crz), ax * cx + ay * cy + az * cz))
             }
-            // 밝은 별 우대 폭에 상한 (조준 반경 5% 또는 2″ 중 큰 것)
+            // 1.8.2: 밝은 별 우대 폭에 상한 (조준 반경 5% 또는 2″ 중 큰 것) — 시리우스 A 가 바로 옆 B 를 덮던 것
             val biasCap = max(maxDeg * 0.05, 2.0 / 3600)
             val n = minOf(cat.countBrighterThan(limNow.toFloat()), cat.realCount)
             for (i in 0 until n) {
                 if (cosTo(cat.dir[i * 3], cat.dir[i * 3 + 1], cat.dir[i * 3 + 2]) < cosLimit) continue
-                // 변광성은 지금 등급으로 (어두워져 안 보이면 안 고름)
+                // 1.2.5: 변광성은 지금 등급으로 (어두워져 안 보이면 안 고름)
                 kr.inf.cheonsang.client.sky.VariableStars.byHip[cat.hip[i]]?.let { v -> if (v.mag(CheonsangSky.clock.jd((Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())) > limNow) continue }
                 val angle = angleTo(cat.dir[i * 3], cat.dir[i * 3 + 1], cat.dir[i * 3 + 2])
                 // 거의 같은 거리면 밝은 별 우선
                 offer(angle, min(maxDeg * 0.1 * (9 - cat.mag[i]) / 9, biasCap)) { starLabel(cat, i).let { (sh, ln) -> InfoCard.star(cat, i, sh, ln) } }
             }
-            // 망원경으로 그리는 깊은 별 (9등 넘는 Tycho-2·Gaia) — 지금 그려진 목록에서
+            // 1.8.1: 망원경으로 그리는 깊은 별 (9등 넘는 Tycho-2·Gaia) — 지금 그려진 목록에서
             if (TelescopeView.magnifying) {
                 val ds = kr.inf.cheonsang.client.sky.DeepStars
                 val od = ds.outDir
@@ -717,7 +708,10 @@ object TelescopeHud {
         return found?.invoke()
     }
 
-    /** 별 이름(별자리 기준), 예: "베텔게우스 (오리온자리 α)", "오리온자리 η", "오리온자리 HIP 27366", "오리온자리의 별" */
+    /**
+     * 별 이름 (별자리 기준):
+     * 이름 있음 "베텔게우스 (오리온자리 α)" · 기호만 "오리온자리 η" / "백조자리 61" · 기호 없음 "오리온자리 HIP 27366" · 번호도 없음 "오리온자리의 별"
+     */
     private fun starLabel(cat: StarCatalog, i: Int): Pair<String, String> {
         val hip = cat.hip[i]
         val name = SkyData.starLabel(hip)
@@ -742,28 +736,20 @@ object TelescopeHud {
 
     private fun pickNow() {
         val mc = Minecraft.getInstance()
-        // Shift(웅크리기 키) + 좌클릭 = 선택 해제 (추적도 해제)
+        // 1.1.1: Shift(웅크리기 키) + 좌클릭 = 선택 해제 (1.1.3: 추적도 해제)
         if (mc.options.keyShift.isDown) {
             mc.player?.sendOverlayMessage(Component.literal(if (selected != null) L.t("cheonsang.telescopehud.33") else L.t("cheonsang.telescopehud.32")))
-            selected = null; locked = null; measure = null
+            selected = null; locked = null
             return
         }
-        // 각거리: 선택한 채 Ctrl + 좌클릭 = 가운데 천체까지 각도 (선택은 그대로)
-        if (mc.hasControlDown() && selected != null) {
-            val t = find(Projector(mc), PICK_RADIUS)
-            val sel = selected!!
-            if (t == null) { mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.34"))); return }
-            if (t.key == sel.key) { measure = null; mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.35"))); return }
-            measure = t
-            mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.37", sel.short, t.short, angleText(sel, t) ?: "-")))
-            return
-        }
-        // 조작 설정에 등록한 추적 키 + 좌클릭 = 선택 + 추적 고정 (추적 중이면 해제)
+        // 1.1.3: Alt + 좌클릭 = 선택 + 추적 고정 (추적 중이면 해제)
+        // 1.1.4: 조작 설정에 등록한 키로 판정 (1.1.3 의 정적 키 검사는 Alt 를 못 잡았음)
         if (TelescopeFilter.trackKey.isDown) {
             if (locked != null) { locked = null; mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.38"))); return }
             val t = find(Projector(mc), PICK_RADIUS)
             if (t == null) { mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.34"))); return }
-            selected = t; locked = t; measure = null
+            selected = t; locked = t
+            LogBook.observe(t)
             mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.39", t.short)))
             return
         }
@@ -773,13 +759,14 @@ object TelescopeHud {
             selected != null -> L.t("cheonsang.telescopehud.33")
             else -> L.t("cheonsang.telescopehud.34")
         }
-        selected = t; measure = null
+        selected = t
+        if (t != null) LogBook.observe(t)
         mc.player?.sendOverlayMessage(Component.literal(msg))
     }
 
-    /** /cfind … true: 시점을 돌린 뒤 몇 틱 지나 화면 가운데 천체를 골라 추적 고정 */
+    /** 1.5.4 /cfind … true: 시점을 돌린 뒤 몇 틱 지나 화면 가운데 천체를 골라 추적 고정 */
     private var lockIn = -1
-    /** 정해진 대상 (위성 — 저배율에선 가운데 고르기로 안 잡힐 수 있음). null = 가운데 고르기 */
+    /** 1.8.4: 정해진 대상 (위성 — 저배율에선 가운데 고르기에 안 잡히고 토성이 잡혔음). null = 가운데 고르기 */
     private var lockTarget: (() -> Target)? = null
     private var lockNote: (() -> String?)? = null
     fun lockCenterSoon() { lockIn = 3; lockTarget = null; lockNote = null }
@@ -793,18 +780,19 @@ object TelescopeHud {
         if (!TelescopeView.active) return
         val mc = Minecraft.getInstance()
         val t = runCatching { fixed?.invoke() }.getOrNull() ?: find(Projector(mc), PICK_RADIUS) ?: return
-        selected = t; locked = t; measure = null
+        selected = t; locked = t
+        LogBook.observe(t)
         mc.player?.sendOverlayMessage(Component.literal(L.t("cheonsang.telescopehud.39", t.short) + (note?.invoke()?.let { " | $it" } ?: "")))
     }
 
-    /** /cfind 행성·심원천체 추적용 (가운데를 다시 고르지 않음) */
+    /** 1.10.0-dev2 /cfind 행성·심원천체 추적용 (가운데를 다시 고르지 않음) */
     internal fun planetTarget(p: kr.inf.cheonsang.astro.PlanetPos): Target = InfoCard.planet(p)
     internal fun dsoTarget(o: kr.inf.cheonsang.client.sky.Dso): Target = InfoCard.dso(o)
 
-    /** /cfind 위성 추적용 */
+    /** 1.8.4 /cfind 위성 추적용 */
     internal fun moonTarget(ko: String, num: String, mag: Double, dir: Vec3, saturn: Boolean): Target =
         if (saturn) InfoCard.saturnMoon(ko, num, mag, dir) else InfoCard.jovianMoon(ko, num, mag, dir)
 
     /** 서버를 나가면 선택 해제 */
-    fun clearSelection() { selected = null; locked = null; measure = null }
+    fun clearSelection() { selected = null; locked = null }
 }

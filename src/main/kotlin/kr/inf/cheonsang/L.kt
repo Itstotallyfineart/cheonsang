@@ -4,8 +4,10 @@ import com.google.gson.JsonParser
 import net.minecraft.locale.Language
 
 /**
- * 천상 글자 (assets/cheonsang/lang/ko_kr.json · en_us.json). 내 화면은 "cheonsang.lang" 으로 ko/en 판단, 서버 명령 답은 [tl] 로 그 사람 언어 (전용 서버엔 모드 언어가 없어 직접 읽음).
- * {0} {1} … 자리에 값을 채우고 % 서식은 그대로 둠 (뒤에서 .format).
+ * 1.9.0-dev2 영문화: 천상 글자 (assets/cheonsang/lang/ko_kr.json · en_us.json).
+ * - 내 화면: 마크 언어가 한국어면 ko_kr, 그 밖은 en_us (언어 파일의 "cheonsang.lang" 으로 판단)
+ * - 서버 명령 답: 그 사람 클라이언트 언어 ([tl]) — 전용 서버에는 모드 언어가 안 올라가서 직접 읽음
+ * - {0} {1} … 자리에 값을 넣고, % 서식은 그대로 둠 (뒤에서 .format)
  */
 object L {
     private fun load(name: String): Map<String, String> = try {
@@ -46,7 +48,7 @@ object L {
     /** 이름 고르기: 한국어 화면이면 한국어 이름, 아니면 영어 이름 (빈 것은 다른 쪽으로) */
     fun name(koName: String, enName: String): String = if (ko) koName.ifEmpty { enName } else enName.ifEmpty { koName }
 
-    /** 위성 (한국어 이름이 식별자) → 화면 이름 */
+    /** 1.9.0: 위성 (한국어 이름이 식별자) → 화면 이름 */
     private val MOON_EN = mapOf("타이탄" to "Titan", "레아" to "Rhea", "이아페투스" to "Iapetus", "테티스" to "Tethys", "디오네" to "Dione",
         "엔셀라두스" to "Enceladus", "미마스" to "Mimas", "이오" to "Io", "유로파" to "Europa", "가니메데" to "Ganymede", "칼리스토" to "Callisto")
     fun moon(koName: String): String = if (ko) koName else MOON_EN[koName] ?: koName

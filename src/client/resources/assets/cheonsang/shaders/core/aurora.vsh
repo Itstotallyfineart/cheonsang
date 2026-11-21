@@ -1,7 +1,7 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// 천상 오로라: 지평 좌표 반구 그물 → 조각 셰이더에 시선 방향 (북 = −Z, 동 = +X, 위 = +Y)
+// 천상 오로라 (1.9.1-dev1): 지평 좌표 반구 그물 → 조각 셰이더에 시선 방향 (북 = −Z, 동 = +X, 위 = +Y)
 
 #include <minecraft:dynamictransforms.glsl>
 #include <minecraft:projection.glsl>

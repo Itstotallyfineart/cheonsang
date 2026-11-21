@@ -11,7 +11,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import java.util.UUID
 
 /**
- * 망원경 눈에 대는 자세 멀티 동기화 — 확대(×1 넘음) 중인지 서버가 모아 다른 사람 화면에도 반영.
+ * 1.9.2 망원경 눈에 대는 자세 멀티 동기화: 확대(×1 넘음) 중인지를 서버가 모아 다른 사람에게 알림
+ * → 다른 사람 화면에서도 팔을 눈에 대고 망원경이 눈에 붙음 (전에는 내 화면에서만).
  * 저장 안 함 (접속 중에만), 나가면 끔.
  */
 object PoseServer {
@@ -39,7 +40,7 @@ object PoseServer {
         PayloadTypeRegistry.clientboundPlay().register(POSE, POSE_CODEC)
         ServerPlayNetworking.registerGlobalReceiver(SET) { p, ctx ->
             val me = ctx.player()
-            // 악용 방지: 자세 켜고 끄기 사람마다 한꺼번에 6 · 초당 2 까지 (넘으면 버림 — 끄는 것만은 늘 받음)
+            // 2.0.0-rc1 악용 방지: 자세 켜고 끄기 사람마다 한꺼번에 6 · 초당 2 까지 (넘으면 버림 — 끄는 것만은 늘 받음)
             if (p.on && !limit.allow(me.uuid)) return@registerGlobalReceiver
             val changed = if (p.on) using.add(me.uuid) else using.remove(me.uuid)
             if (!changed) return@registerGlobalReceiver

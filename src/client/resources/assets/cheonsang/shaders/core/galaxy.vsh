@@ -1,9 +1,9 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// 천상 은하 스케치: 은하마다 사각형 하나, UV → 사각형 내 위치 −1~1
-// UV0.x: 사진판 칸 번호 ×2 + 위치, 칸 없으면 −2 + 위치
-// Color (GalaxySketch.kt): r=축비, g=형태×16+무늬씨앗, b=진하기, a=밝기 문턱
+// 천상 1.10.0 은하 관측 스케치: 은하마다 사각형 하나 (긴 축 × 짧은 축 방향), UV → 사각형 안 위치 −1~1
+// UV0.x = 사진 판 칸 번호 × 2 + 위치(0~1), 칸 없으면 −2 + 위치 (dev1b)
+// Color: r = 짧은/긴 축 비 · g = 형태 번호 × 16 + 무늬 씨앗 · b = 진하기(적분 등급 문턱 × 세기) · a = 보이는 밝기 문턱 (GalaxySketch.kt)
 
 #include <minecraft:dynamictransforms.glsl>
 #include <minecraft:projection.glsl>

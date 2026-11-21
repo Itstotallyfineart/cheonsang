@@ -1,7 +1,7 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// 천상 해·달 공용 정점 셰이더: 단위 사각형(-1~1) → p = 사각형 안 위치 (x = 오른쪽, y = 위)
+// 천상 해·달 공용 정점 셰이더 (0.1.3-c): 단위 사각형(-1~1) → p = 사각형 안 위치 (x = 오른쪽, y = 위)
 
 #include <minecraft:dynamictransforms.glsl>
 #include <minecraft:projection.glsl>

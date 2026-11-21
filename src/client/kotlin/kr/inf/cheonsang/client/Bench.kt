@@ -19,8 +19,10 @@ import kotlin.math.asin
 import kotlin.math.atan2
 
 /**
- * 성능 측정 `/cbench`. 장면마다 2초 안정 + 10초 측정(프레임 시간), 결과는 채팅 요약 + cheonsang_bench/날짜_시각/ 폴더에 결과.txt·장면별 스크린샷으로 저장.
- * 서버 상태(시간·날씨)는 안 바꿈. 망원경을 손에 들고 실행. 기준 환경: RTX 2050·1080p·렌더 16
+ * 성능 측정 `/cbench` (1.2.2 O8: 모든 버전에서 — 전에는 개발자 버전만).
+ * 장면마다 2초 안정 + 10초 측정 (프레임 시간). 결과: 채팅 요약 + 게임 폴더 cheonsang_bench/날짜_시각/
+ *   결과.txt (평균·느린 1%·최장 프레임·그래픽 메모리) + 장면마다 스크린샷 (이전 칸과 나란히 비교용)
+ * 서버 상태(시간·날씨)는 안 바꿈. 망원경을 손에 들고 실행. 기준 환경: RTX 2050·1080p·렌더 16 (로드맵 운영 규칙)
  */
 object Bench {
     val DEV: Boolean = FabricLoader.getInstance().getModContainer(Cheonsang.MOD_ID)
@@ -56,7 +58,10 @@ object Bench {
     private var outDir: java.nio.file.Path? = null
     private var vram0 = -1L
 
-    /** 그래픽 메모리 사용량(MB) — OpenGL+NVIDIA(GL_NVX_gpu_memory_info)일 때만, 아니면 -1. 리플렉션으로 불러 다른 백엔드에서도 안 튕김 */
+    /**
+     * 그래픽 메모리 사용량 (MB) — OpenGL + NVIDIA(GL_NVX_gpu_memory_info) 일 때만, 아니면 -1.
+     * LWJGL 은 리플렉션으로 불러서 다른 백엔드에서도 안 튕김
+     */
     private fun vramUsedMb(): Long = try {
         val info = RenderSystem.getDevice().deviceInfo
         if (!info.underlyingExtensions().contains("GL_NVX_gpu_memory_info")) -1L else {
@@ -77,7 +82,12 @@ object Bench {
         } catch (e: Throwable) { Cheonsang.LOG.warn("Cheonsang: benchmark screenshot failed", e) }
     }
 
+    /** 2.0.2-dev1: 개발판(-dev)·개발 환경에서만 등록 — 정식 배포판에는 /cbench 없음 */
+    private val ENABLED: Boolean = FabricLoader.getInstance().isDevelopmentEnvironment ||
+        FabricLoader.getInstance().getModContainer(Cheonsang.MOD_ID).map { "-dev" in it.metadata.version.friendlyString }.orElse(false)
+
     fun register() {
+        if (!ENABLED) return
         ClientCommandRegistrationCallback.EVENT.register { d, _ ->
             d.register(ClientCommands.literal("cbench")
                 .executes { start(); 1 }

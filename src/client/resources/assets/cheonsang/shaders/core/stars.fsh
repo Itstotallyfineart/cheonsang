@@ -1,7 +1,7 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// 별 점을 그림(star.png) 대신 원형 가우스로 직접 계산 — 최근접 샘플링이면 하늘이 돌 때 별이 픽셀 경계를 넘으며 깜빡임.
+// 1.4.0: 별 점을 그림(star.png) 대신 원형 가우스로 직접 계산 — 최근접 샘플링 때문에 하늘이 돌 때 별이 픽셀 경계를 넘으며 깜빡이던 것 고침.
 // corner: 사각형 안 위치 0~1. 사각형 반 폭 = 별 반지름 r 의 2배 → 가운데에서 r 만큼 떨어지면 |p| = 0.5
 
 #include <minecraft:dynamictransforms.glsl>

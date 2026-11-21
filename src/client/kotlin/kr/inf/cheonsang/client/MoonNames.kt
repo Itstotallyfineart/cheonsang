@@ -13,11 +13,11 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 달 지명 좌클릭 (×200↑): 화면 가운데가 달 원판 위면 그 자리의 셀레노 위도·경도 → 그 자리를 덮는 가장 작은 지형.
+ * 1.2.3 달 지명 좌클릭 (×200↑): 화면 가운데가 달 원판 위면 그 자리의 셀레노 위도·경도 → 그 자리를 덮는 가장 작은 지형.
  * 자료: sky/moon_names.json (IAU 지명, USGS Gazetteer — _tools/make_moon_names.py). 칭동·자전축은 셰이더(moon.fsh)와 같은 변환.
  */
 internal object MoonNames {
-    /** 이 배율부터 지명 */
+    /** 이 배율부터 지명 (1.7.0: 단계 번호 → 배율, 전 4단계 = ×200) */
     const val MIN_ZOOM = 150.0
     private const val MOON_R_KM = 1737.4
 
@@ -26,9 +26,20 @@ internal object MoonNames {
 
     class Feature(val ko: String, val name: String, val type: String, val lat: Double, val lon: Double, val diamKm: Double) {
         val title get() = if (ko.isEmpty() || !L.ko) name else "$ko ($name)"
-        /** 종류 화면 이름 (자료는 한국어) */
+        /** 1.9.0-dev2: 종류 화면 이름 (자료는 한국어) */
         val typeLabel: String get() = if (L.ko) type else TYPE_EN[type] ?: type
     }
+
+    /** 2.0.2-dev1: /cfind 검색에 내놓는 유명 지명 53곳 (좌클릭 이름 표시는 787곳 그대로) */
+    private val FAMOUS = setOf(
+        "Oceanus Procellarum", "Mare Imbrium", "Mare Serenitatis", "Mare Tranquillitatis", "Mare Crisium", "Mare Fecunditatis", "Mare Nectaris",
+        "Mare Nubium", "Mare Humorum", "Mare Frigoris", "Mare Vaporum", "Mare Cognitum", "Mare Insularum", "Mare Orientale",
+        "Sinus Iridum", "Sinus Medii", "Sinus Aestuum", "Lacus Somniorum",
+        "Tycho", "Copernicus", "Kepler", "Aristarchus", "Plato", "Clavius", "Ptolemaeus", "Alphonsus", "Arzachel", "Theophilus", "Cyrillus",
+        "Catharina", "Grimaldi", "Gassendi", "Eratosthenes", "Archimedes", "Langrenus", "Petavius", "Posidonius", "Maginus", "Schickard",
+        "Aristoteles", "Eudoxus", "Hipparchus", "Albategnius", "Proclus", "Messier", "Bailly", "Pythagoras",
+        "Montes Apenninus", "Montes Alpes", "Montes Caucasus", "Vallis Alpes", "Rupes Recta", "Vallis Schröteri")
+    val famous: List<Feature> by lazy { list.filter { it.name in FAMOUS } }
 
     val list: List<Feature> by lazy {
         val s = MoonNames::class.java.getResourceAsStream("/assets/cheonsang/sky/moon_names.json") ?: return@lazy emptyList()

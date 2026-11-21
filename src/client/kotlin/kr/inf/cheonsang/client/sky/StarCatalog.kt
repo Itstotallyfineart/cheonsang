@@ -104,9 +104,10 @@ class StarCatalog(
                         }
                     }
                 }
-                // famous_stars.json 의 fixMag 로 등급이 부정확한 별을 고친 뒤 밝은 순으로 다시 정렬
+                // 1.9.0-dev2: 자료 밝기가 옛 값인 별 (famous_stars.json fixMag) → 고친 뒤 밝은 순 다시 맞춤
                 fixMags(dir, mag, bv, hip, con, greek, sup, flam)
-                // 배경용 어두운 별(9~11등)은 밝은 순 정렬 뒤에 이어 붙임. 깊은 별 목록(Tycho-2, DeepStars)이 있으면 등급대가 겹쳐 안 씀
+                // 0.1.8: 배경용 어두운 별 (9~11등, faint_stars.bin) — 밝은 순 정렬 유지 (전부 9등보다 어두움)
+                // 1.7.0: 깊은 별(Tycho-2, DeepStars) 이 있으면 흩뿌린 배경 별은 안 씀 (같은 등급대 겹침)
                 if (StarCatalog::class.java.getResource("/assets/cheonsang/sky/deep_stars.bin") != null) return StarCatalog(dir, mag, bv, hip, con, greek, sup, flam)
                 val faint = StarCatalog::class.java.getResourceAsStream("/assets/cheonsang/sky/faint_stars.bin")
                     ?: return StarCatalog(dir, mag, bv, hip, con, greek, sup, flam)
@@ -132,7 +133,7 @@ class StarCatalog(
 
         /**
          * 색지수 B-V → RGB (0~255). Ballesteros 식으로 온도를 구하고 흑체색 근사.
-         * 실제 별색은 옅어서 흰색을 조금 섞는다 (22%).
+         * 실제 별색은 옅어서 흰색을 조금 섞는다 (0.1.12: 50% → 22%, 색이 눈에 띄게).
          */
         fun color(bv: Float): Int {
             val b = bv.coerceIn(-0.4f, 2.0f).toDouble()

@@ -4,8 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem
 import kr.inf.cheonsang.Cheonsang
 
 /**
- * 그래픽 메모리 예산 = 카드 메모리의 1/4 (최소 256MB), 조각:사진 = 4:3 분할. 못 구하면 512MB+384MB 기본값.
- * 렌더 스레드에서 한 번만 측정 (GL_NVX_gpu_memory_info / GL_ATI_meminfo, 리플렉션)
+ * 1.9.0-dev2 그래픽 메모리 예산 = 그래픽 카드 메모리의 1/4 자동, 최소 256MB (11-13 지율님 확정).
+ * 조각(TileSky) : 사진(PhotoSky) = 4 : 3 으로 나눔. 카드 메모리를 모르면 (Vulkan·NVIDIA/AMD 확장 없음) 전 값 그대로 (512MB + 384MB)
+ * 렌더 스레드에서 한 번만 (OpenGL 확장 GL_NVX_gpu_memory_info · GL_ATI_meminfo, LWJGL 은 리플렉션)
  */
 object VramBudget {
     private var done = false

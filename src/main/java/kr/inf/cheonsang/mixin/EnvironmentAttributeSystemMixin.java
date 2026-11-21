@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 바닐라 맞추기: 서버 월드의 달 위상·지표 슬라임 확률·(설정 시) 하늘 빛 밝기를 천상 하늘 값으로.
+ * 1.3.1 바닐라 맞추기: 서버 월드의 달 위상·지표 슬라임 확률·(설정 시) 하늘 빛 밝기를 천상 하늘 값으로.
  * VanillaSync 에 등록된 (서버 오버월드의) 속성 시스템만 바꿈 — 나머지는 바닐라 그대로
  */
 @Mixin(EnvironmentAttributeSystem.class)

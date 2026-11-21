@@ -18,11 +18,17 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * 주변 빛 계산 — 빛공해(보틀 지수·도시 돔)와 암적응.
+ * 1.5.1 주변 빛 (클라이언트 계산, PERF-001) — 빛공해(보틀 지수·도시 돔) · 암적응.
  *
- * 빛공해는 주변 17×17 칸(8블록 간격) 지표면 위 블록 빛을 거리 가중 합산해 보틀 지수와 돔 방향을 구하며,
- * 8블록 이동·2초 경과·청크 변화 시에만 틱당 40곳씩 나눠 다시 계산한다.
- * 암적응은 눈 위치 밝기로 최대 30초에 걸쳐 회복되고, 가시성 모델의 관측자 단계에서 등급 손해로만 반영된다.
+ * 빛공해: 주변 ±64블록 · 8칸 간격(17×17 = 289곳) 지표면 위에서 하늘 빛 15(바깥)인 칸의 블록 빛만 거리 가중 합산
+ *  → 보틀 지수 1~9 → 천정 하늘 밝기 증가분 (nL) + 빛이 몰린 방향 지평선 돔.
+ *  동굴·막힌 집 안 불빛은 하늘 빛 15 가 아니라 빠지고, 창문·문으로 새어 나온 빛은 마크 빛 전파로 바깥 칸에 잡힘. 미로드 청크 = 빛 0.
+ *  다시 계산 (LIGHT-001): 8블록 넘게 이동 · 2초 경과 · 청크 로드/언로드. 나눠 샘플링 (O7): 틱마다 40곳,
+ *  도중에 이동·청크 변화가 생기면 그 회차 버리고 처음부터 (서로 다른 시점 샘플 안 섞음).
+ *  블록 하나 바뀐 것은 따로 잡지 않고 2초 주기로 반영 (횃불 놓기·치우기 → 최대 약 3초 뒤)
+ *
+ * 암적응: 눈 위치 블록 빛 + 손에 든 광원(블록 빛 세기). 밝으면 바로 풀림, 어두우면 최대 30초(FIXED)에 걸쳐 회복.
+ *  덜 적응한 만큼 한계 등급 손해 (최대 3등, TBD) — 별 밝기를 직접 바꾸지 않고 가시성 모델 ④ 관측자 단계에서만.
  */
 object AmbientLight {
     private const val RANGE = 64
@@ -30,11 +36,11 @@ object AmbientLight {
     private const val PER_TICK = 40
     private const val MOVE_LIMIT = 8.0
     private const val PERIOD_TICKS = 40
-    /** 빛 합 → 보틀: 1 + 8·(1 − e^(−L/L0)) */
+    /** 빛 합 → 보틀: 1 + 8·(1 − e^(−L/L0)) (TBD) */
     private const val L0 = 800.0
     /** 보틀 1~9 → 천정 하늘 밝기 (등/초각², 어림) */
     private val BORTLE_MAG = doubleArrayOf(21.9, 21.6, 21.4, 20.8, 20.0, 19.1, 18.5, 18.0, 17.5)
-    /** 암적응 최대 손해 (등) · 회복 시간 (초) */
+    /** 암적응 최대 손해 (등, TBD) · 회복 시간 (초, FIXED) */
     private const val DARK_MAX_LOSS = 3.0
     private const val DARK_RECOVER_SEC = 30.0
 
@@ -65,14 +71,14 @@ object AmbientLight {
         Visibility.lightPollutionNl = { dir -> lightNl(dir) }
         Visibility.darkAdaptLoss = { DARK_MAX_LOSS * (1.0 - adapt) }
         Visibility.zodiacalNl = { dir -> zodiacalNl(dir) }
-        // 반짝임: 맨눈·저배율만 (고배율은 시상 효과). 지평선 쪽 강하게는 셰이더가 대기량으로
+        // 반짝임: 맨눈·저배율만 (고배율은 1.7.0 시상). 지평선 쪽 강하게는 셰이더가 대기량으로 (TBD 0.35)
         CheonsangSky.twinkleAmount = {
             if (!Visibility.on(Visibility.Fx.TWINKLE)) 0f
             else (0.35 * (1.0 - kotlin.math.ln(Visibility.zoomNow()) / kotlin.math.ln(75.0)).coerceIn(0.0, 1.0)).toFloat()
         }
     }
 
-    // ── 황도광·대일조 (어두운 하늘 기준 몇 배) ──
+    // ── 황도광·대일조 (어두운 하늘 기준 몇 배, TBD) ──
     /** 황도 북극 (J2000 적도) */
     private val ECL_POLE = Vec3(0.0, -kotlin.math.sin(Math.toRadians(23.4392911)), kotlin.math.cos(Math.toRadians(23.4392911)))
 
@@ -101,10 +107,10 @@ object AmbientLight {
         return ((h ushr 11) and 0xFFFFF).toDouble() / 0xFFFFF.toDouble()
     }
 
-    /** 개발용 `/caurora` — 위도·태양 활동과 무관하게 이 세기로 (null = 끔, 저장 안 함) */
+    /** 1.9.0-dev2 개발판 전용 `/caurora` — 위도·태양 활동과 무관하게 이 세기로 (null = 끔, 저장 안 함, 도감·발전과제에는 안 들어감) */
     var debugAurora: Double? = null
 
-    /** 오로라 세기 0~1 — 위도 60° 미만·활동 약함(0.4 미만)·밝은 하늘이면 0 */
+    /** 오로라 세기 0~1 — 위도 60° 미만·활동 약함(0.4 미만)·밝은 하늘이면 0 (TBD) */
     fun auroraStrength(jd: Double): Double {
         if (!Visibility.on(Visibility.Fx.AURORA)) return 0.0
         debugAurora?.let { return it * ((-CheonsangSky.sunAlt - 10.0) / 6.0).coerceIn(0.0, 1.0) }
@@ -128,12 +134,12 @@ object AmbientLight {
         val px = p.blockX; val pz = p.blockZ
         val moved = hypot((px - originX).toDouble(), (pz - originZ).toDouble()) > MOVE_LIMIT
         val now = level.gameTime
-        // 새 회차 시작 조건: 최초 실행, 이동, 청크 변화, 주기 도달
+        // 새 회차 시작: 처음 · 이동 · 청크 변화 · 주기
         if (cursor < 0) {
             if (dirty || moved || now - lastTick >= PERIOD_TICKS) start(px, pz, now)
             else return
         } else if (moved || dirty) {
-            start(px, pz, now)  // 샘플링 도중 변화가 생기면 버리고 처음부터
+            start(px, pz, now)  // 도중 변화 → 버리고 처음부터
         }
         val total = cols * cols
         var n = 0

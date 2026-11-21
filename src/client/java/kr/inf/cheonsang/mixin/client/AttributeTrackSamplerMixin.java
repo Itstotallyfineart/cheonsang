@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** 화면용 트랙은 바닐라 시계 대신 천상 해 고도에 맞춘 가상 시각으로 (클라이언트 렌더 스레드만) */
+/** 1.10.1-dev4: 화면용 트랙은 바닐라 시계 대신 천상 해 고도에 맞춘 가상 시각으로 (클라이언트 렌더 스레드만) */
 @Mixin(AttributeTrackSampler.class)
 public abstract class AttributeTrackSamplerMixin implements VisualDaySampler {
     @Unique private boolean cheonsang$visual;

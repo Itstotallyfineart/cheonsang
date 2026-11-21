@@ -2,12 +2,16 @@ package kr.inf.cheonsang.client
 
 import kotlin.math.log10
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * 손 망원경 광학. F비 f/7 고정: 대물 초점거리 = 구경×7, 배율 = 대물 초점 ÷ 접안 초점.
- * 한계 등급 = 맨눈 + 5·log10(유효 구경 / 눈동자 7mm) + 0.43, 유효 구경 = min(구경, 배율×7mm).
- * 배율 한계 = 구경×2 (강제 제한 없음 — 넘으면 회절·시상으로 별 상이 흐려짐).
+ * 1.7.0 손 망원경 광학 (11-12 지율님 확정).
+ * - 대물 구경 (Shift+휠) · 접안 초점거리 (휠) 를 바꿈. F비 f/7 고정 → 대물 초점거리 = 구경 × 7, 배율 = 대물 초점 ÷ 접안 초점
+ * - 켤 때마다 기본값 (80mm, ×1 부터)
+ * - 한계 등급 = 맨눈 + 5·log10(유효 구경 / 눈동자 7mm) + 0.43 (맨눈 6.5등에서 7.7 + 5·log10(구경 cm) 와 같음).
+ *   유효 구경 = min(구경, 배율 × 7mm) — 출사동이 눈동자보다 크면 빛이 다 안 들어옴
+ * - 배율 한계 = 구경 × 2 (막지 않음 — 넘으면 별 상이 회절·시상만큼 커져 흐려짐)
  */
 object Optics {
     val APERTURES = intArrayOf(50, 60, 70, 80, 90, 102, 114, 127, 150, 200, 254, 305)
@@ -15,8 +19,28 @@ object Optics {
     const val DEFAULT_APERTURE = 3
     const val F_RATIO = 7.0
     const val EYE_PUPIL_MM = 7.0
-    /** 시상 (FWHM ″) */
-    const val SEEING_ARCSEC = 1.5
+    /**
+     * 2.0.2-dev1 시상 (FWHM ″): 밤마다 다름 (그 장소 현지 날짜로 정해지는 값 0.9~3.0, 1.2~2 가 흔함) × 보는 방향 대기량^0.6.
+     * 전: 1.5″ 고정
+     */
+    fun nightSeeing(): Double {
+        val jd = kr.inf.cheonsang.client.sky.CheonsangSky.clock.jd((net.minecraft.client.Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())
+        val night = kotlin.math.floor(jd + kr.inf.cheonsang.client.sky.CheonsangSky.longitude / 360.0).toLong()
+        if (night == cachedNight) return cachedSeeing
+        var x = night * -0x61c8864680b583ebL; x = (x xor (x ushr 31)) * -0x40a7b892e31b1a47L; x = x xor (x ushr 29)
+        val u1 = ((x ushr 11) and 0xFFFFF).toDouble() / 0xFFFFF; val u2 = ((x ushr 33) and 0xFFFFF).toDouble() / 0xFFFFF
+        cachedNight = night; cachedSeeing = (0.9 + 2.1 * (u1 + u2) / 2 * (0.6 + 0.4 * u1)).coerceIn(0.9, 3.0)
+        return cachedSeeing
+    }
+    private var cachedNight = Long.MIN_VALUE
+    private var cachedSeeing = 1.5
+
+    /** 지금 보는 방향 시상 — 고도 낮을수록 나쁨 (대기량^0.6, 고도 5° 아래는 5° 값) */
+    fun seeingArcsec(): Double {
+        val alt = (-(net.minecraft.client.Minecraft.getInstance().player?.xRot ?: -45f).toDouble()).coerceIn(5.0, 90.0)
+        val airmass = 1.0 / kotlin.math.sin(Math.toRadians(alt + 244.0 / (165.0 + 47.0 * alt.pow(1.1))))
+        return nightSeeing() * airmass.pow(0.6)
+    }
 
     var apIdx = DEFAULT_APERTURE
         private set
@@ -53,6 +77,7 @@ object Optics {
     /** 별 상 반지름 (″) — 회절 (에어리 첫 어둠 138/D) 과 시상을 합친 크기의 대략 */
     fun starRadiusArcsec(): Double {
         val airy = 138.0 / apertureMm
-        return 0.6 * sqrt(airy * airy + SEEING_ARCSEC * SEEING_ARCSEC)
+        val s = seeingArcsec()
+        return 0.6 * sqrt(airy * airy + s * s)
     }
 }

@@ -45,14 +45,14 @@ object Calendar {
     fun julianDayKst(year: Int, month: Int, day: Int, hour: Int, minute: Int): Double =
         julianDayLocal(year, month, day, hour + minute / 60.0, ZONE_HOURS)
 
-    /** 현지 날짜·시각(시, 소수) → 율리우스일(UT). zoneHours = 경도/15 (지방평균시) */
+    /** 1.3.0: 현지 날짜·시각(시, 소수) → 율리우스일(UT). zoneHours = 경도/15 (지방평균시) */
     fun julianDayLocal(year: Int, month: Int, day: Int, hours: Double, zoneHours: Double): Double =
         julianDay(year, month, day + (hours - zoneHours) / 24.0)
 
     /** 율리우스일(UT) → KST 날짜·시각 (분 단위 반올림) */
     fun toKst(jd: Double): CivilTime = toLocal(jd, ZONE_HOURS)
 
-    /** 율리우스일(UT) → 현지 날짜·시각 (zoneHours = 경도/15) */
+    /** 1.3.0: 율리우스일(UT) → 현지 날짜·시각 (zoneHours = 경도/15) */
     fun toLocal(jd: Double, zoneHours: Double): CivilTime {
         // 분 단위로 먼저 반올림해 23:59.99 → 24:00 같은 넘침 방지
         val j = floor((jd + zoneHours / 24.0) * 1440.0 + 0.5) / 1440.0

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** 일식: 땅에 비치는 하늘빛도 어둡게 (개기 때 해 질 녘 정도) */
+/** 일식 (0.1.11): 땅에 비치는 하늘빛도 어둡게 (개기 때 해 질 녘 정도) */
 @Mixin(LightmapRenderStateExtractor.class)
 public abstract class LightmapMixin {
     @Unique private float cheonsang$lastDim;

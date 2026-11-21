@@ -21,7 +21,7 @@ data class MoonPhase(
     val texture: Int,
 )
 
-/** 달 칭동: 지구 쪽을 향한 셀레노 경도 l·위도 b, 달 자전축 위치각 P (천구 북쪽 → 동쪽), 도 */
+/** 달 칭동 (1.2.3): 지구 쪽을 향한 셀레노 경도 l·위도 b, 달 자전축 위치각 P (천구 북쪽 → 동쪽), 도 */
 data class Libration(val l: Double, val b: Double, val p: Double)
 
 /** Meeus 47장 달 (주기항 60+60, 오차 약 10") */

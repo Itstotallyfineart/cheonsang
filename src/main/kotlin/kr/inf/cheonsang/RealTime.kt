@@ -9,13 +9,13 @@ import kotlin.math.floor
 import kotlin.math.roundToLong
 
 /**
- * 리얼타임 모드: 마크 하루 = 현실 하루, 하늘 = 지금 그 도시의 실제 하늘.
+ * 1.0.0 리얼타임 모드: 마크 하루 = 현실 하루, 하늘 = 지금 그 도시의 실제 하늘.
  * - 월드 시계 속도 1/72 (마크 시계 기능), 시각 = 그 도시의 지방평균시
- * - 하늘: 도시 위치(위도·경도)로 /cele set + 압축률 1 + 지금 현실 시각 (예외 계산 없음)
+ * - 하늘: 1.3.0 부터 = 도시 위치(위도·경도)로 /cele set + 압축률 1 + 지금 현실 시각 (예외 계산 없음)
  */
 object RealTime {
     data class City(val id: String, val name: String, val lat: Double, val lon: Double, val zone: String) {
-        /** 화면 이름 (name 은 /cele set 에 한국어로 적는 이름) */
+        /** 1.9.0-dev2: 화면 이름 (name 은 /cele set 에 한국어로 적는 이름) */
         val label: String get() = L.t("cheonsang.city.$id")
         fun label(lang: String?): String = L.tl(lang, "cheonsang.city.$id")
     }
@@ -44,8 +44,8 @@ object RealTime {
     fun jdNow(): Double = System.currentTimeMillis() / 86_400_000.0 + 2440587.5
 
     /**
-     * 지금 그 도시의 지방평균시 마크 시각 (0~23999) — 천상 시계 규칙: 06:00 = 0틱, 지방평균시 = 세계시 + 경도/15.
-     * (하늘은 도시 위치 그대로 SkyClock 이 계산)
+     * 1.3.0: 지금 그 도시의 지방평균시 마크 시각 (0~23999) — 천상 시계 규칙: 06:00 = 0틱, 지방평균시 = 세계시 + 경도/15.
+     * (1.2.x 의 참태양시·경도 예외 계산은 없앰 — 하늘은 도시 위치 그대로 SkyClock 이 계산, C-09)
      */
     fun solarTickOfDay(jd: Double, c: City): Double {
         val ut = (jd + 0.5).let { (it - floor(it)) * 24.0 }

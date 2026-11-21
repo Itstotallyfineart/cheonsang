@@ -42,20 +42,22 @@ import kotlin.math.abs
 import kotlin.math.floor
 
 /**
- * 하늘 상태 (서버가 원본) — 차원마다 시계 기준점·압축률·위도·경도를 월드 저장 데이터에 두고 접속자에게 동기화. 모드 없는 서버면 클라이언트가 기본값(2026-08-11·0°·0°·1배)으로 혼자 그림.
- * 위치는 월드 기본값(사람마다 /cplace 로 자기 관측 위치를 따로 둠), 경도는 마크 시계 = 그 경도 지방평균시 (기준 있는 옛 월드는 135°로 이어 붙임).
+ * 하늘 상태 (서버가 원본, ARCH-001) — 차원마다 [시계 기준점·압축률·위도·경도]를 월드 저장 데이터에 두고 접속자에게 동기화.
+ * 서버에 이 모드가 없으면 클라이언트는 기본값(2026-08-11, 0°·0°, 1배)으로 혼자 그린다.
+ * 1.9.0-dev3: 여기 위치 = 월드 기본 위치. 사람마다 /cplace 로 자기 관측 위치 (클라이언트, 마크 시계 = 그 위치 현지 시각)
+ * 1.3.0: 경도 추가 (마크 시계 = 그 경도의 지방평균시). 기준 있는 옛 월드는 경도 135° 로 이어 붙임 (C-04)
  *
  * 명령: /cele · set <년> <월> <일> <시> <분> <위도> <경도> (생략·~ = 유지, 위도 자리에 도시 이름) · set today · rate · reset · realtime [도시|off]
  */
 object SkyServer {
-    /**
-     * 서버 → 클라이언트: 지금 차원의 하늘. city = 실시간 도시 id ("" 면 꺼짐, 그 도시 시각도 같이 보냄).
-     * lat·lon = 월드 기본 위치 (사람마다 /cplace 로 자기 관측 위치를 따로 둠, 클라이언트).
-     */
+    /** 서버 → 클라이언트: 지금 있는 차원의 하늘 */
+    /** city = 실시간 도시 id (1.1.3, 꺼져 있으면 "") — 클라이언트가 그 도시 시계 시각을 같이 보여 줌 */
+    /** lat·lon = 월드 기본 위치 (1.9.0-dev3: 사람마다 /cplace 로 자기 관측 위치를 정함 — 클라이언트) */
     data class Sky(val epochTick: Long, val epochJd: Double, val rate: Double, val lat: Double, val lon: Double, val city: String = "") : CustomPacketPayload {
         override fun type() = TYPE
         val clock get() = SkyClock(epochTick, epochJd, rate, lon)
     }
+    /** 1.3.0: 경도가 들어가 패킷 형식이 바뀜 → 이름도 바꿈 (옛 클라이언트와 섞여도 엉뚱하게 읽지 않게). 1.9.0-dev1·2 sky3(위도 이동) → dev3 sky4 */
     val TYPE = CustomPacketPayload.Type<Sky>(Cheonsang.id("sky4"))
     private val CODEC: StreamCodec<RegistryFriendlyByteBuf, Sky> = StreamCodec.composite(
         ByteBufCodecs.VAR_LONG, Sky::epochTick, ByteBufCodecs.DOUBLE, Sky::epochJd,
@@ -63,8 +65,9 @@ object SkyServer {
     )
 
     /**
-     * 월드 기본 위치 번호 — /cele set 등으로 위도·경도가 바뀔 때마다 +1, 클라이언트가 전에 받은 번호와 다르면 자기 /cplace 를 풂 (다음 접속 때도).
-     * 따로 된 패킷이라 옛 클라이언트에는 안 보냄.
+     * 2.0.0-rc1 (11-14 19:25 지율님 "cele set 으로 위치를 바꾸면 모든 사람의 cplace 를 초기화"): 월드 기본 위치 번호.
+     * /cele set 등으로 위도·경도가 바뀔 때마다 +1 → 클라이언트가 전에 받은 번호와 다르면 자기 /cplace 를 풂 (접속 안 해 있던 사람도 다음 접속 때)
+     * 따로 된 패킷이라 옛 클라이언트(못 받음)에는 안 보냄
      */
     data class PlaceGen(val gen: Int) : CustomPacketPayload { override fun type() = GEN_TYPE }
     val GEN_TYPE = CustomPacketPayload.Type<PlaceGen>(Cheonsang.id("placegen"))
@@ -74,13 +77,13 @@ object SkyServer {
 
     /**
      * 저장: 차원 ID → [기준틱, 기준 율리우스일, 압축률, 위도] (+ 리얼타임 켜져 있으면 [도시 번호, 켜기 전 기준틱·율리우스일·압축률·위도])
-     * "차원 ID#lon" → [경도, 켜기 전 경도(리얼타임)] — 이 키가 없는 기준 월드는 경도 135°
+     * 1.3.0: "차원 ID#lon" → [경도, 켜기 전 경도(리얼타임)] — 이 키가 없는 기준 = 1.2.x 월드 → 경도 135°
      */
     class Data(val skies: MutableMap<String, List<Double>> = HashMap()) : SavedData()
     private val DATA = SavedDataType(
         Cheonsang.id("sky"), ::Data,
         Codec.unboundedMap(Codec.STRING, Codec.DOUBLE.listOf()).xmap({ Data(HashMap(it)) }, { it.skies }),
-        DataFixTypes.SAVED_DATA_COMMAND_STORAGE, // null 불가 — 영향 없는 기본 타입
+        DataFixTypes.SAVED_DATA_COMMAND_STORAGE, // 26.3은 null 불가 — 영향 없는 기본 타입
     )
     private fun data(server: MinecraftServer) = server.dataStorage.computeIfAbsent(DATA)
 
@@ -88,6 +91,7 @@ object SkyServer {
     const val SOUTH = -30.0
 
     // ── 서버 설정 (config/cheonsang/server.json) ──
+    // 1.3.0: 새 키 lat·lon (옛 키 latitude·dimensions 는 1.2.x 기본 −30 이 적혀 있어 무시 — 새 월드 기본 0°·0°)
     private var defaultRate = SkyClock.DEFAULT_RATE
     private var defaultLat = SkyClock.DEFAULT_LAT
     private var defaultLon = SkyClock.DEFAULT_LON
@@ -98,7 +102,7 @@ object SkyServer {
             if (Files.exists(file)) {
                 val o = gson.fromJson(Files.readString(file), JsonObject::class.java)
                 o["rate"]?.let { defaultRate = it.asDouble.coerceIn(0.01, 1000.0) }
-                // 옛 기본값 3.261 은 지금 기본값 1.0 으로 한 번 옮김
+                // 1.10.1-dev4: 옛 버전이 적어 둔 옛 기본값 3.261 은 지금 기본값 1.0 으로 한 번 옮김 (11-14 지율님 "기본 압축률 왜 아직도 3")
                 if (o["rateMigrated"] == null) {
                     if (kotlin.math.abs(defaultRate - 3.261) < 1e-6) {
                         defaultRate = SkyClock.DEFAULT_RATE
@@ -112,6 +116,7 @@ object SkyServer {
                 o["lon"]?.let { defaultLon = it.asDouble.coerceIn(-180.0, 180.0) }
                 o["vanillaMoon"]?.let { VanillaSync.moonOn = it.asBoolean }
                 o["vanillaNight"]?.let { VanillaSync.nightOn = it.asBoolean }
+                // 1.9.0-dev3: dev1·2 의 latTravel·blocksPerDegree 는 읽지 않음 (위도 이동 → /cplace)
             } else {
                 val o = JsonObject()
                 o.addProperty("_note", "rate = sky days per game day (1.0 = real speed), lat/lon = default latitude/longitude for new worlds (S/W negative), vanillaMoon = vanilla moon phase & slimes follow the Cheonsang Moon, vanillaNight = mobs/night follow the real Sun altitude (-6°) (default off)")
@@ -135,8 +140,8 @@ object SkyServer {
         val d = data(level.server)
         val v = d.skies[id]
         if (v != null && v.size >= 4) return Sky(v[0].toLong(), v[1], v[2], v[3], lonOf(level))
-        // 기준이 없을 때 — 이미 하루 넘게 플레이한 월드면 옛 기본(2019-03-21·남위 30°)에 경도 135° 로 이어 붙이고,
-        // 새 월드면 새 기본(2026-08-11·0°·0°). 한 번 정하면 저장 (다음부터 판단하지 않음)
+        // 1.3.0: 기준이 없을 때 — 이미 하루 넘게 플레이한 월드면 1.2.x 기본(2019-03-21·남위 30°)에 경도 135° 로 이어 붙이고,
+        // 새 월드면 새 기본(1.9.0: 2026-08-11·0°·0°). 한 번 정하면 저장 (다음부터 판단하지 않음)
         val old = level.server.overworld().gameTime > 24000L
         val sky = if (old) Sky(0L, SkyClock.OLD_EPOCH_JD, defaultRate, SkyClock.OLD_LAT, SkyClock.OLD_LON)
             else Sky(0L, SkyClock.DEFAULT_EPOCH_JD, defaultRate, defaultLat, defaultLon)
@@ -147,7 +152,7 @@ object SkyServer {
         return sky
     }
 
-    /** 경도 — "#lon" 키가 없으면 옛 기준이 있는 월드 → 135° */
+    /** 경도 — "#lon" 키가 없으면 1.2.x 기준이 있는 월드 → 135° (C-04) */
     private fun lonOf(level: ServerLevel): Double = data(level.server).skies["${dimId(level)}#lon"]?.firstOrNull() ?: SkyClock.OLD_LON
 
     /** 보내는 하늘 = 저장된 하늘 + 실시간 도시 */
@@ -164,7 +169,7 @@ object SkyServer {
         d.skies[dimId(level)] = listOf(sky.epochTick.toDouble(), sky.epochJd, sky.rate, sky.lat) + rt
         val oldLon = d.skies["${dimId(level)}#lon"]
         d.skies["${dimId(level)}#lon"] = listOf(sky.lon) + (oldLon?.drop(1) ?: emptyList())
-        // 위도·경도가 바뀌면 위치 번호 +1 (날짜·시각·압축률만 바뀌면 그대로)
+        // 2.0.0-rc1: 위도·경도가 바뀌면 위치 번호 +1 (날짜·시각·압축률만 바뀌면 그대로)
         val moved = old == null || old.size < 4 || abs(old[3] - sky.lat) > 1e-9 || abs((oldLon?.firstOrNull() ?: sky.lon) - sky.lon) > 1e-9
         if (moved) d.skies["${dimId(level)}#gen"] = listOf((genOf(level) + 1).toDouble())
         d.setDirty()
@@ -200,7 +205,7 @@ object SkyServer {
 
     private fun clockOf(level: ServerLevel) = level.dimensionType().defaultClock().orElse(null)
 
-    /** 월드 시계를 그 도시의 지방평균시로, 하늘 = 그 도시 위치·지금 현실 시각·압축률 1 */
+    /** 1.3.0: 월드 시계를 그 도시의 지방평균시로, 하늘 = 그 도시 위치·지금 현실 시각·압축률 1 (C-09: 경도 예외 계산 없음) */
     private fun syncRealtime(level: ServerLevel, c: RealTime.City, force: Boolean) {
         val clock = clockOf(level) ?: return
         val cm = level.server.clockManager()
@@ -313,19 +318,20 @@ object SkyServer {
         }
         val now = s.clock.civil(level.defaultClockTime)
         reply(c, L.t("cheonsang.cmd.time", now).format(s.rate, 365.2422 / s.rate, placeText(s.lat, s.lon)))
-        // 서버는 월드 기본 위치만 앎 — 내 관측 위치는 /cplace
+        // 1.9.0-dev3: 서버는 월드 기본 위치만 앎 — 내 관측 위치는 /cplace
         return reply(c, sunMoonLine(s, level.defaultClockTime) + L.t("cheonsang.cmd.world_place"))
     } }
 
-    /** "일출 06:52 · 남중 11:50 (38°) · 일몰 16:48 | 월출 … · 월몰 …" */
+    /** 1.1.0: "일출 06:52 · 남중 11:50 (38°) · 일몰 16:48 | 월출 … · 월몰 …" */
     private fun sunMoonLine(s: Sky, tick: Long): String {
         val day = SkyDay(s.clock, s.lat, tick)
         return kr.inf.cheonsang.astro.RiseSet.text(day.sun(), "sun") + " | " + kr.inf.cheonsang.astro.RiseSet.text(day.moon(), "moon")
     }
 
     /**
-     * `/cele set <년> <월> <일> <시> <분> <위도> <경도>` — 뒤쪽 생략, "~" = 지금 값 유지, 위도 자리에 장소 이름(seoul 등). 시각은 그 장소 지방평균시 (시·분 적으면 월드 시계도 그 시각으로, 안 적으면 그대로).
-     * 위치만 바꾸면 마크 시계·현지 날짜는 유지되고 세계시가 경도만큼 밀림.
+     * 1.3.0 `/cele set <년> <월> <일> <시> <분> <위도> <경도>` — 뒤쪽 생략, "~" = 지금 값 유지, 위도 자리에 장소 이름(seoul 등).
+     * 시각 = 그 장소 지방평균시. 시·분을 적으면 월드 시계도 그 시각으로 (지금 마크 날 안), 안 적으면 월드 시계 그대로.
+     * 위치만 바꾸면 마크 시계·현지 날짜 유지 → 세계시가 경도만큼 밀림
      */
     private fun setCmd(c: CommandContext<CommandSourceStack>, text: String): Int { return L.with(lang(c)) {
         if (blockedByRealtime(c)) return 0
@@ -404,7 +410,7 @@ object SkyServer {
         else -> "%.1f°S".format(-lat)
     }
 
-    /** 명령 친 사람의 클라이언트 언어 (콘솔은 null → 영어) */
+    /** 1.9.0-dev2: 명령 친 사람의 클라이언트 언어 (콘솔은 null → 영어) */
     private fun lang(c: CommandContext<CommandSourceStack>): String? = c.source.player?.clientInformation()?.language()
 
     private fun reply(c: CommandContext<CommandSourceStack>, msg: String): Int {

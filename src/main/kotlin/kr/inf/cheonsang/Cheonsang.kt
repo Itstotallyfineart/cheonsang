@@ -14,6 +14,7 @@ object Cheonsang : ModInitializer {
     override fun onInitialize() {
         LOG.info("Cheonsang started")
         SkyServer.register()
+        LogServer.register()
         PoseServer.register()
         VanillaSync.register()
         Telescope.register()

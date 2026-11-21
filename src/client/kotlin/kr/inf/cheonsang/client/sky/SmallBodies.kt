@@ -16,15 +16,15 @@ import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.math.tan
 
-/** 소행성 위치 (지구에서 본 모습, J2000 적도) */
+/** 1.2.5 소행성 위치 (지구에서 본 모습, J2000 적도) */
 class AsteroidPos(val body: Asteroids.Body, val dir: Vec3, val distAu: Double, val sunDistAu: Double, val mag: Double, val phaseAngle: Double)
 
 /**
- * 소행성 세레스·베스타 — JPL Horizons 해 중심 위치 표 (1900~2050, 4일 간격, sky/asteroids.bin) 를 4점 라그랑주 보간.
+ * 1.2.5 소행성 세레스·베스타 — JPL Horizons 해 중심 위치 표 (1900~2050, 4일 간격, sky/asteroids.bin) 를 4점 라그랑주 보간.
  * 지구는 행성 계산과 같은 JPL 근사 궤도요소. 등급 = H·G 체계 (IAU 1985). 표 밖 연도는 그리지 않음
  */
 object Asteroids {
-    /** H·G = JPL 소천체 자료 (세레스 3.34·0.12, 베스타 3.20·0.32) */
+    /** H·G = JPL 소천체 자료 (세레스 3.34·0.12, 베스타 3.20·0.32 — 확인 필요 시 TBD) */
     class Body(val ko: String, val en: String, val num: Int, val h: Double, val g: Double, val jd0: Double, val step: Double, val xyz: FloatArray) {
         val count get() = xyz.size / 3
     }
@@ -83,20 +83,20 @@ object Asteroids {
 }
 
 /**
- * 변광성 알골·미라 — 밝기를 시각에 따라 계산 (GCVS 요소, VizieR B/gcvs 에서 확인).
+ * 1.2.5 변광성 알골·미라 — 밝기를 시각에 따라 계산 (GCVS 요소, VizieR B/gcvs 에서 확인).
  * 별 정점 버퍼에서는 빼고 따로 그림 (CheonsangSky)
  */
 object VariableStars {
     class Star(val hip: Int, val ko: String, private val kindKo: String, private val rangeKo: String, val period: Double, val mag: (Double) -> Double) {
-        /** 화면 이름 (ko 는 한국어 검색어) */
+        /** 1.9.0-dev2: 화면 이름 (ko 는 한국어 검색어) */
         val label: String get() = L.t("cheonsang.var.$hip.name")
         val kind: String get() = L.t("cheonsang.var.$hip.kind")
         val range: String get() = L.t("cheonsang.var.$hip.range")
     }
 
     /**
-     * 알골 (β Per, EA): 극소 HJD 2445641.5135 + 2.8673043·E, 2.12~3.39등. 식 지속 약 10시간 — 주극소 깊이 1.27등, 부극소 0.06등.
-     * 미라 (ο Cet, M): 극대 JD 2444839 + 331.96·E. GCVS 범위 2.0~10.1등 → 평균적인 주기 3.4~9.3등, 밝아지는 데 주기의 38% (GCVS M−m)
+     * 알골 (β Per, EA): 극소 HJD 2445641.5135 + 2.8673043·E, 2.12~3.39등. 식 지속 약 10시간 (TBD) — 주극소 깊이 1.27등, 부극소 0.06등.
+     * 미라 (ο Cet, M): 극대 JD 2444839 + 331.96·E. GCVS 범위 2.0~10.1등 → 평균적인 주기 3.4~9.3등 (TBD), 밝아지는 데 주기의 38% (GCVS M−m)
      */
     val list = listOf(
         Star(14576, "알골", "식쌍성", "2.1~3.4등", 2.8673043) { jd ->

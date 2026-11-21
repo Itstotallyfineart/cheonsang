@@ -3,10 +3,10 @@ package kr.inf.cheonsang.astro
 import kr.inf.cheonsang.L
 
 import kotlin.math.abs
-import kotlin.math.log10
-import kotlin.math.sqrt
 import kotlin.math.cos
+import kotlin.math.log10
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /** 행성 (지구에서 본 모습, J2000 적도 — 별과 같은 좌표계) */
 data class PlanetPos(
@@ -44,7 +44,7 @@ enum class Planet(
     URANUS("천왕성", 70.481, 0.56),
     NEPTUNE("해왕성", 68.294, 0.41),;
 
-    /** 화면 이름 (ko 는 식별자·한국어 검색어로 그대로) */
+    /** 1.9.0-dev2: 화면 이름 (ko 는 식별자·한국어 검색어로 그대로) */
     val label: String get() = kr.inf.cheonsang.L.t("cheonsang.planet.${name.lowercase()}")
 }
 
@@ -56,10 +56,10 @@ data class SaturnRings(
     val axisAngle: Double,
 )
 
-/** 지구에서 본 행성 원판: 가운데 경도(서경 +, 도)·위도·자전축 위치각 P (J2000 북 → 동) */
+/** 1.2.4 지구에서 본 행성 원판: 가운데 경도(서경 +, 도)·위도·자전축 위치각 P (J2000 북 → 동) */
 data class BodyView(val cmWest: Double, val lat: Double, val p: Double)
 
-/** 토성 위성 하나: 이름·J2000 방향·토성 뒤에 숨었는지 */
+/** 1.2.4 토성 위성 하나: 이름·J2000 방향·토성 뒤에 숨었는지 */
 data class SaturnMoon(val name: String, val num: String, val mag: Double, val dir: Vec3, val hidden: Boolean)
 
 /** 목성 위성 하나: 목성 중심에서 하늘 위 위치 (목성 적도 반지름 단위) */
@@ -67,8 +67,9 @@ data class JovianMoon(val name: String, val east: Double, val north: Double, val
 
 /**
  * 행성 위치 — VSOP87D 축약 (Vsop87Data.kt, 진폭 3e-6 이상 항 1,259개).
+ * 2.0.0-rc2: JPL 근사 궤도요소(Standish 표, 목성·토성 대섭동 없음)에서 바꿈.
  * PyEphem 대조 최대 오차 (_tools/vsop_check.py): 1000~3000년 수성·금성·목성·토성·천왕성 4~7″, 화성 13″, 해왕성 4″ ·
- * 기원전 1000~1000년 1~2′ · 기원전 3000~1000년 2~15′.
+ * 기원전 1000~1000년 1~2′ · 기원전 3000~1000년 2~15′. 옛 방식은 1800~2050년에도 토성 11′·천왕성 17′.
  */
 object Planets {
     /** J2000 황도경사 (황도 → 적도) */
@@ -194,9 +195,9 @@ object Planets {
     }
 
     /**
-     * 지구에서 본 원판 가운데 경도·위도·축 방향 (IAU 자전 모델, 광행시 보정).
+     * 1.2.4: 지구에서 본 원판 가운데 경도·위도·축 방향 (IAU 자전 모델, 광행시 보정).
      * 극 α0·δ0 = a0 + a1·T, d0 + d1·T (T = J2000 세기), 본초자오선 W = w0 + w1·d (d = 일).
-     * Horizons 대조: 화성 경도·위도·축각 오차 0.1°대, 목성 System III 거의 일치.
+     * Horizons 대조 (2026-11-11 0h): 화성 1.27°/21.2°/P 5.4° (Horizons 1.28°/21.4°/5.5°) · 목성 System III 45.41° (45.41°)
      */
     fun bodyView(p: PlanetPos, jd: Double, poleRa: Double, poleRaT: Double, poleDec: Double, poleDecT: Double, w0: Double, w1: Double): BodyView {
         val d = jd + deltaT(jd) / 86400.0 - J2000 - p.distAu * 0.0057755
@@ -219,7 +220,7 @@ object Planets {
 
     /**
      * 대적점 System II 경도 (서경, 도) — 2026-06-01 91°, 한 달 1.75° 씩 증가 (JUPOS 추세, Sky & Telescope 대적점 계산기 기준).
-     * 직선 근사라 2026 에서 멀어질수록 어긋남
+     * 직선 근사라 2026 에서 멀어질수록 어긋남 (TBD)
      */
     fun grsLongitude(jd: Double) = norm360(91.0 + 1.75 / 30.4375 * (jd - 2461192.5))
 
@@ -227,10 +228,12 @@ object Planets {
     const val GRS_LAT = -22.5
 
     /**
-     * 토성 위성 — JPL Horizons 1900~2050 벡터에 맞춘 식 (_tools/fit_saturn_moons.py, fit_saturn_moons2.py).
-     * 토성 적도면(극 고정) 위: λ = λ0 + n·t, M = λ − (ϖ0 + ϖ'·t), u = λ + 주기항, r = a0 + 주기항. t = JD − 2451545.
-     * 긴 주기 칭동(lib), 적도면 밖 높이(k), 이아페투스만 2λ 항(q, s) 추가. 오차 평균 0.02″~1.5″대.
-     * 등급: 충 무렵 평균 (이아페투스는 앞뒤 반구 밝기 차 10.2~11.9 → 평균 11.0)
+     * 1.2.4 토성 위성 타이탄·레아 — JPL Horizons 1900~2050 벡터에 맞춘 식 (_tools/fit_saturn_moons.py, 오차 평균 0.7″·0.3″, 최대 1.5″).
+     * 토성 적도면(극 고정) 위: λ = λ0 + n·t, M = λ − (ϖ0 + ϖ'·t), u = λ + 주기항, r = a0 + 주기항. t = JD − 2451545
+     * 1.9.0 큰 위성 7개: 미마스·엔셀라두스·테티스·디오네·이아페투스 추가 (_tools/fit_saturn_moons2.py) —
+     * 긴 주기 칭동 (주기 p 일, lib = [sin, cos, t·sin, t·cos]) · 적도면 밖 높이 (k: z = r·((k0 + k2 t + k4 t²) sin u + (k1 + k3 t + k5 t²) cos u))
+     * · 이아페투스만 2λ 항 (q: u, s: r — [sin2λ, cos2λ, t·sin2λ, t·cos2λ]). 오차 평균: 미마스 0.7″ · 엔셀라두스 0.1″ · 테티스 0.5″ · 디오네 0.02″ · 이아페투스 1.0″
+     * 등급: 충 무렵 평균 (이아페투스는 앞뒤 반구 밝기 차 10.2~11.9 → 평균 11.0, TBD)
      */
     private class SatMoon(val name: String, val num: String, val mag: Double, val lam0: Double, val n: Double, val wd: Double,
                           val c: DoubleArray, val r: DoubleArray, val p: Double = 0.0, val lib: DoubleArray? = null, val k: DoubleArray? = null,

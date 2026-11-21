@@ -1,7 +1,7 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// 천상: 한 채널(R8) 흑백 그림 — r 을 rgb 로 펼쳐서 position_tex 와 같은 결과 (현실 은하수)
+// 천상 1.2.0: 한 채널(R8) 흑백 그림 — r 을 rgb 로 펼쳐서 position_tex 와 같은 결과 (현실 은하수)
 
 #include <minecraft:dynamictransforms.glsl>
 

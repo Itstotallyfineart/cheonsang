@@ -28,9 +28,10 @@ object CheonsangClient : ClientModInitializer {
         Bench.register()
         Tonight.register()
         CWhen.register()
+        LogBook.register()
         PoseSync.register()
         AmbientLight.register()
-        // 개발용: 가시성 모델 효과별 켜고 끄기 (저장 안 함)
+        // 1.5.0 개발용: 가시성 모델 효과별 켜고 끄기 (저장 안 함)
         net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register { d, _ ->
             d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("cvis")
                 .executes { c -> c.source.sendFeedback(net.minecraft.network.chat.Component.literal(Visibility.state())); 1 }
@@ -42,7 +43,7 @@ object CheonsangClient : ClientModInitializer {
                         }))
                 })
         }
-        // 개발판(-dev)에서만 `/caurora [on|off|0~1]` — 오로라 보기
+        // 1.9.0-dev2: 개발판(-dev)에서만 `/caurora [on|off|0~1]` — 오로라 보기 (11-13 지율님)
         val ver = FabricLoader.getInstance().getModContainer(Cheonsang.MOD_ID).map { it.metadata.version.friendlyString }.orElse("")
         if ("-dev" in ver) net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register { d, _ ->
             fun say(c: com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>) =
@@ -57,18 +58,18 @@ object CheonsangClient : ClientModInitializer {
         }
         // 서버가 보낸 지금 차원의 하늘 (시계·압축률·위도)
         ClientPlayNetworking.registerGlobalReceiver(SkyServer.TYPE) { sky, _ ->
-            // 서버 시각·위치가 바뀌면 보간·캐시 즉시 버림 (Place.apply 가 확인)
-            // 서버 하늘 = 월드 기본, 내 관측 위치(/cplace)를 얹음
+            // 1.3.0 TIME-001: 서버 시각·위치가 바뀌면 보간·캐시 즉시 버림 (Place.apply 가 확인)
+            // 1.9.0-dev3: 서버 하늘 = 월드 기본, 내 관측 위치(/cplace)를 얹음
             CheonsangSky.serverSkyData = sky
             CheonsangSky.serverSky = true
             CheonsangSky.realtimeCity = kr.inf.cheonsang.RealTime.CITIES.firstOrNull { it.id == sky.city }
             Place.setBase(sky.clock, sky.lat)
         }
-        ClientPlayNetworking.registerGlobalReceiver(SkyServer.GEN_TYPE) { g, _ -> Place.onGen(g.gen) }
+        ClientPlayNetworking.registerGlobalReceiver(SkyServer.GEN_TYPE) { g, _ -> Place.onGen(g.gen) }   // 2.0.0-rc1
         Place.register()
         // 서버를 나가면 기본 하늘로 (모드 없는 서버에서도 혼자 그릴 수 있게)
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
-            // 클라이언트 단독: 서버에 천상이 없으면 설정 화면에서 정한 날짜·위치 (없으면 기본 2026-08-11·0°·0°, 위도 이동 없음)
+            // 1.3.1 클라이언트 단독: 서버에 천상이 없으면 설정 화면에서 정한 날짜·위치 (없으면 기본 2026-08-11·0°·0°, 위도 이동 없음)
             CheonsangSky.serverSky = false
             CheonsangSky.serverSkyData = null
             Place.forget()
@@ -94,7 +95,7 @@ object ClientConfig {
                 val o = gson.fromJson(Files.readString(file), JsonObject::class.java)
                 o["enabled"]?.let { CheonsangSky.enabled = it.asBoolean }
                 o["nakedEyeLimit"]?.let { CheonsangSky.nakedLimit = it.asFloat.coerceIn(4.0f, 6.5f) }
-                // 해·달 실제 크기 고정 — 옛 client.json 의 discScale 은 읽지 않음
+                // 1.2.2: 해·달 실제 크기 고정 — 옛 client.json 의 discScale(기본 3)은 읽지 않음
                 o["meteors"]?.let { Meteors.scale = it.asDouble.coerceIn(0.0, 5.0) }
                 o["guideShown"]?.let { guideShown = it.asBoolean }
                 o.getAsJsonObject("standalone")?.let { sa ->
@@ -136,7 +137,7 @@ object ClientConfig {
         }
     }
 
-    /** 망원경 조작 안내를 이미 보여 줬는지 */
+    /** 1.7.1 U6: 망원경 조작 안내를 이미 보여 줬는지 */
     var guideShown = false
         private set
 
@@ -153,7 +154,7 @@ object ClientConfig {
         }
     }
 
-    // ── 클라이언트 단독 하늘 (서버에 천상이 없을 때) — client.json "standalone": jd0(월드 0틱의 율리우스일)·lat·lon ──
+    // ── 1.3.1 클라이언트 단독 하늘 (서버에 천상이 없을 때) — client.json "standalone": jd0(월드 0틱의 율리우스일)·lat·lon ──
     var standaloneJd0 = SkyClock.DEFAULT_EPOCH_JD
     var standaloneLat = SkyClock.DEFAULT_LAT
     var standaloneLon = SkyClock.DEFAULT_LON
@@ -183,7 +184,7 @@ object ClientConfig {
         }
     }
 
-    /** 망원경 표시 필터만 저장 (다른 값은 그대로 둠) */
+    /** 망원경 표시 필터만 저장 (다른 값은 그대로 둠, 0.1.12) */
     fun saveDisplay() {
         val gson = GsonBuilder().setPrettyPrinting().create()
         try {

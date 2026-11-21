@@ -3,6 +3,9 @@ package kr.inf.cheonsang.client
 import kr.inf.cheonsang.L
 import kr.inf.cheonsang.astro.Vec3
 import kr.inf.cheonsang.client.sky.CheonsangSky
+import kr.inf.cheonsang.client.sky.SkyData
+import kr.inf.cheonsang.client.sky.VariableStars
+import net.minecraft.client.Minecraft
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.exp
@@ -15,19 +18,19 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
- * 통합 가시성 모델 — 하늘 그리기와 천체 표시가 같은 함수를 씀.
+ * 1.5.0 통합 가시성 모델 (VIS-001·VIS-002) — 하늘 그리기·관측 도감(C-03)이 같은 함수를 씀.
  *
  * 적용 순서 (고정):
  *  ① 천체 고유 밝기 (등급 m, 면광원은 표면 밝기 S 등/초각²)
  *  ② 대기 소광 — 고도에서 대기량 X(Kasten–Young) → Δm = k·(X − 1)   [이 단계에서만 적용]
  *  ③ 하늘 밝기 B (nL) = 자연 하늘(대기광, van Rhijn) + 박명 + 달빛(Krisciunas–Schaefer 1991) + 빛공해 + 황도광·대일조
- *  ④ 관측자 상태 — 암적응 손해
- *  ⑤ 장비 — 망원경 이득 2.5·log10(배율) (최대 11등, 구경 항으로 교체) · 면광원은 출사동 비율
+ *  ④ 관측자 상태 — 암적응 손해 (1.5.1)
+ *  ⑤ 장비 — 망원경 이득 2.5·log10(배율) (최대 11등, 1.7.0 구경 항으로 교체) · 면광원은 출사동 비율
  *  ⑥ 판정 — 점광원: m + Δm ≤ 한계 / 면광원: 표면 밝기 대비 + 겉보기 크기
  *
  * 입력·단위·기본값: 해 고도(도) · 달 밝은 비율(0~1)·달 방향 · 천체 방향(월드) · 맨눈 한계(설정, 기본 6.0등 = 어두운 하늘 천정)
- *  · 소광 계수 k = 0.172 (V) · 어두운 하늘 = 22.0 등/초각² · 손 망원경 구경 80mm · 눈동자 7mm
- * 아직 안 만든 효과(빛공해·황도광·암적응·반짝임·오로라)는 중립값 0 (끈 것과 같은 결과).
+ *  · 소광 계수 k = 0.172 (V) · 어두운 하늘 = 22.0 등/초각² · 손 망원경 구경 80mm (TARGET, 1.7.0) · 눈동자 7mm
+ * 아직 안 만든 효과(빛공해·황도광·암적응·반짝임·오로라 — 1.5.1)는 중립값 0 (끈 것과 같은 결과).
  * 효과별 개발용 켜고 끄기: `/cvis <효과> on|off` (저장 안 함)
  */
 object Visibility {
@@ -36,7 +39,7 @@ object Visibility {
         REFRACTION("refraction", "굴절"), COLORLOSS("colorloss", "색 빠짐"), LIGHTPOLLUTION("light", "빛공해"), DARKADAPT("dark", "암적응"),
         ZODIACAL("zodiacal", "황도광·대일조"), TWINKLE("twinkle", "반짝임"), AURORA("aurora", "오로라"),
         ;
-        /** 화면 이름 (생성자의 한국어는 기록용) */
+        /** 1.9.0-dev2: 화면 이름 (생성자의 한국어는 기록용) */
         val label: String get() = L.t("cheonsang.vis.$id")
     }
     private val offSet = java.util.EnumSet.noneOf(Fx::class.java)
@@ -45,17 +48,20 @@ object Visibility {
     /** 효과 스위치가 바뀔 때마다 1 증가 (구워 둔 메시 다시 만들기) */
     var version = 0
         private set
-    /** 구경이 바뀌어 구워 둔 메시를 다시 만들 때 */
+    /** 1.7.0: 구경이 바뀌어 구워 둔 메시를 다시 만들 때 */
     fun bump() { version++ }
 
-    // ── 상수 ──
+    // ── 상수 (TBD 는 로드맵 수치 관리표) ──
     /** V 밴드 소광 계수 (등/대기량) */
     const val K_V = 0.172
-    /** 어두운 자연 하늘 천정 밝기 (등/초각²) */
+    /** 어두운 자연 하늘 천정 밝기 (등/초각², TBD) */
     const val DARK_SKY = 22.0
-    /** 손 망원경 구경 (mm) · 어두운 곳 눈동자 (mm) */
+    /** 손 망원경 구경 (mm, TARGET — 1.7.0) · 어두운 곳 눈동자 (mm) */
     const val APERTURE_MM = 80.0
     const val EYE_PUPIL_MM = 7.0
+    /** 기하 고도 이보다 높아야 보임 (굴절 약 0.5°) */
+    private const val HORIZON_DEG = -0.5
+
     fun altitude(w: Vec3): Double = Math.toDegrees(asin(w.normalized().y.coerceIn(-1.0, 1.0)))
 
     /** 등/초각² ↔ nL (Schaefer 1990) */
@@ -79,7 +85,7 @@ object Visibility {
         return 1.02 / tan(Math.toRadians(h + 10.3 / (h + 5.11))) / 60.0
     }
 
-    /** 그려진(굴절 후) 방향 → 굴절 전 방향 (Bennett, 겉보기 고도 기준) — 좌클릭 찾기 */
+    /** 1.5.2.1: 그려진(굴절 후) 방향 → 굴절 전 방향 (Bennett, 겉보기 고도 기준) — 좌클릭 찾기 */
     fun unrefractWorld(w: Vec3): Vec3 {
         val d = w.normalized()
         if (!on(Fx.REFRACTION)) return d
@@ -106,7 +112,7 @@ object Visibility {
     }
 
     // ── ③ 하늘 밝기 ──
-    /** 박명·낮 천정 밝기 (등/초각², 해 고도별 어림 표) */
+    /** 박명·낮 천정 밝기 (등/초각², 해 고도별 어림 표 — TBD) */
     private val TW_ALT = doubleArrayOf(-24.0, -18.0, -15.0, -12.0, -9.0, -6.0, -3.0, 0.0, 5.0, 10.0, 20.0, 40.0, 90.0)
     private val TW_MAG = doubleArrayOf(30.0, 24.0, 21.0, 18.2, 15.2, 12.2, 9.5, 7.3, 5.5, 4.6, 3.9, 3.4, 3.0)
     private fun twilightMag(sunAlt: Double): Double {
@@ -152,14 +158,14 @@ object Visibility {
         return b * (1.0 - 0.98 * CheonsangSky.lunarUmbra) * (mAlt + 1.0).coerceIn(0.0, 1.0)
     }
 
-    /** 빛공해 (nL) — 아직 중립 0 */
+    /** 1.5.1 빛공해 (nL) — 아직 중립 0 */
     @JvmStatic var lightPollutionNl: (Vec3) -> Double = { 0.0 }
-    /** 황도광·대일조 (nL) — 아직 중립 0 */
+    /** 1.5.1 황도광·대일조 (nL) — 아직 중립 0 */
     @JvmStatic var zodiacalNl: (Vec3) -> Double = { 0.0 }
-    /** 암적응 손해 (등) — 아직 중립 0 */
+    /** 1.5.1 암적응 손해 (등) — 아직 중립 0 */
     @JvmStatic var darkAdaptLoss: () -> Double = { 0.0 }
 
-    /** 하늘 밝기는 천정 한 곳으로 고정 (고개 방향과 무관) */
+    /** 1.5.2.1: 하늘 밝기는 천정 한 곳으로 고정 — 고개(화면 가운데 방향)를 따라 하늘 전체 밝기가 바뀌던 것 삭제 (11-11 지율님) */
     private val ZENITH = Vec3(0.0, 1.0, 0.0)
 
     /** ③ 하늘 밝기 (nL) — 방향 인자는 받지만 천정 값 (방향별 차이는 나중에 별마다, 확인 필요) */
@@ -171,7 +177,7 @@ object Visibility {
     }
 
     /**
-     * 하늘이 밝아 깎이는 한계 등급 (등) — 어두운 하늘 = 0. 점광원 문턱 ∝ B^0.6 (밝은 하늘에서 Weber 영역보다 완만)
+     * 하늘이 밝아 깎이는 한계 등급 (등) — 어두운 하늘 = 0. 점광원 문턱 ∝ B^0.6 (밝은 하늘에서 Weber 영역보다 완만, TBD)
      * 보름 밤 약 1.7 · 박명 −6° 약 5.4 · 낮 약 10.7
      */
     fun skyLoss(dir: Vec3): Double = max(0.0, 1.5 * log10((1.0 + skyNl(dir) / DARK_NL) / 2.0))
@@ -181,7 +187,7 @@ object Visibility {
 
     // ── ⑤ 장비 ──
     fun zoomNow(): Double = if (TelescopeView.active) TelescopeView.opticalZoom else 1.0
-    /** 점광원 이득 — 구경 항 (Optics.gain) */
+    /** 점광원 이득 — 1.7.0: 구경 항 (Optics.gain) */
     fun gain(zoom: Double = zoomNow()): Double = Optics.gain(zoom)
     /** 면광원 밝기 비율 = (출사동 / 눈동자)², 최대 1 */
     fun pupilRatio(zoom: Double): Double = if (zoom <= 1.0) 1.0 else min(1.0, (Optics.apertureMm / zoom / EYE_PUPIL_MM).pow(2))
@@ -196,8 +202,8 @@ object Visibility {
     fun effMag(mag: Double, dir: Vec3): Double = mag + extinction(altitude(dir))
 
     /**
-     * 면광원 표시 진하기 0~1.
-     * 표면 밝기 S 를 출사동 비율로 어둡게 → 겉보기 크기에 따른 문턱 S_thr(a) = 26.5 − 2.5·log10(1 + (15′/a)²) 과 비교.
+     * 면광원 표시 진하기 0~1 (1.5.0 — 전 "5.5 + 2.5·log 배율" 한계 대신).
+     * 표면 밝기 S 를 출사동 비율로 어둡게 → 겉보기 크기에 따른 문턱 S_thr(a) = 26.5 − 2.5·log10(1 + (15′/a)²) 과 비교 (TBD).
      * 적분 등급이 너무 어두우면(5.5 + 2.5·log 배율 + 0.5 넘음) 안 보임. 보이면 최소 0.08 (고배율에서 0 안 됨)
      */
     fun diffuseIntensity(mag: Double, surface: Double, majorArcmin: Double, zoom: Double): Double {
@@ -208,13 +214,13 @@ object Visibility {
         return max(bySurface, 0.08) * byMag
     }
 
-    /** 적분 등급 문턱 0~1 — 5.5 + 2.5·log 배율 (+0.5) 보다 어두우면 0 (은하 스케치와 같이 씀) */
+    /** 적분 등급 문턱 0~1 — 5.5 + 2.5·log 배율 (+0.5) 보다 어두우면 0 (1.10.0: 은하 스케치와 같이 씀) */
     fun diffuseGate(mag: Double, zoom: Double): Double {
         val gate = min(5.5 + Optics.gain(zoom), TelescopeView.MAX_LIMIT.toDouble())
         return ((gate + 0.5 - mag) / 1.5).coerceIn(0.0, 1.0)
     }
 
-    /** 겉보기 크기에 따른 면광원 문턱 표면 밝기 S_thr(a) = 26.5 − 2.5·log10(1 + (15′/a)²) */
+    /** 겉보기 크기에 따른 면광원 문턱 표면 밝기 S_thr(a) = 26.5 − 2.5·log10(1 + (15′/a)²) (TBD) */
     fun surfaceThreshold(majorArcmin: Double, zoom: Double): Double {
         val a = majorArcmin * zoom.coerceAtLeast(1.0)
         return 26.5 - 2.5 * log10(1.0 + (15.0 / a).pow(2))
@@ -224,8 +230,8 @@ object Visibility {
     fun surfaceEff(surface: Double, zoom: Double) = surface - 2.5 * log10(pupilRatio(zoom))
 
     /**
-     * 은하수(넓은 면광원) 배율 감쇄 — 출사동 비율의 0.33제곱(Stevens 밝기 지각) × (1 − 별로 풀린 몫), 최소 0.10 (0 아님).
-     * 별로 풀린 몫 = 한계 등급 6 → 0, 11 → 0.35
+     * 은하수(넓은 면광원) 배율 감쇄 — 출사동 비율의 0.33제곱(Stevens 밝기 지각) × (1 − 별로 풀린 몫), 최소 0.10 (TBD, 0 아님).
+     * 별로 풀린 몫 = 한계 등급 6 → 0, 11 → 0.35 (TBD)
      */
     fun milkyFactor(zoom: Double): Double {
         val lim = min(CheonsangSky.nakedLimit + gain(zoom), TelescopeView.MAX_LIMIT.toDouble())
@@ -235,6 +241,54 @@ object Visibility {
 
     /** 색 빠짐: 어두운 면광원은 회색 (표면 밝기 20 → 23 등/초각² 사이에서 0 → 1) */
     fun colorLoss(surfaceEff: Double): Double = if (on(Fx.COLORLOSS)) ((surfaceEff - 20.0) / 3.0).coerceIn(0.0, 1.0) else 0.0
+
+    // ── 도감 판정 (C-03) ──
+    private fun rain(): Float = Minecraft.getInstance().level?.let { 1f - it.getRainLevel(1f) * 0.9f } ?: 1f
+    private fun jdNow() = CheonsangSky.clock.jd((Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())
+
+    private fun pointOk(mag: Double, w: Vec3) = effMag(mag, w) <= pointLimit(w)
+
+    /** 고른 천체가 지금 실제로 보이는지 */
+    internal fun visible(t: Target): Boolean {
+        if (!CheonsangSky.isActive()) return false
+        val w = t.dir()?.normalized() ?: return false
+        if (altitude(w) < HORIZON_DEG) return false
+        if (rain() < 0.3f) return false
+        val k = t.key
+        return when {
+            k == "sun" -> true
+            k == "moon" || k.startsWith("moonf:") -> CheonsangSky.moonIllum > 0.01 || CheonsangSky.lunarUmbra > 0f
+            k.startsWith("planet:") -> CheonsangSky.planets.firstOrNull { "planet:" + it.planet.name == k }?.let { pointOk(it.mag, w) } ?: false
+            k.startsWith("asteroid:") -> CheonsangSky.asteroids.firstOrNull { "asteroid:" + it.body.en == k }?.let { pointOk(it.mag, w) } ?: false
+            k.startsWith("jovian:") -> pointOk(5.7, w)
+            k.startsWith("saturnian:") -> CheonsangSky.saturnMoonsWorld().firstOrNull { "saturnian:" + it.first.name == k }?.let { pointOk(it.first.mag, w) } ?: false
+            k.startsWith("dso:") -> SkyData.dso.firstOrNull { "dso:" + it.id == k }?.let { o ->
+                if (o.mag >= 90) false else {
+                    val minor = max(o.minor, o.major * 0.5)
+                    val s = o.mag + 2.5 * log10(Math.PI / 4 * o.major * minor * 3600)
+                    // 하늘 밝기만큼 문턱이 낮아짐 + 소광
+                    val i = diffuseIntensity(o.mag + extinction(altitude(w)) + skyLoss(w), s + extinction(altitude(w)) + skyLoss(w), o.major, zoomNow())
+                    i > 0.0
+                }
+            } ?: false
+            k.startsWith("star:") -> {
+                val cat = CheonsangSky.catalog ?: return false
+                val i = k.removePrefix("star:").toIntOrNull() ?: return false
+                if (i !in 0 until cat.realCount) return false
+                val mag = VariableStars.byHip[cat.hip[i]]?.mag(jdNow()) ?: cat.mag[i].toDouble()
+                pointOk(mag, w)
+            }
+            else -> false
+        }
+    }
+
+    /** 사람이 하늘을 볼 수 있는 자리인지 (머리 위가 트임) — 일식·월식·유성우 자동 등록 */
+    fun skyOpen(): Boolean {
+        val mc = Minecraft.getInstance()
+        val p = mc.player ?: return false
+        val level = mc.level ?: return false
+        return level.canSeeSky(net.minecraft.core.BlockPos.containing(p.getEyePosition()))
+    }
 
     /** `/cvis` — 효과 목록 */
     fun state(): String = Fx.entries.joinToString(" | ") { L.t("cheonsang.visibility.1", it.label, it.id, if (on(it)) L.t("cheonsang.visibility.4") else L.t("cheonsang.visibility.3")) } +

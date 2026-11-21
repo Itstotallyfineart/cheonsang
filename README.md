@@ -7,23 +7,23 @@ A Fabric mod for Minecraft 26.3 that replaces the overworld sky with the real ce
 ## Features
 - Positions of stars, Sun, Moon, planets and moons computed for the observer's date and location. Planets use a truncated VSOP87 theory (1,259 terms); the maximum difference from PyEphem for 1800–2050 is 2.4″ (Neptune) to 12.6″ (Mars).
 - Stars: HYG to magnitude 9, Tycho-2 to 13, and with the optional extra pack 32,061,510 Gaia DR3 stars to magnitude 15.2
-- Telescope with real optics: aperture 50–305 mm, eyepieces 40–3 mm, limiting magnitude, diffraction, exit pupil
+- Telescope with real optics: aperture 50–305 mm, eyepieces 40–3 mm, limiting magnitude, diffraction, exit pupil, seeing that changes from night to night
 - Galaxies, nebulae and globular clusters drawn as seen in an eyepiece, based on Digitized Sky Survey plates
 - Sky brightness model: twilight, moonlight, airglow, light pollution, dark adaptation, extinction and refraction
-- Solar and lunar eclipses for the observer's place, meteor showers, aurora, zodiacal light
+- Moon with libration and crater relief from the NASA LRO LOLA elevation model; Jupiter's bands and Great Red Spot, Saturn's rings, moons of Jupiter and Saturn at their real size
+- Solar and lunar eclipses for the observer's place (Earth's shadow drawn on the Moon), meteor showers with trains and fireballs, aurora, zodiacal light
 - Western 88 constellations or the Korean Cheonsang Yeolcha Bunyajido (289 asterisms)
 - `/cfind` to find any object, `/cwhen` for when and where objects and events are visible, `/cplace` for a personal observing location
 - Screen day and night follow the real Sun altitude; mob spawning and sleeping stay vanilla
 - English and Korean in game
 
-## Documentation
-See [docs/](docs/README.md): user manual, overview, technical specification and implementation analysis.  
-Change history: [CHANGELOG.md](CHANGELOG.md).
+## Release notes
+Each version's changes are in [Releases](../../releases).
 
 ## Download
 See [Releases](../../releases).
-- `cheonsang-2.0.1.jar`: the mod (required on client and server)
-- `cheonsang-extra-1.0.1.jar`: optional pack with Gaia stars to magnitude 15.2, Milky Way 16K/32K and an 8K Moon map (about 434 MB)
+- `cheonsang-2.0.2.jar`: the mod (required on client and server)
+- `cheonsang-extra-1.0.2.jar`: optional pack with Gaia stars to magnitude 15.2, Milky Way 16K/32K and an 8K Moon map with elevation data (about 443 MB). Requires Cheonsang 2.0.2 or later.
 
 ## Requirements
 Minecraft 26.3, Fabric Loader 0.20.1 or later, Fabric API, Fabric Language Kotlin, Java 25.

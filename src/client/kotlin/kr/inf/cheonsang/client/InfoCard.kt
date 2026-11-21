@@ -20,7 +20,10 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-/** 좌클릭 선택 + 정보 카드. 고른 천체(Target)는 방향·카드 내용을 매 프레임 다시 계산하고, 출·남중·몰은 3초마다만 */
+/**
+ * 1.1.0 좌클릭 선택 + 정보 카드.
+ * 고른 천체(Target)는 방향·카드 내용을 매 프레임 다시 계산 (방위·고도가 실시간으로 바뀜). 출·남중·몰은 3초마다.
+ */
 internal class Target(
     /** 같은 천체인지 가리는 이름표 */
     val key: String,
@@ -45,7 +48,7 @@ internal object InfoCard {
     private var rsKey = ""
     private var rsAt = 0L
     private var rsText = ""
-    /** 하늘 시각·위치가 바뀌면 출몰 캐시 버림 */
+    /** 1.3.0 TIME-001: 하늘 시각·위치가 바뀌면 출몰 캐시 버림 */
     fun invalidate() { rsKey = ""; rsAt = 0L }
 
     private fun riseSet(key: String, calc: () -> String): String {
@@ -54,7 +57,7 @@ internal object InfoCard {
         return rsText
     }
 
-    /** 분 → 시각 글자. 실시간 모드면 그 도시 시계 시각, 아니면 천상 시계(해 기준) */
+    /** 1.1.3: 분 → 시각 글자. 실시간 모드면 그 도시 시계 시각, 아니면 천상 시계(해 기준) */
     fun timeFmt(day: SkyDay): (Double) -> String {
         val c = CheonsangSky.realtimeCity ?: return { RiseSet.hm(it) }
         val zone = java.time.ZoneId.of(c.zone)
@@ -132,7 +135,7 @@ internal object InfoCard {
         { CheonsangSky.moonWorld }, { CheonsangSky.moonRadius }) {
         val jd = jdNow()
         val m = Moon.position(jd); val ph = Moon.phase(m, Sun.position(jd))
-        // 관측자 기준 (하늘이 이미 관측자 기준 방향·거리로 그림)
+        // 관측자 기준 (1.3.0: 하늘이 이미 관측자 기준 방향·거리로 그림)
         val topo = CheonsangSky.moonWorld.normalized() * CheonsangSky.moonTopoKm
         listOf(
             L.t("cheonsang.infocard.38"),
@@ -158,7 +161,7 @@ internal object InfoCard {
         }
     }
 
-    /** 지금 위성 (그렸는지·가려졌는지와 무관) — 추적이 저배율·가려짐에서도 이어지게 */
+    /** 1.8.4: 지금 위성 (그렸는지·가려졌는지와 무관) — 추적이 저배율·가려짐에서도 이어지게 */
     private fun moonNow(name: String) = CheonsangSky.moonsNow().firstOrNull { it.ko == name }
     private fun hiddenLine(name: String, planet: String) = if (moonNow(name)?.hidden == true) listOf(L.t("cheonsang.infocard.46", planet)) else emptyList()
 
@@ -169,7 +172,7 @@ internal object InfoCard {
                 riseSet("planet:JUPITER") { rsText({ it.planet(Planet.JUPITER) }, "") }
         }
 
-    /** 토성 위성 (타이탄·레아) */
+    /** 1.2.4 토성 위성 (타이탄·레아) */
     fun saturnMoon(name: String, num: String, mag: Double, dir: Vec3): Target {
         fun now() = moonNow(name)?.let { CheonsangSky.skyMat3 * it.dirJ }
         return Target("saturnian:$name", L.moon(name), L.t("cheonsang.infocard.52", L.moon(name), num) + L.t("cheonsang.infocard.47").format(mag), { now() }, { 0.0 }) {
@@ -195,13 +198,13 @@ internal object InfoCard {
         }
     }
 
-    /** 유명 별 거리: 100광년 안은 소수 한 자리 */
+    /** 1.9.0-dev2 유명 별 거리: 100광년 안은 소수 한 자리 */
     private fun famousDist(f: kr.inf.cheonsang.client.sky.Famous) =
         if (f.ly < 100) (if (L.ko) "%.1f광년" else "%.1f ly").format(f.ly) else lightYears(f.ly)
 
     private fun famousLine(f: kr.inf.cheonsang.client.sky.Famous) = listOf(f.note)
 
-    /** 이름 없는 유명 별 (깊은 별·목록 밖) — /cfind 와 망원경 고르기 */
+    /** 1.9.0-dev2 이름 없는 유명 별 (깊은 별·목록 밖) — /cfind 와 망원경 고르기 */
     fun famous(f: kr.inf.cheonsang.client.sky.Famous, mag: Double = f.fixMag ?: f.mag): Target {
         val dirJ = f.dirJ
         val key = "famous:${f.id}"
@@ -213,7 +216,7 @@ internal object InfoCard {
 
     fun star(cat: StarCatalog, i: Int, short0: String, line0: String): Target {
         val dirJ = Vec3(cat.dir[i * 3].toDouble(), cat.dir[i * 3 + 1].toDouble(), cat.dir[i * 3 + 2].toDouble())
-        // 이름 없는 유명 별이면 그 이름 + 한 줄 설명
+        // 1.9.0-dev2: 이름 없는 유명 별이면 그 이름 + 한 줄 설명
         val fam = cat.hip[i].takeIf { it > 0 }?.let { SkyData.famousByHip[it] } ?: SkyData.famousNear(dirJ.x, dirJ.y, dirJ.z)
         val short = if (fam != null && SkyData.starLabel(cat.hip[i]) == null) fam.label else short0
         val line = if (fam != null && short != short0) "$short | " + L.t("cheonsang.infocard.47").format(cat.mag[i]) else line0
@@ -235,11 +238,11 @@ internal object InfoCard {
     }
 
     /**
-     * 깊은 별 (9등 넘는 Tycho-2·Gaia DR3) 카드 — 번호 없이 등급·색·위치·출몰.
-     * 별자리 = 가장 가까운 맨눈 별의 별자리 (경계 근처는 틀릴 수 있음)
+     * 1.8.1 깊은 별 (9등 넘는 Tycho-2·Gaia DR3) 카드 — 번호 없이 등급·색·위치·출몰.
+     * 별자리 = 가장 가까운 맨눈 별의 별자리 (경계 근처는 틀릴 수 있음, TBD)
      */
     fun deep(cat: StarCatalog, dirJ: Vec3, mag: Float, bv: Float): Target {
-        // 깊은 별은 Tycho-2(2000)·Gaia(2016) 위치라 빨리 움직이는 별이 조금 어긋남, 3′ 안 + 등급 비슷한 것만 매칭
+        // 깊은 별은 Tycho-2(2000)·Gaia(2016) 위치라 빨리 움직이는 별이 조금 어긋남 → 3′ 안 + 등급 비슷한 것
         SkyData.famousNear(dirJ.x, dirJ.y, dirJ.z, 3.0, mag.toDouble())?.let { return famous(it, mag.toDouble()) }
         var best = -2.0; var con: kr.inf.cheonsang.client.sky.Constellation? = null
         for (i in 0 until cat.realCount) {
@@ -260,14 +263,14 @@ internal object InfoCard {
         }
     }
 
-    /** 변광성 줄: 지금 등급 · 범위 · 주기 */
+    /** 1.2.5 변광성 줄: 지금 등급 · 범위 · 주기 */
     private fun variableLine(hip: Int): List<String> {
         val v = kr.inf.cheonsang.client.sky.VariableStars.byHip[hip] ?: return emptyList()
         val p = if (v.period < 10) L.t("cheonsang.infocard.67").format(v.period) else L.t("cheonsang.infocard.66").format(v.period)
         return listOf(L.t("cheonsang.infocard.68", v.kind, v.range, p).format(v.mag(jdNow())))
     }
 
-    /** 소행성 */
+    /** 1.2.5 소행성 */
     fun asteroid(a: kr.inf.cheonsang.client.sky.AsteroidPos): Target {
         val b = a.body
         val title = if (L.ko) "${b.ko} (${b.num} ${b.en})" else "${b.num} ${b.en}"

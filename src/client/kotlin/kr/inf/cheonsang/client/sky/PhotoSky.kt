@@ -16,9 +16,12 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 
 /**
- * 실사 사진(장노출 모드) — 목록은 초고화질팩 `pack/photos.json` 에서 읽고, 목록이 없으면(사진팩 1.0.x·초고화질팩 2.0.0) 옛 13장을 그대로 쓴다.
- * 사진 하나 = 하늘 위 직사각형: 가운데 (ra, dec), 가로·세로(°), rot = 사진 위쪽의 위치각(북→동, °), 오른쪽은 서쪽. size = 천체 크기(′), 배율로 커지면 나타남.
- * replace = 그 자리 은하수를 덮어 그림(반투명, 알파=가장자리) — 대·소마젤란처럼 은하수 그림에도 있는 천체의 중복 방지. 텍스처는 화면 근처만 별도 스레드로 올리고 [BUDGET] 넘으면 오래 안 본 것부터 내림.
+ * 1.6.2: 실사 사진 (장노출 모드) — 목록은 초고화질팩 `pack/photos.json` 에서 읽음 → 사진을 늘리거나 바꿀 때 팩만 바꾸면 됨.
+ * 목록이 없으면 (사진팩 1.0.x · 초고화질팩 2.0.0) 옛 13장 그대로.
+ * 사진 하나 = 하늘 위 직사각형: 가운데 (ra, dec), 가로·세로 (°), rot = 사진 위쪽의 위치각 (북 → 동, °), 오른쪽 = 서쪽.
+ * size = 천체 크기 (′) — 배율이 올라 이 크기가 화면에서 커질 때 나타남.
+ * replace = 그 자리 은하수를 덮고 그림 (반투명 합성, 알파 = 가장자리) — 대·소마젤란처럼 은하수 그림에도 크게 있는 천체 (두 겹 방지).
+ * 텍스처는 화면 근처 사진만 별도 스레드에서 풀어 올림 (전부 올리면 수 GB), [BUDGET] 넘으면 오래 안 본 것부터 내림.
  */
 object PhotoSky {
     class Photo(
@@ -26,7 +29,7 @@ object PhotoSky {
         val size: Double, val replace: Boolean, val tex: Identifier,
     ) {
         val dir: Vec3 = Vec3.fromSpherical(ra, dec)
-        @Volatile var state = 0   // 상태: 0=안 올림, 1=푸는 중, 2=올라감, 3=실패
+        @Volatile var state = 0   // 0 안 올림 · 1 푸는 중 · 2 올라감 · 3 실패
         var loadedAt = 0L
         var lastUse = 0L
         var bytes = 0L
@@ -80,7 +83,7 @@ object PhotoSky {
         }
     }
 
-    /** 렌더 패스 밖에서 화면 근처 사진 요청, 다 풀린 것 올리기, 예산 넘으면 내리기 */
+    /** 렌더 패스 밖: 화면 근처이고 곧 보일 사진 요청 · 다 풀린 것 올리기 · 예산 넘으면 내리기 */
     fun update(view: Vec3?, halfDiagDeg: Double, zoom: Double, now: Long) {
         upload(now)
         if (view != null) for (p in photos()) {
