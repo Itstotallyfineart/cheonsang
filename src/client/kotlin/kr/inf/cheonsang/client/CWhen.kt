@@ -59,12 +59,119 @@ object CWhen {
 
     fun register() {
         ClientCommandRegistrationCallback.EVENT.register { d, _ ->
-            d.register(ClientCommands.literal("cwhen")
+            val root = ClientCommands.literal("cwhen")
                 .executes { c -> Safety.run(Safety.TONIGHT, Unit) { Tonight.report().forEach { line -> c.source.sendFeedback(Component.literal(line)) } }; 1 }
+            // 2.0.3-dev1: `/cwhen <천체> <밝은 비율%>` — 천체 이름 뒤에 숫자가 오면 그 위상이 되는 다음 순간 (값 범위는 입력 중에 표시)
+            for (b in PHASE_BODIES) for (key in b.keys) root.then(ClientCommands.literal(key)
+                .executes { c -> Safety.run(Safety.TONIGHT, Unit) { run(c.source, key) }; 1 }
+                .then(ClientCommands.argument("pct", PhaseArg(b.min)).executes { c -> Safety.run(Safety.TONIGHT, Unit) { phase(c.source, b, PhaseArg.get(c, "pct")) }; 1 }))
+            d.register(root
                 .then(ClientCommands.argument("what", StringArgumentType.greedyString())
                     .suggests { _, b -> suggest(b) }
                     .executes { c -> Safety.run(Safety.TONIGHT, Unit) { run(c.source, StringArgumentType.getString(c, "what")) }; 1 }))
         }
+    }
+
+    // ── 2.0.3-dev1 위상 % ──
+    /** min = 가능한 가장 작은 밝은 비율 % (외행성: 지구가 구 위치일 때 최대 위상각, 근일점 거리로 — (1+cos i)/2) */
+    private class PhaseBody(val keys: List<String>, val planet: Planet?, val min: Double) {
+        val label: String get() = planet?.let { if (L.ko) it.ko else it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: L.t("cheonsang.m.moon")
+        fun illum(jd: Double): Double = (if (planet == null) Moon.phase(Moon.position(jd), Sun.position(jd)).illuminated else Planets.position(planet, jd).illuminated) * 100
+        /** (고도, 방위) — 달은 그날 적도, 행성은 J2000 */
+        fun altAz(jd: Double, lat: Double, lon: Double): Pair<Double, Double> =
+            if (planet == null) Events.altAz(jd, lat, lon, Moon.position(jd).dir, false) else Events.altAz(jd, lat, lon, Planets.position(planet, jd).dir, true)
+        /** 보기 좋은 때를 찾는 범위 (일) · 해 고도 문턱 */
+        val window: Double get() = if (planet == null) 1.0 else 5.0
+        val sunMax: Double get() = if (planet == null) -6.0 else -12.0
+        /** 찾는 기간 (일) — 회합 주기 한 번 남짓 · 표본 간격 (일) */
+        val span: Double get() = when (planet) { null -> 32.0; Planet.MERCURY -> 130.0; Planet.VENUS -> 600.0; Planet.MARS -> 800.0; else -> 420.0 }
+        val step: Double get() = if (planet == null) 0.25 else 1.0
+    }
+    private val PHASE_BODIES = listOf(
+        PhaseBody(listOf("moon", "달"), null, 0.0), PhaseBody(listOf("mercury", "수성"), Planet.MERCURY, 0.0), PhaseBody(listOf("venus", "금성"), Planet.VENUS, 0.0),
+        PhaseBody(listOf("mars", "화성"), Planet.MARS, 84.5), PhaseBody(listOf("jupiter", "목성"), Planet.JUPITER, 98.9), PhaseBody(listOf("saturn", "토성"), Planet.SATURN, 99.6),
+        PhaseBody(listOf("uranus", "천왕성"), Planet.URANUS, 99.9), PhaseBody(listOf("neptune", "해왕성"), Planet.NEPTUNE, 99.9))
+
+    private fun phase(src: FabricClientCommandSource, b: PhaseBody, v: PhaseArg.Value) {
+        val level = Minecraft.getInstance().level ?: run { src.sendError(Component.literal(L.t("cheonsang.tonight.1"))); return }
+        if (!CheonsangSky.isActive()) { src.sendError(Component.literal(L.t("cheonsang.findguide.31"))); return }
+        val h = Here(CheonsangSky.clock.jd(level.defaultClockTime.toDouble()), CheonsangSky.latitude, CheonsangSky.longitude, CheonsangSky.nakedLimit.toDouble(), canSetDate())
+        calc(src) { alive -> phaseLines(h, b, v, alive) }
+    }
+
+    private fun phaseLines(h: Here, b: PhaseBody, v: PhaseArg.Value, alive: () -> Boolean): List<Component> {
+        val n = (b.span / b.step).toInt()
+        val xs = DoubleArray(n + 1) { h.jd0 + it * b.step }
+        val ys = DoubleArray(n + 1) { if (!alive()) throw WhenCalc.Cancel(); b.illum(xs[it]) - v.pct }
+        // 2.0.3-dev3: 그 값을 지나는 순간을 방향별로 모두 모음 (외행성은 충·합 둘 다 100% 근처라 첫 순간이 해 뒤일 수 있음)
+        val crossings = HashMap<Int, MutableList<Double>>()
+        for (i in 0 until n) {
+            val d = if (ys[i] < 0 && ys[i + 1] >= 0) 1 else if (ys[i] > 0 && ys[i + 1] <= 0) -1 else 0
+            if (d == 0) continue
+            var lo = xs[i]; var hi = xs[i + 1]; val fl = ys[i]
+            repeat(40) { val m = (lo + hi) / 2; val fm = b.illum(m) - v.pct; if ((fm < 0) == (fl < 0)) lo = m else hi = m }
+            crossings.getOrPut(d) { mutableListOf() } += (lo + hi) / 2
+        }
+        val dirs = if (v.dir == 0) listOf(1, -1) else listOf(v.dir)
+        val out = mutableListOf<Component>()
+        val pctText = if (v.pct == Math.floor(v.pct)) "%.0f".format(v.pct) else "%.1f".format(v.pct)
+        for (d in dirs) {
+            val list = crossings[d] ?: continue
+            val tag = L.t(if (d > 0) "cheonsang.cwhen.phase_up" else "cheonsang.cwhen.phase_down")
+            out += pickLine(h, b, list, L.t("cheonsang.cwhen.phase_line", b.label, pctText, tag), alive)
+        }
+        if (out.isEmpty()) {
+            // 그 값을 지나지 않음 → 그 값에 가장 가까워지는 순간들(극대·극소)을 가까운 순서로
+            val ext = mutableListOf<Double>()
+            for (i in 1 until n) {
+                val a = kotlin.math.abs(ys[i]); if (a > kotlin.math.abs(ys[i - 1]) || a > kotlin.math.abs(ys[i + 1])) continue
+                var lo = xs[i - 1]; var hi = xs[i + 1]
+                repeat(40) {
+                    val m1 = lo + (hi - lo) * 0.382; val m2 = lo + (hi - lo) * 0.618
+                    if (kotlin.math.abs(b.illum(m1) - v.pct) < kotlin.math.abs(b.illum(m2) - v.pct)) hi = m2 else lo = m1
+                }
+                ext += (lo + hi) / 2
+            }
+            if (ext.isEmpty()) ext += xs[ys.indices.minByOrNull { kotlin.math.abs(ys[it]) }!!]
+            val bestGap = ext.minOf { kotlin.math.abs(b.illum(it) - v.pct) }
+            val near = ext.filter { kotlin.math.abs(b.illum(it) - v.pct) < bestGap + 0.05 }  // 거의 같은 값(충·합)은 모두 후보
+            val nv = b.illum(near.first())
+            out += pickLine(h, b, near, L.t(if (nv > v.pct) "cheonsang.cwhen.phase_min" else "cheonsang.cwhen.phase_max", b.label, "%.2f".format(nv)), alive)
+        }
+        return out
+    }
+
+    /** 후보 순간들 중 어두울 때 보이는 첫 순간으로 한 줄. 하나도 안 보이면 첫 후보 + "어두울 때 안 보임" */
+    private fun pickLine(h: Here, b: PhaseBody, candidates: List<Double>, head: String, alive: () -> Boolean): Component {
+        for (jd in candidates.sorted()) {
+            if (!alive()) throw WhenCalc.Cancel()
+            val v = bestView(h, b, jd) ?: continue
+            val l = Component.literal(head + " " + L.t("cheonsang.cwhen.phase_view", lt(v.first, h.lon), compass(v.third), v.second.roundToInt(), "%.0f".format(b.illum(v.first))))
+            moveButton(l, h, v.first); return l
+        }
+        val jd0 = candidates.minOrNull()!!
+        val l = Component.literal(head + " " + lt(jd0, h.lon) + " " + L.t("cheonsang.cwhen.phase_dark"))
+        moveButton(l, h, jd0); return l
+    }
+
+    /**
+     * 2.0.3-dev2: 위상 순간 앞뒤(달 ±1일 · 행성 ±5일)에서 해가 문턱 아래이고 천체가 가장 높은 때 (시각, 고도, 방위).
+     * 그 사이 어두울 때 고도 3° 위로 안 뜨면 null
+     */
+    private fun bestView(h: Here, b: PhaseBody, jd0: Double): Triple<Double, Double, Double>? {
+        val step = if (b.planet == null) 10.0 / 1440 else 30.0 / 1440
+        val k = if (b.planet == null) 4.0 else 0.5  // 위상 순간에서 멀수록 조금 깎음 (같은 높이면 가까운 밤)
+        var best: Triple<Double, Double, Double>? = null; var bestScore = -1e9
+        var t = jd0 - b.window
+        while (t <= jd0 + b.window) {
+            if (Events.altOfDate(t, h.lat, h.lon, Sun.position(t).dir) < b.sunMax) {
+                val (alt, az) = b.altAz(t, h.lat, h.lon)
+                val score = alt - kotlin.math.abs(t - jd0) * k
+                if (alt > 3.0 && score > bestScore) { best = Triple(t, alt, az); bestScore = score }
+            }
+            t += step
+        }
+        return best
     }
 
     // ── 자동완성 ──

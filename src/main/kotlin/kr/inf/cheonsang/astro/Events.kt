@@ -18,6 +18,11 @@ object Events {
     private fun horizonAt(jd: Double, lat: Double, lon: Double): Mat3 = Frames.horizon(norm360(SkyClock.gmst(jd) + lon), lat)
     fun altOfDate(jd: Double, lat: Double, lon: Double, dir: Vec3) = asinD((horizonAt(jd, lat, lon) * dir).normalized().y)
     fun altJ2000(jd: Double, lat: Double, lon: Double, dir: Vec3) = asinD((horizonAt(jd, lat, lon) * Frames.precession(jd) * dir).normalized().y)
+    /** 2.0.3-dev2: (고도, 방위) 도 — j2000 = true 면 dir 이 J2000 적도 (행성), 아니면 그날 적도 (해·달) */
+    fun altAz(jd: Double, lat: Double, lon: Double, dir: Vec3, j2000: Boolean): Pair<Double, Double> {
+        val w = (horizonAt(jd, lat, lon) * (if (j2000) Frames.precession(jd) * dir else dir)).normalized()
+        return asinD(w.y) to norm360(atan2D(w.x, -w.z))
+    }
 
     /** 그 장소 현지 날짜·시각 글자 */
     private fun local(jd: Double, lon: Double) = Calendar.toLocal(jd, lon / 15.0)

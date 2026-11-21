@@ -2,7 +2,7 @@ Cheonsang (천상) — Credits & Licenses
 =====================================
 
 Cheonsang by itsnotfineart
-This file covers Cheonsang 2.0.2 (updated 2026-11-21).
+This file covers Cheonsang 2.0.3 (updated 2026-11-21).
 
 LICENSING AT A GLANCE
 ---------------------
@@ -136,6 +136,13 @@ dso_dist.json, dso_morph.json
   Caldwell numbers: Wikipedia "Caldwell catalogue" — CC BY-SA 4.0
   Distances and galaxy types from Wikipedia ("Messier object", "Caldwell catalogue",
   individual galaxy articles) — CC BY-SA 4.0. Shared under CC BY-SA 4.0.
+
+
+BUNDLED LIBRARY
+---------------
+Cloth Config API (cloth-config-fabric 26.3.159), by shedaniel — https://github.com/shedaniel/cloth-config
+  GNU Lesser General Public License v3.0 (LGPL-3.0-only). Included unmodified as a separate nested jar
+  (META-INF/jars/cloth-config-26.3.159+fabric.jar) and can be replaced by the user. Used for the settings screen (2.0.3).
 
 
 MOON, PLANETS, SMALL BODIES

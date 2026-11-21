@@ -448,7 +448,7 @@ object FindGuide {
             )
         }
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register { _ -> Safety.run(Safety.FIND, Unit) { TelescopeHud.tickLock() } }
-        HudElementRegistry.addLast(Cheonsang.id("find_guide")) { g, _ -> Safety.run(Safety.FIND, Unit) { draw(g) } }
+        HudElementRegistry.addLast(Cheonsang.id("find_guide")) { g, _ -> if (!TelescopeHud.hideAll) Safety.run(Safety.FIND, Unit) { draw(g) } }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> current = null }
     }
 

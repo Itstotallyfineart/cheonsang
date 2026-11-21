@@ -77,10 +77,14 @@ object TelescopeHud {
     private val fade = HashMap<String, Float>()
     private var lastNanos = 0L
 
+    /** 2.0.3-dev1 개발판 `/chud off` (저장 안 함) */
+    @JvmStatic var hideAll = false
+
     fun register() {
         HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR) { vanilla ->
             HudElement { g, dt ->
-                if (TelescopeView.active && Safety.ok(Safety.TELESCOPE)) Safety.run(Safety.TELESCOPE, Unit) { draw(g) } else { fade.clear(); vanilla.extractRenderState(g, dt) }
+                if (hideAll) { fade.clear() }  // 2.0.3-dev1 개발판 `/chud off`: 조준선·이름·카드·광학 표시 모두 숨김
+                else if (TelescopeView.active && Safety.ok(Safety.TELESCOPE)) Safety.run(Safety.TELESCOPE, Unit) { draw(g) } else { fade.clear(); vanilla.extractRenderState(g, dt) }
             }
         }
     }

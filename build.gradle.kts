@@ -30,6 +30,9 @@ dependencies {
     // 개발 실행용: 모드 목록 화면
     compileOnly("maven.modrinth:modmenu:${property("modmenu_version")}")
     runtimeOnly("maven.modrinth:modmenu:${property("modmenu_version")}")
+    // 2.0.3-dev4: 설정 화면 라이브러리 Cloth Config (LGPL-3.0) — jar 안에 같이 넣음 (사용자가 따로 안 깔아도 됨)
+    implementation("maven.modrinth:cloth-config:${property("cloth_version")}")
+    include("maven.modrinth:cloth-config:${property("cloth_version")}")
 }
 
 tasks.processResources {

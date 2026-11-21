@@ -55,6 +55,40 @@ object CheonsangClient : ClientModInitializer {
                 .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument("strength", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg(0.0, 1.0)).executes { c ->
                     AmbientLight.debugAurora = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(c, "strength"); say(c); 1
                 }))
+            // 2.0.3-dev1: 시연·촬영용 개발판 명령 (저장 안 함) — /cmeteor · /cseeing · /cdark · /chud
+            fun msg(c: com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>, s: String) =
+                c.source.sendFeedback(net.minecraft.network.chat.Component.literal(s))
+            fun meteorText(): String = kr.inf.cheonsang.client.sky.Meteors.let { m ->
+                m.debugPerMin?.let { (L.t("cheonsang.dev.meteor_on", "%.0f".format(it)) + (if (m.debugFire) " " + L.t("cheonsang.dev.fire") else "") + (m.debugShower?.let { s -> " $s" } ?: "")).trim() } ?: L.t("cheonsang.dev.meteor_off") }
+            val M = kr.inf.cheonsang.client.sky.Meteors
+            d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("cmeteor")
+                .executes { c -> if (M.debugPerMin == null) M.debugPerMin = 60.0 else { M.debugPerMin = null; M.debugFire = false; M.debugShower = null }; msg(c, meteorText()); 1 }
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("off").executes { c -> M.debugPerMin = null; M.debugFire = false; M.debugShower = null; msg(c, meteorText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("fire").executes { c -> M.debugFire = !M.debugFire; if (M.debugPerMin == null) M.debugPerMin = 20.0; msg(c, meteorText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument("perMin", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg(1.0, 240.0)).executes { c ->
+                    M.debugPerMin = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(c, "perMin"); msg(c, meteorText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument("shower", com.mojang.brigadier.arguments.StringArgumentType.word())
+                    .suggests { _, b -> kr.inf.cheonsang.client.sky.SkyData.showers.forEach { b.suggest(it.id) }; b.buildFuture() }
+                    .executes { c ->
+                        val id = com.mojang.brigadier.arguments.StringArgumentType.getString(c, "shower")
+                        if (kr.inf.cheonsang.client.sky.SkyData.showers.none { it.id.equals(id, true) }) { c.source.sendError(net.minecraft.network.chat.Component.literal(L.t("cheonsang.dev.no_shower", id))); return@executes 0 }
+                        M.debugShower = id.uppercase(); if (M.debugPerMin == null) M.debugPerMin = 60.0; msg(c, meteorText()); 1 }))
+            fun seeingText() = Optics.debugSeeing?.let { L.t("cheonsang.dev.seeing_on", "%.1f".format(it)) } ?: L.t("cheonsang.dev.seeing_off", "%.1f".format(Optics.nightSeeing()))
+            d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("cseeing")
+                .executes { c -> msg(c, seeingText()); 1 }
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("off").executes { c -> Optics.debugSeeing = null; msg(c, seeingText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument("arcsec", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg(0.3, 6.0)).executes { c ->
+                    Optics.debugSeeing = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(c, "arcsec"); msg(c, seeingText()); 1 }))
+            fun darkText() = if (AmbientLight.debugDark) L.t("cheonsang.dev.dark_on") else L.t("cheonsang.dev.dark_off")
+            d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("cdark")
+                .executes { c -> AmbientLight.debugDark = !AmbientLight.debugDark; msg(c, darkText()); 1 }
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("on").executes { c -> AmbientLight.debugDark = true; msg(c, darkText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("off").executes { c -> AmbientLight.debugDark = false; msg(c, darkText()); 1 }))
+            fun hudText() = if (TelescopeHud.hideAll) L.t("cheonsang.dev.hud_off") else L.t("cheonsang.dev.hud_on")
+            d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("chud")
+                .executes { c -> TelescopeHud.hideAll = !TelescopeHud.hideAll; msg(c, hudText()); 1 }
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("off").executes { c -> TelescopeHud.hideAll = true; msg(c, hudText()); 1 })
+                .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("on").executes { c -> TelescopeHud.hideAll = false; msg(c, hudText()); 1 }))
         }
         // 서버가 보낸 지금 차원의 하늘 (시계·압축률·위도)
         ClientPlayNetworking.registerGlobalReceiver(SkyServer.TYPE) { sky, _ ->

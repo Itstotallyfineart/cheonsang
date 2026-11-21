@@ -917,10 +917,14 @@ object CheonsangSky {
     private fun drawPlanet(pass: RenderPass, quad: GpuBuffer, p: PlanetPos, c: Float) {
         val world0 = skyMat3 * p.dir
         // 1.5.0: 그 방향 한계 등급 · 소광 (가시성 모델)
-        val lim = kr.inf.cheonsang.client.Visibility.pointLimit(world0).toFloat()
+        // 2.0.3-dev4: 낮·박명에 해 가까우면 눈부심만큼 한계등급 내림 (해 10° 안에서 큼: 2° 약 −3.5등). 해가 −6° 아래면 없음
+        val sunSep = Math.toDegrees(kotlin.math.acos((world0.normalized() dot sunWorld.normalized()).coerceIn(-1.0, 1.0)))
+        val glare = if (sunAlt > -6.0) (2.5 * log10(1.0 + (10.0 / sunSep.coerceAtLeast(0.3)).let { it * it }) * ((sunAlt + 6.0) / 6.0).coerceIn(0.0, 1.0)).toFloat() else 0f
+        val lim = kr.inf.cheonsang.client.Visibility.pointLimit(world0).toFloat() - glare
         val m = kr.inf.cheonsang.client.Visibility.effMag(p.mag, world0).toFloat()
         if (m > lim + 0.5f) return
-        val pb = ((lim + 1.5f - m) / 2f).coerceIn(0f, 1f) * c
+        // 2.0.3-dev4: 빛점(별 셰이더)과 같은 진하기 곡선 — 전 (lim+1.5−m)/2 는 한계보다 1등만 밝아도 꽉 차서 밝은 하늘에서 행성 원판이 또렷했음
+        val pb = (((lim + 0.5f - m) / 5f).coerceIn(0f, 1f).pow(1.4f) * 1.25f).coerceAtMost(1f) * c
         val zoom = if (TelescopeView.active) TelescopeView.zoom.toFloat() else 1f
         val pointR = (0.20f * 10f.pow(-0.1f * (p.mag.toFloat() - 6f))).coerceIn(0.18f, 1.1f) / 2 / zoom
         val alpha = ((lim + 0.5f - m) / 5.0f).coerceIn(0.04f, 1f).pow(1.6f) * c
@@ -931,8 +935,8 @@ object CheonsangSky {
         val world = kr.inf.cheonsang.client.Visibility.refractWorld(world0)
         var discR = (R * tan(Math.toRadians(p.diameterArcsec / 7200.0))).toFloat()
         // 2.0.2-dev1: 목성·토성은 망원경으로 확대하면 처음부터 원판 (전: 원판이 빛점보다 커질 때까지 별 셰이더 빛점 → 잠깐 별처럼 보임). 최소 반지름 1.2px
-        val bigPlanet = p.planet == Planet.JUPITER || p.planet == Planet.SATURN
-        if (bigPlanet && zoom > 1.5f) {
+        // 2.0.3-dev3: 모든 행성 (전 목성·토성만 — 화성·금성 등이 확대 초반에 별처럼 보였음)
+        if (zoom > 1.5f) {
             val mc = Minecraft.getInstance()
             val pxW = (R * tan(Math.toRadians(mc.gameRenderer.mainCamera().getFov().toDouble() / 2)) / (mc.window.height / 2.0)).toFloat()
             discR = max(discR, 1.2f * pxW)
@@ -1058,10 +1062,11 @@ object CheonsangSky {
         // 크기: 동서 반지름 0.10 · 남북 0.08 (목성 반지름 단위, 동서는 가장자리에서 좁아짐)
         // 1.3.0: 화면에서 동서 반지름이 4픽셀보다 작으면 키움 (최대 2.5배, TBD) — ×300 에서 목성 40~50px 라 실제 비율로는 4~5px
         val discPx = tan(Math.toRadians(Math.toDegrees(kotlin.math.atan((discR / R).toDouble())))) / tan(Math.toRadians(Minecraft.getInstance().gameRenderer.mainCamera().getFov().toDouble() / 2)) * Minecraft.getInstance().window.height / 2
-        val grow = (4.0 / (0.10 * discPx).coerceAtLeast(0.1)).coerceIn(1.0, 2.5)
+        // 2.0.3-dev3: 키우지 않음 (전 최대 2.5배 — 낮은 배율에서 원판에 붙인 딱지처럼 보였음, 11-21 지율님)
+        val grow = 1.0
         // 1.3.0: 진한 벽돌색 · 진하기 85% (전 연주황 55% — 줄무늬에 묻혀 안 보였음)
         drawQuad(pass, "grs", MASK_PIPELINE, TEX_GRS, quad, center.normalized(), rt * (0.10 * grow * discR * kotlin.math.sqrt(1 - x * x)), up * (0.08 * grow * discR * 0.935), 1f,
-            Vector4f(0.62f * k * tintR, 0.28f * k * tintG, 0.18f * k * tintB, 0.85f * kotlin.math.sqrt(z).toFloat()))
+            Vector4f(0.80f * k * tintR, 0.50f * k * tintG, 0.38f * k * tintB, 0.5f * z.toFloat()))  // 2.0.3-dev3: 옅은 연어색 · 진하기 50% · 가장자리로 갈수록 옅게
     }
 
     /**

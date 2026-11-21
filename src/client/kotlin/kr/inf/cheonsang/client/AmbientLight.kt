@@ -123,6 +123,10 @@ object AmbientLight {
         return (a - 0.4) / 0.6 * byLat * night * (1.0 - 0.5 * CheonsangSky.moonLight)
     }
 
+    /** 2.0.3-dev1 개발판 `/cdark`: 빛공해 끄고 보틀 1 고정 (저장 안 함) */
+    @JvmStatic var debugDark = false
+        set(v) { field = v; if (v) { bortle = 1.0; domeK = 0.0 } else dirty = true }
+
     fun reset() { bortle = 1.0; domeK = 0.0; adapt = 1.0; cursor = -1; dirty = true }
 
     private fun tick() {
@@ -173,6 +177,7 @@ object AmbientLight {
     private fun finish() {
         cursor = -1
         bortle = 1.0 + 8.0 * (1.0 - exp(-sumL / L0))
+        if (debugDark) { bortle = 1.0; domeK = 0.0; return }
         val len = hypot(sumX, sumZ)
         if (sumL > 1e-6 && len > 1e-6) { domeX = sumX / len; domeZ = sumZ / len; domeK = (len / sumL).coerceIn(0.0, 1.0) } else domeK = 0.0
     }

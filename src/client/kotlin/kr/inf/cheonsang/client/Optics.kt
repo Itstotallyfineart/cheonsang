@@ -23,7 +23,11 @@ object Optics {
      * 2.0.2-dev1 시상 (FWHM ″): 밤마다 다름 (그 장소 현지 날짜로 정해지는 값 0.9~3.0, 1.2~2 가 흔함) × 보는 방향 대기량^0.6.
      * 전: 1.5″ 고정
      */
+    /** 2.0.3-dev1 개발판 `/cseeing <″>`: 시상 고정 (null = 밤마다, 저장 안 함) */
+    var debugSeeing: Double? = null
+
     fun nightSeeing(): Double {
+        debugSeeing?.let { return it }
         val jd = kr.inf.cheonsang.client.sky.CheonsangSky.clock.jd((net.minecraft.client.Minecraft.getInstance().level?.defaultClockTime ?: 0L).toDouble())
         val night = kotlin.math.floor(jd + kr.inf.cheonsang.client.sky.CheonsangSky.longitude / 360.0).toLong()
         if (night == cachedNight) return cachedSeeing
@@ -37,6 +41,7 @@ object Optics {
 
     /** 지금 보는 방향 시상 — 고도 낮을수록 나쁨 (대기량^0.6, 고도 5° 아래는 5° 값) */
     fun seeingArcsec(): Double {
+        debugSeeing?.let { return it }  // 2.0.3-dev2: 고정값은 그대로 (전: 고도 보정을 곱해 0.5 가 0.6~1.3 으로)
         val alt = (-(net.minecraft.client.Minecraft.getInstance().player?.xRot ?: -45f).toDouble()).coerceIn(5.0, 90.0)
         val airmass = 1.0 / kotlin.math.sin(Math.toRadians(alt + 244.0 / (165.0 + 47.0 * alt.pow(1.1))))
         return nightSeeing() * airmass.pow(0.6)

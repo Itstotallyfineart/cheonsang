@@ -95,7 +95,7 @@ object TelescopeFilter {
         }
         ClientTickEvents.END_CLIENT_TICK.register { _ ->
             Safety.run(Safety.KEYS, Unit) { while (key.consumeClick()) if (TelescopeView.active) cycle() }
-            Safety.run(Safety.KEYS, Unit) { while (settingsKey.consumeClick()) if (Minecraft.getInstance().gui.screen() == null) SettingsScreen.open() }
+            Safety.run(Safety.KEYS, Unit) { while (settingsKey.consumeClick()) if (Minecraft.getInstance().gui.screen() == null) CheonsangMenu.open() }
         }
         // 1.2.1: /cfilter 명령 없앰 → 설정 화면 (SettingsScreen)
     }

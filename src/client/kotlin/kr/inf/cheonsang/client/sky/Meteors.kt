@@ -31,6 +31,11 @@ object Meteors {
     /** 유성 양 배율 (설정은 8단계) */
     var scale = 1.0
 
+    /** 2.0.3-dev1 개발판 `/cmeteor`: 분당 개수 (null = 끔) · 화구만 · 유성우 id (복사점). 저장 안 함 */
+    var debugPerMin: Double? = null
+    var debugFire = false
+    var debugShower: String? = null
+
     /** 지금 시각의 1초당 유성 수 (밝기 무관, 하늘이 완전히 어둡다고 칠 때) */
     fun ratePerSecond(sunLon: Double, radiantAlt: (Shower) -> Double): Double {
         var perHour = SkyData.sporadicPerHour
@@ -48,10 +53,12 @@ object Meteors {
      * @param darkness 0~1 (박명·비·달빛 반영된 하늘 어두움)
      */
     fun visible(tick: Double, sunLon: Double, toWorld: Mat3, darkness: Float): List<Streak> {
-        if (darkness <= 0.01f || scale <= 0.0) return emptyList()
+        if (darkness <= 0.01f || (scale <= 0.0 && debugPerMin == null)) return emptyList()
         val radiants = SkyData.showers.associateWith { toWorld * Vec3.fromSpherical(it.ra, it.dec) }
         val alt = { s: Shower -> asinD(radiants.getValue(s).y) }
-        val rate = ratePerSecond(sunLon, alt)
+        val natural = ratePerSecond(sunLon, alt)
+        val rate = debugPerMin?.let { it / 60.0 } ?: natural
+        val forced = debugShower?.let { id -> SkyData.showers.firstOrNull { it.id.equals(id, true) } }
         val pSlot = (rate * SLOT_TICKS / 20.0).coerceAtMost(0.9)
         val out = ArrayList<Streak>()
         val now = tick / SLOT_TICKS
@@ -60,9 +67,9 @@ object Meteors {
             val rng = SplittableRandom(k * -0x61c8864680b583ebL + 0x5DEECE66DL)
             if (rng.nextDouble() >= pSlot) continue
             // 어느 유성우에서 왔나 (활동량 비례), 아니면 산발
-            var pick = rng.nextDouble() * rate / (PER_HOUR_TO_PER_SECOND * scale)
-            var shower: Shower? = null
-            for (s in SkyData.showers) {
+            var pick = rng.nextDouble() * natural / (PER_HOUR_TO_PER_SECOND * scale)
+            var shower: Shower? = forced
+            if (forced == null) for (s in SkyData.showers) {
                 val d = norm180(sunLon - s.peakLon)
                 pick -= s.zhr * exp(-0.5 * (d / s.sigma) * (d / s.sigma)) * max(0.0, sinD(alt(s)))
                 if (pick < 0) { shower = s; break }
@@ -89,7 +96,7 @@ object Meteors {
             val bright = (0.35 + rng.nextDouble() * 0.65).toFloat()
             val age = ((now - k) * SLOT_TICKS - rng.nextDouble() * SLOT_TICKS) / 20.0
             // 2.0.2-dev2 G5: 약 3% 는 화구 (길고 굵고 주황빛), 밝은 유성(밝기 0.85↑)과 화구는 지나간 자리에 초록빛 잔광이 잠깐 남음
-            val fire = rng.nextDouble() < 0.03
+            val fire = rng.nextDouble() < 0.03 || debugFire
             val dur = if (fire) duration * 1.6 else duration
             val len = if (fire) length * 1.5 else length
             val train = if (fire) 2.0 + rng.nextDouble() * 2.0 else if (bright > 0.85f) 0.6 + rng.nextDouble() * 0.8 else 0.0

@@ -13,7 +13,8 @@ A Fabric mod for Minecraft 26.3 that replaces the overworld sky with the real ce
 - Moon with libration and crater relief from the NASA LRO LOLA elevation model; Jupiter's bands and Great Red Spot, Saturn's rings, moons of Jupiter and Saturn at their real size
 - Solar and lunar eclipses for the observer's place (Earth's shadow drawn on the Moon), meteor showers with trains and fireballs, aurora, zodiacal light
 - Western 88 constellations or the Korean Cheonsang Yeolcha Bunyajido (289 asterisms)
-- `/cfind` to find any object, `/cwhen` for when and where objects and events are visible, `/cplace` for a personal observing location
+- `/cfind` to find any object, `/cwhen` for when and where objects and events are visible (including `/cwhen moon 50` for a given phase), `/cplace` for a personal observing location
+- Settings screen with tabs (sky display, place & time with a city list, tonight, equipment); server operators can set the server sky from it
 - Screen day and night follow the real Sun altitude; mob spawning and sleeping stay vanilla
 - English and Korean in game
 
@@ -22,11 +23,12 @@ Each version's changes are in [Releases](../../releases).
 
 ## Download
 See [Releases](../../releases).
-- `cheonsang-2.0.2.jar`: the mod (required on client and server)
+- `cheonsang-2.0.3.jar`: the mod (required on client and server)
 - `cheonsang-extra-1.0.2.jar`: optional pack with Gaia stars to magnitude 15.2, Milky Way 16K/32K and an 8K Moon map with elevation data (about 443 MB). Requires Cheonsang 2.0.2 or later.
 
 ## Requirements
 Minecraft 26.3, Fabric Loader 0.20.1 or later, Fabric API, Fabric Language Kotlin, Java 25.
+Cloth Config API (settings screen) is bundled inside the jar.
 On servers, install the mod on both the server and the clients.
 
 ## Building
@@ -46,4 +48,4 @@ Planning, data selection, design decisions and in-game verification by itsnotfin
 
 ## License
 Source code: MIT (see `LICENSE`). Original textures and icons by itsnotfineart: CC BY-SA 4.0.
-Data files keep the licenses of their sources (see `CREDITS.txt`). The deep-sky sketch atlas is derived from the Digitized Sky Surveys and is CC BY-NC-SA 4.0 (non-commercial).
+Data files keep the licenses of their sources (see `CREDITS.txt`). The bundled Cloth Config API is LGPL-3.0. The deep-sky sketch atlas is derived from the Digitized Sky Surveys and is CC BY-NC-SA 4.0 (non-commercial).
